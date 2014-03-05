@@ -40,7 +40,7 @@
     var result = document.createElement(tagName);
     result.className = className || "";
     if (kids) {
-      kids.map(function (kid) {result.appendChild(kid);})
+      kids.forEach(function (kid) {result.appendChild(kid);})
     }
     return result;
   }
@@ -59,7 +59,7 @@
     var result = [];
     var flat = function flat (thing) {
       if (Object.prototype.toString.call(thing) === '[object Array]')
-        thing.map(flat);
+        thing.forEach(flat);
       else
         result.push(thing);
     };
@@ -263,7 +263,7 @@
 
     var handle_tkn = function (tkn) {
       if (wordShouldBeSplitUp(tkn)) {
-        splitLongWord(tkn).map(emit);
+        splitLongWord(tkn).forEach(emit);
       } else {
         emit(tkn);
       }

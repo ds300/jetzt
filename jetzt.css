@@ -1,0 +1,96 @@
+.sr-reader {
+  position: fixed;
+  top: -50%;
+  left: 50%;
+  -webkit-transform: translate(-50%, -50%);
+  -moz-transform: translate(-50%, -50%);
+  transform: translate(-50%, -50%);
+  height: 100px;
+  display: flex;
+  flex-direction: row;
+  font-family: Consolas, monaco, monospace;
+  -webkit-box-shadow: 2px 2px 19px 0px rgba(50, 50, 50, 0.75);
+  -moz-box-shadow: 2px 2px 19px 0px rgba(50, 50, 50, 0.75);
+  box-shadow: 2px 2px 19px 0px rgba(50, 50, 50, 0.75);
+  border-radius: 10px;
+  -webkit-transition: top 0.34s ease;
+  -moz-transition: top 0.34s ease;
+  transition: top 0.34s ease;
+}
+
+.sr-blackout {
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  top: 0px;
+  left: 0px;
+  background-color: black;
+  opacity: 0;
+  -webkit-transition: opacity 0.34s ease;
+  -moz-transition: opacity 0.34s ease;
+  transition: opacity 0.34s ease;
+}
+
+.sr-blackout.in {
+  opacity: 0.34;
+}
+
+.sr-reader > .sr-wrap {
+  min-width: 30px;
+  background-color: #EEE; 
+  color: #666;
+  font-size: 50px;
+  flex: 1 1 auto;
+  padding: 15px 5px;
+}
+
+.sr-reader .sr-wrap.sr-left {
+  border-top-left-radius: 8px;
+  border-bottom-left-radius: 8px;
+}
+
+.sr-reader .sr-wrap.sr-right {
+  border-top-right-radius: 8px;
+  border-bottom-right-radius: 8px;
+}
+
+.sr-reader .sr-word-box {
+  flex: 0 0 auto;
+  width: 400px;
+  background: white;
+  position: relative;
+  font-size: 50px;
+  color: black;
+}
+
+.sr-reader .sr-word-box .sr-reticle {
+  position: absolute;
+  left: 110px;
+  height: 100px;
+  width: 10px;
+  border-top: 20px solid #CCC;
+  border-bottom: 20px solid #CCC;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+}
+
+.sr-reader .sr-word-box .sr-wpm {
+  position: absolute;
+  right: 4px;
+  bottom: 0px;
+  font-size: 20px;
+  color: #777;
+  box-sizing: border-box;
+}
+
+.sr-reader .sr-word-box .sr-word {
+  position: absolute;
+  top: 50%;
+  -webkit-transform: translateY(-50%);
+  -moz-transform: translateY(-50%);
+  transform: translateY(-50%);
+}
+
+.sr-reader .sr-word-box .sr-word .sr-pivot {
+  color: red;
+}

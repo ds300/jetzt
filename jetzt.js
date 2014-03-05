@@ -515,29 +515,21 @@
       var len = instr.token.length;
       var mul = 1;
       switch (len) {
-        case 1:
-        case 2:
-          mul = 0.8;
-          break;
-        case 3:
-        case 4:
-          mul = 0.9;
-          break;
         case 6:
         case 7:
           mul = 1.2;
           break;
         case 8:
         case 9:
-          mul = 1.5;
+          mul = 1.4;
           break;
         case 10:
         case 11:
-          mul = 1.9;
+          mul = 1.8;
           break;
         case 12:
         case 13:
-          mul = 2.1;
+          mul = 2;
       }
       return interval * mul;
     }

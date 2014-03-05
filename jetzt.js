@@ -375,7 +375,7 @@
   var blackout, // the dark backdrop div
       box,      // the reader box div
       wordDiv,
-      wpmSpan,
+      wpmDiv,
       leftSpan,
       rightSpan,
       reticle;
@@ -421,7 +421,7 @@
         delete blackout;
         delete box;
         delete wordDiv;
-        delete wpmSpan;
+        delete wpmDiv;
         delete leftSpan;
         delete rightSpan;
         delete reticle;

@@ -18,7 +18,7 @@ Control is currently keyboard-only.
 
 - Go faster/slower with up/down arrow keys.
 
-- Go back/forward a sentence with left/right arrow keys (hold `ctrl` to navigate by paragraphs).
+- Go back/forward a sentence with left/right arrow keys (hold `alt` to navigate by paragraphs).
 
 - Pause with space.
 

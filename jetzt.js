@@ -89,8 +89,6 @@
     };
 
     var default_options = {
-      clause_pause_multiplier: 0.5,
-      sentence_pause_multiplier: 1,
       target_wpm: 400,
       scale: 1
     };

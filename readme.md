@@ -1,6 +1,6 @@
 # jetzt
 
-*jetzt* is a speed-reader extension for [chrome](http://google.com/chrome).
+*jetzt* is a speed-reader extension for [chrome](http://google.com/chrome) inspired by [Spritz](http://www.spritzinc.com/).
 
 ### Installation
 
@@ -14,7 +14,9 @@ Control is currently keyboard-only.
 
 - Initiate jetzt by selecting some text and pressing `alt+r`.
 
-- Change size of the with `+`/`-`.
+- Change size with `+`/`-`.
+
+- Go faster/slower with up/down arrow keys.
 
 - Go back/forward a sentence with left/right arrow keys.
 

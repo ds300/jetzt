@@ -125,7 +125,9 @@
     start_sentence: 1.8,
     end_sentence: 2.4,
     start_paragraph: 2.2,
-    end_paragraph: 3
+    end_paragraph: 3,
+    short_space: 1.5,
+    long_space: 2.5
   };
 
   function maxModifier(a, b) {
@@ -199,12 +201,6 @@
     var instructions = [];
 
     var modifier = "start_paragraph";
-    var ignored = null;
-
-    var ignoreNext = function () {
-      ignored = modifier;
-      modifier = "normal";
-    };
 
     var modNext = function (mod) {
       modifier = maxModifier(modifier, mod);
@@ -239,21 +235,35 @@
       rightWrap = "";
     };
 
-    
+    var spacerInstruction = null;
+
+    var spacer = function () {
+      if (spacerInstruction) {
+        spacerInstruction.modifier = "long_space";
+      } else {
+        spacerInstruction = {
+          leftWrap: leftWrap,
+          rightWrap: rightWrap,
+          token: "   ",
+          modifier: "short_space"
+        };
+      }
+    };
 
     var emit = function (token) {
+      if (spacerInstruction) {
+        instructions.push(spacerInstruction);
+      }
+
       instructions.push({
         token: token,
         leftWrap: leftWrap,
         rightWrap: rightWrap,
         modifier: modifier
       });
-      if (ignored) {
-        modifier = ignored;
-        ignored = null;
-      } else {
-        modifier = "normal";
-      }
+
+      modifier = "normal";
+      spacerInstruction = null;
     };
 
     // doesn't handle nested double quotes, but that junk is *rare*.
@@ -266,11 +276,7 @@
         emit(tkn);
       }
     };
-
-    var spacer = function () {
-      ignoreNext(); // we don't want spaces to be modified
-      handle_tkn("   ");
-    };
+    
 
     for (var i=0; i<tokens.length; i++) {
       var tkn = tokens[i];
@@ -322,11 +328,11 @@
             handle_tkn(tkn);
             modNext("start_clause");
           } else if (tkn.match(/\n+/)) {
+            clearWrap();
             modPrev("end_paragraph");
             spacer();
             modNext("start_paragraph");
             double_quote_state = false;
-            clearWrap();
           } else if (tkn.match(/^".+$/)) {
             double_quote_state = true;
             modNext("start_clause");

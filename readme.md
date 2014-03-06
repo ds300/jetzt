@@ -33,6 +33,7 @@ Control is currently keyboard-only.
 
 - [David Sheldrick](http://github.com/ds300)
 - [fusillicode](http://github.com/fusillicode)
+- [Brian Hanson](http://github.com/brianjhanson)
 
 
 ### License

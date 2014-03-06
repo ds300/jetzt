@@ -12,7 +12,7 @@ Then navigate to [chrome://extensions](chrome://extensions), enable developer mo
 
 Control is currently keyboard-only.
 
-- Initiate jetzt by selecting some text and pressing `alt+r`.
+- Initiate jetzt by selecting some text and pressing `alt`-`s`.
 
 - Change size with `+`/`-`.
 
@@ -27,6 +27,12 @@ Control is currently keyboard-only.
 ### Online Demo
 
 [Here](http://ds300.github.com/jetzt/)
+
+### Contributors
+
+[David Sheldrick](http://github.com/ds300)
+[fusillicode](http://github.com/fusillicode)
+
 
 ### License
 

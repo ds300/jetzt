@@ -120,14 +120,14 @@
     // delay multipliers
   var modifiers = {
     normal: 1,
-    start_clause: 1.5,
+    start_clause: 1,
     end_clause: 1.8,
-    start_sentence: 1.8,
-    end_sentence: 2.4,
-    start_paragraph: 2.2,
-    end_paragraph: 3,
+    start_sentence: 1.3,
+    end_sentence: 2.2,
+    start_paragraph: 2.0,
+    end_paragraph: 2.8,
     short_space: 1.5,
-    long_space: 2.5
+    long_space: 2.2
   };
 
   function maxModifier(a, b) {
@@ -384,6 +384,7 @@
       wpmDiv,
       leftSpan,
       rightSpan,
+      progressBar,
       reticle;
 
   function makeBlackout () {
@@ -399,11 +400,13 @@
     reticle = div("sr-reticle");
     leftSpan = span();
     rightSpan = span();
+    progressBar = div("sr-progress");
 
     box = div("sr-reader", [
       div("sr-wrap sr-left", [leftSpan]),
       div("sr-word-box", [
         reticle,
+        progressBar,
         wordDiv,
         wpmDiv
       ]),
@@ -430,6 +433,7 @@
         delete wpmDiv;
         delete leftSpan;
         delete rightSpan;
+        delete progressBar;
         delete reticle;
       }, 340);
   }
@@ -460,6 +464,10 @@
     }
   }
 
+  function setProgress (percent) {
+    progressBar.style.borderLeftWidth = Math.ceil(percent * 4) + "px";
+  }
+
   function setWord (word) {
     var pivot = calculatePivot(word);
     wordDiv.innerHTML = word.substr(0, pivot)
@@ -471,6 +479,7 @@
     var pivotElem = wordDiv.getElementsByClassName("sr-pivot")[0];
     var pivotCenter = reticle.offsetLeft + (reticle.offsetWidth / 2);
     wordDiv.style.left = (pivotCenter - pivotElem.offsetLeft - (pivotElem.offsetWidth / 2)) + "px";
+    setProgress(100 * (index / instructions.length));
   }
 
   function adjustWPM (diff) {
@@ -701,7 +710,6 @@
       }
     } 
   }
-  
 
 
   window.addEventListener("keydown", function (ev) {

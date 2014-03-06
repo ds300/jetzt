@@ -69,6 +69,7 @@
   font-size: 50px;
   flex: 1 1 auto;
   padding: 15px 5px;
+  line-height: 60px;
 }
 
 .sr-reader .sr-wrap.sr-left {
@@ -88,6 +89,20 @@
   position: relative;
   font-size: 50px;
   color: black;
+}
+
+.sr-reader .sr-word-box .sr-progress {
+  position: absolute;
+  bottom: -10px;
+  width: 400px;
+  height: 3px;
+  background-color: black;
+  border-left: 0px solid green;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+  -webkit-transition: border 0.34s ease;
+  -moz-transition: border 0.34s ease;
+  transition: border 0.34s ease;
 }
 
 .sr-reader .sr-word-box .sr-reticle {

@@ -7,12 +7,19 @@
 
   "content_scripts": [
     {
-      "matches": ["http://*/*", "https://*/*"],
+      "matches": ["http://*/*", "https://*/*", "file:///*"],
       "css": ["jetzt.css"],
       "js": ["jetzt.js"]
     }
   ],
   "permissions": [
-    "storage"
-  ]
+    "storage",
+    "contextMenus"
+  ],
+  "background": {
+    "scripts": ["background.js"]
+  },
+  "icons": { "16": "icon16.png",
+             "48": "icon48.png",
+             "128": "icon128.png" } 
 }

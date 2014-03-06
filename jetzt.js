@@ -659,27 +659,49 @@
   var existingOnKeyDown;
 
   function init (text) {
-    makeBlackout();
-    makeBox();
+    if (!instructions) {
+      makeBlackout();
+      makeBox();
 
-    blackout.onclick = close;
+      blackout.onclick = close;
 
-    instructions = parseText(text);
+      instructions = parseText(text);
 
-    index = 0;
+      index = 0;
 
-    existingOnKeyDown = window.onkeydown;
-    window.onkeydown = handleKeydown;
+      existingOnKeyDown = window.onkeydown;
+      window.onkeydown = handleKeydown;
 
-    setTimeout(toggleRunning, 500);
+      setTimeout(toggleRunning, 500);
+    } else {
+      throw new Error("jetzt already initialized");
+    }
   }
 
   var close = function () {
-    if (running) toggleRunning();
-    dismiss();
-    instructions = null;
-    window.onkeydown = existingOnKeyDown;
+    if (instructions) {
+      if (running) toggleRunning();
+      dismiss();
+      instructions = null;
+      window.onkeydown = existingOnKeyDown; 
+    } else {
+      throw new Error("jetzt not yet initialized");
+    }
   };
+
+  if (!window.jetzt) {
+    window.jetzt = {
+      init: init,
+      close: close,
+      adjustWPM: adjustWPM,
+      adjustScale: adjustScale,
+      toggleRunning: function () {
+        if (instructions) toggleRunning();
+        else throw new Error("jetzt not yet initialized")
+      }
+    } 
+  }
+  
 
 
   window.addEventListener("keydown", function (ev) {
@@ -691,4 +713,6 @@
       }
     }
   })
+
+  
 })();

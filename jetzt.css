@@ -24,6 +24,7 @@
 
 
 .sr-reader {
+  z-index: 999999;
   position: fixed;
   top: -50%;
   left: 50%;

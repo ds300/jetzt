@@ -677,7 +677,7 @@
 
 
   window.addEventListener("keydown", function (ev) {
-    if (!instructions && ev.altKey && ev.keyCode === 82) {
+    if (!instructions && ev.altKey && ev.keyCode === 83) {
       ev.preventDefault();
       var text = window.getSelection().toString();
       if (text.trim().length > 0) {

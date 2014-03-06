@@ -718,6 +718,7 @@
       var text = window.getSelection().toString();
       if (text.trim().length > 0) {
         init(text);
+        window.getSelection().removeAllRanges();
       }
     }
   })

@@ -8,7 +8,12 @@ This is very much beta software so a proper chrome extension package is not curr
 
 Remember to pull every now and then for bugfixes and new features.
 
-You can also use our bookmarklet by manually adding a new bookdrag and pasting the content of bookmarklet.js in the location field. 
+### Bookmarklet
+
+You can also use it as a bookmarklet by:
+- Copying the content of bookmarklet.js
+- Manually adding a new bookmark
+- Pasting the content into the location field. 
 
 ### Usage
 

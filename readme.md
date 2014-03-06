@@ -30,8 +30,8 @@ Control is currently keyboard-only.
 
 ### Contributors
 
-[David Sheldrick](http://github.com/ds300)
-[fusillicode](http://github.com/fusillicode)
+- [David Sheldrick](http://github.com/ds300)
+- [fusillicode](http://github.com/fusillicode)
 
 
 ### License

@@ -4,9 +4,10 @@
 
 ### Installation
 
-    git clone git@github.com:ds300/jetzt
+This is very much beta software so a proper chrome extension package is not currently provided. Instead: clone this repository, then, in chrome, navigate to chrome://extensions , enable developer mode, click "Load unpacked extension..." and select the directoy you cloned.
 
-Then navigate to [chrome://extensions](chrome://extensions), enable developer mode, click "Load unpacked extension..." and select the directoy you cloned.
+Remember to pull every now and then for bugfixes and new features.
+
 
 ### Usage
 

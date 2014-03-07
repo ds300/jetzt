@@ -294,13 +294,13 @@
           break;
         case "\"":
           if (double_quote_state) {
-            spacer();
             popWrap(wraps.double_quote)
+            spacer();
             modNext("start_clause");
           } else {
+            spacer();
             pushWrap(wraps.double_quote);
             modPrev("end_clause");
-            spacer();
           }
           double_quote_state = !double_quote_state;
           break;

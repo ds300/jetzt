@@ -207,7 +207,7 @@
   }
 
   function modifier(mod) {
-    return config(["modifiers", mod]);
+    return config(["modifiers", mod]) || 1;
   }
 
   function maxModifier(a, b) {
@@ -628,7 +628,7 @@
   function calculateDelay(instr) {
     var interval = 60 * 1000 / config("target_wpm");
     if (instr.modifier !== "normal") {
-      return interval * (modifiers[instr.modifier] || 1);
+      return interval * modifier(instr.modifier);
     } else {
       var len = instr.token.length;
       var mul = 1;

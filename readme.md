@@ -13,7 +13,7 @@ Remember to pull every now and then for bugfixes and new features.
 
 Control is currently keyboard-only.
 
-- Initiate jetzt by selecting some text and pressing `alt`-`s`.
+- Initiate jetzt by pressing `alt`-`s` and clicking on the block of text you wish to read. Alternatively, select some text before pressing `alt`-`s`.
 
 - Change size with `+`/`-`.
 

@@ -116,7 +116,7 @@
      \______/  \______/ \__|  \__|\__|      \______| \______/
   */
 
-  DEFAULT_OPTIONS = {
+  var DEFAULT_OPTIONS = {
       target_wpm: 400,
       scale: 1,
       modifiers: {
@@ -827,7 +827,8 @@
 
 
   /**
-   * Initialise the jetzt reader with some content (either a dom node or string)
+   * Initialise the jetzt reader with some content,
+   * content being either a dom node, a string, or some instructions.
    */
   function init (content) {
     if (!instructions) {
@@ -840,6 +841,8 @@
       } else if (content.textContent && content.textContent.trim().length > 0) {
         // TODO: write proper dom parsing function
         instructions = parseText(content.textContent.trim());
+      } else if (realTypeOf(content) === "Array") {
+        instructions = content;
       } else {
         throw new Error("jetzt doesn't know how to deal with this object:", content);
       }
@@ -912,6 +915,24 @@
 
     window.addEventListener("mouseover", mouseoverHandler);
     window.addEventListener("click", clickHandler);
+  };
+
+
+  window.jetzt = {
+    selectMode: selectMode
+    , init: init
+    , close: close
+    , toggleRunning: toggleRunning
+    , adjustWPM: adjustWPM
+    , adjustScale: adjustScale
+    , DEFAULT_OPTIONS: DEFAULT_OPTIONS
+    , config: config
+    , setConfigBackend: setConfigBackend
+    , Instructionator: Instructionator
+    , nextParagraph: nextParagraph
+    , nextSentence: nextSentence
+    , prevParagraph: prevParagraph
+    , prevSentence: prevSentence
   };
 
 

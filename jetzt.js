@@ -22,7 +22,17 @@
 
 */
 
-(function () {
+(function (window) {
+  "use strict";
+
+  if (typeof window.jetzt !== 'undefined') {
+    console.warn("jetzt unable to initialize, window.jetzt already set");
+    return;
+  }
+
+  var jetzt = {};
+
+  window.jetzt = jetzt;
 
   /*
     $$\   $$\ $$$$$$$$\ $$\       $$$$$$$\  $$$$$$$$\ $$$$$$$\   $$$$$$\
@@ -53,6 +63,9 @@
     return elem('span', className, kids);
   }
 
+  function realTypeOf (thing) {
+    return Object.prototype.toString.call(thing).slice(8, -1);
+  }
 
   // flatten possibly nested array
   function flatten (arr) {
@@ -71,6 +84,30 @@
     return Math.min(Math.max(num, min), max);
   }
 
+  // merge objects together and so forth. don't rely on child object
+  // references being preserved.
+  function recursiveExtend () {
+    var result = arguments[0];
+    for (var i=1; i<arguments.length; i++) {
+      var uber = arguments[i];
+      for (var prop in uber) {
+        if (uber.hasOwnProperty(prop)) {
+          if (result.hasOwnProperty(prop)) {
+            var resultVal = result[prop];
+            var uberVal = uber[prop];
+            if (realTypeOf(resultVal) === 'Object' && realTypeOf(uberVal) === 'Object') {
+              result[prop] = recursiveExtend({}, resultVal, uberVal);
+            } else {
+              result[prop] = uberVal;
+            }
+          } else {
+            result[prop] = uber[prop];
+          }
+        }
+      }
+    }
+    return result;
+  }
 
   /*
      $$$$$$\   $$$$$$\  $$\   $$\ $$$$$$$$\ $$$$$$\  $$$$$$\
@@ -83,55 +120,98 @@
      \______/  \______/ \__|  \__|\__|      \______| \______/
   */
 
-  var config = (function () {
-    var storageEnabled = function () {
-      return !!(window.chrome && chrome.storage);
-    };
-
-    var default_options = {
+  jetzt.DEFAULT_OPTIONS = {
       target_wpm: 400,
-      scale: 1
-    };
-
-    var options = default_options;
-
-    if (storageEnabled())
-      chrome.storage.local.get(default_options, function (value) {
-        options = value;
-      });
-
-    return function (key, val) {
-      if (typeof val === 'undefined') {
-        if (options.hasOwnProperty(key)) {
-          return options[key];
-        } else {
-          throw new Error("bad key: " + key);
-        }
-      } else if (options.hasOwnProperty(key) && typeof val === typeof options[key]){
-        options[key] = val;
-        if (storageEnabled())
-          chrome.storage.local.set(options);
-      } else {
-        throw new Error("bad key/val: " + key + ": " + val);
+      scale: 1,
+      modifiers: {
+        normal: 1,
+        start_clause: 1,
+        end_clause: 1.8,
+        start_sentence: 1.3,
+        end_sentence: 2.2,
+        start_paragraph: 2.0,
+        end_paragraph: 2.8,
+        short_space: 1.5,
+        long_space: 2.2
       }
-    };
-  })();
-
-    // delay multipliers
-  var modifiers = {
-    normal: 1,
-    start_clause: 1,
-    end_clause: 1.8,
-    start_sentence: 1.3,
-    end_sentence: 2.2,
-    start_paragraph: 2.0,
-    end_paragraph: 2.8,
-    short_space: 1.5,
-    long_space: 2.2
+      // keybindings and so forth soon
   };
 
+  var options = recursiveExtend({}, jetzt.DEFAULT_OPTIONS);
+
+  // placeholder config backend for when there is no real backend.
+  var configBackend = {
+    get: function (cb) {
+      cb(options);
+    },
+    set: function (opts) {}
+  };
+
+  jetzt.setConfigBackend = function (backend) {
+    configBackend = backend;
+    backend.get(function (opts) {
+      if (realTypeOf(opts) === 'Object') {
+        options = recursiveExtend({}, options, opts);
+      } else {
+        throw new Error("bad config backend");
+      }
+    });
+  };
+
+  function lookup (map, keyPath) {
+    if (keyPath.length === 0) throw new Error("this should never happen");
+
+    var key = keyPath[0];
+    if (keyPath.length === 1) {
+      if (!map.hasOwnProperty(key)) {
+        console.warn("config lookup: no key '"+key+"'");
+      }
+      return map[key];
+    } else {
+      var submap = map[key];
+      if (realTypeOf(submap) !== 'Object') {
+        console.warn("config lookup: no key '"+key+"'");
+        return;
+      } else {
+        return _lookup(submap, keyPath.slice(1));
+      }
+    }
+  }
+
+  function put (map, keyPath, val) {
+    if (keyPath.length === 0) throw new Error("this should never happen");
+
+    var key = keyPath[0];
+    if (keyPath.length === 1) {
+      map[key] = val;
+    } else {
+      var submap = map[key];
+      if (realTypeOf(submap) !== 'Object') {
+        submap = {};
+        map[key] = submap;
+      }
+      _put(submap, keyPath.slice(1), val);
+    }
+  }
+
+
+  jetzt.config = function (keyPath, val) {
+    if (typeof keyPath === 'string') keyPath = [keyPath];
+
+    if (typeof val === 'undefined') {
+      return _lookup(options, keyPath);
+    } else {
+      _put(options, keyPath, val);
+      configBackend.set(options);
+    }
+  }
+
+  function modifier(mod) {
+    return config(["modifiers", mod]);
+  }
+
   function maxModifier(a, b) {
-    if ((modifiers[a] || 1) > (modifiers[b] || 1)) {
+    if ((modifier(a) || 1) > (modifier(b) || 1)) {
       return a;
     } else {
       return b;
@@ -192,7 +272,7 @@
    * Helper class for generating jetzt instructions.
    * Very subject to change.
    */
-  function Instructionator () {
+  jetzt.Instructionator = function () {
     // state
     var instructions = []
       , modifier = "normal"
@@ -286,12 +366,14 @@
     parens: {left: "(", right: ")"}
   };
 
+  jetzt.wraps = wraps;
+
   // convert raw text into instructions
-  function parseText(text) {
+  jetzt.parseText = function (text) {
                         // long dashes ↓
     var tokens = text.match(/["“”\(\)\/–—]|--+|\n+|[^\s"“”\(\)\/–—]+/g);
 
-    var $ = new Instructionator();
+    var $ = new jetzt.Instructionator();
 
     // doesn't handle nested double quotes, but that junk is *rare*;
     var double_quote_state = false;
@@ -383,10 +465,10 @@
   */
 
   // vars
-  var running,      // whether or not the reader is running
-      instructions, // the list of instructions
-      index,        // the index of the current instruction
-      runLoop;      // the run loop timeout
+  var running = false, // whether or not the reader is running
+      instructions,    // the list of instructions
+      index,           // the index of the current instruction
+      runLoop;         // the run loop timeout
 
 
   /*
@@ -461,7 +543,7 @@
       }, 340);
   }
 
-  function adjustScale (diff) {
+  jetzt.adjustScale = function (diff) {
     var current = config("scale");
     var adjusted = clamp(0.1, current + diff, 2);
     config("scale", adjusted);
@@ -469,7 +551,7 @@
     box.style.webkitTransform = "translate(-50%, -50%) scale("+adjusted+")";
     box.style.mozTransform = "translate(-50%, -50%) scale("+adjusted+")";
     box.style.transform = "translate(-50%, -50%) scale("+adjusted+")";
-  }
+  };
 
   // calculate the focal character index
   function calculatePivot (word) {
@@ -505,14 +587,14 @@
     setProgress(100 * (index / instructions.length));
   }
 
-  function adjustWPM (diff) {
+  jetzt.adjustWPM = function (diff) {
     var current = config("target_wpm");
     var adjusted = clamp(100, current + diff, 1500);
 
     config("target_wpm", adjusted);
 
     wpmDiv.innerHTML = adjusted + "";
-  }
+  };
 
   function setWrap (left, right) {
     if (left !== leftSpan.innerHTML) {
@@ -587,7 +669,9 @@
     }, time);
   }
 
-  function toggleRunning () {
+  jetzt.toggleRunning = function (run) {
+    if (run === running) return;
+
     if (running) {
       clearTimeout(runLoop);
       running = false;
@@ -595,44 +679,44 @@
       running = true;
       defer(0);
     }
-  }
+  };
 
   var startModifiers = {
     "start_sentence": true,
     "start_paragraph": true
   };
 
-  function prevSentence () {
+  jetzt.prevSentence = function () {
     index = Math.max(0, index - 5);
     while (index > 0 && !startModifiers[instructions[index].modifier]) {
       index--;
     }
     if (!running) setWord(instructions[index].token);
-  }
+  };
 
-  function nextSentence () {
+  jetzt.nextSentence = function () {
     index = Math.min(index+1, instructions.length - 1);
     while (index < instructions.length - 1 && !startModifiers[instructions[index].modifier]) {
       index++;
     }
     if (!running) setWord(instructions[index].token);
-  }
+  };
 
-  function prevParagraph () {
+  jetzt.prevParagraph = function () {
     index = Math.max(0, index - 5);
     while (index > 0 && instructions[index].modifier != "start_paragraph") {
       index--;
     }
     if (!running) setWord(instructions[index].token);
-  }
+  };
 
-  function nextParagraph () {
+  jetzt.nextParagraph = function () {
     index = Math.min(index+1, instructions.length - 1);
     while (index < instructions.length - 1 && instructions[index].modifier != "start_paragraph") {
       index++;
     }
     if (!running) setWord(instructions[index].token);
-  }
+  };
 
   /*
      $$$$$$\   $$$$$$\  $$\   $$\ $$$$$$$$\ $$$$$$$\   $$$$$$\  $$\
@@ -647,6 +731,7 @@
 
 
   function handleKeydown (ev) {
+    // handle custom keybindings eventually
     switch (ev.keyCode) {
       case 27: //esc
         ev.preventDefault();
@@ -690,14 +775,26 @@
 
   var existingOnKeyDown;
 
-  function init (text) {
+
+  jetzt.init = function (content) {
     if (!instructions) {
+
+      // plain string
+      if (typeof content === 'string' && content.trim().length > 0) {
+        instructions = parseText(text);
+
+      // dom node
+      } else if (content.textContent && content.textContent.trim().length > 0) {
+        // TODO: write proper dom parsing function
+        instructions = parseText(textContent);
+      } else {
+        throw new Error("jetzt doesn't know how to deal with this object:", content);
+      }
+
       makeBlackout();
       makeBox();
 
       blackout.onclick = close;
-
-      instructions = parseText(text);
 
       index = 0;
 
@@ -708,9 +805,9 @@
     } else {
       throw new Error("jetzt already initialized");
     }
-  }
+  };
 
-  var close = function () {
+  jetzt.close = function () {
     if (instructions) {
       if (running) toggleRunning();
       dismiss();
@@ -721,20 +818,7 @@
     }
   };
 
-  if (!window.jetzt) {
-    window.jetzt = {
-      init: init,
-      close: close,
-      adjustWPM: adjustWPM,
-      adjustScale: adjustScale,
-      toggleRunning: function () {
-        if (instructions) toggleRunning();
-        else throw new Error("jetzt not yet initialized")
-      }
-    }
-  }
-
-  var selectmode = function () {
+  jetzt.selectMode = function () {
     var previousElement;
 
     var removeHighlight = function (element) {
@@ -759,14 +843,12 @@
     };
 
     var clickHandler = function (ev) {
-      console.log(ev);
-      text = ev.target.textContent.trim();
       window.removeEventListener("mouseover", mouseoverHandler);
       window.removeEventListener("click", clickHandler);
       removeHighlight(previousElement);
       removeHighlight(ev.target);
 
-      init(text);
+      init(ev.target);
     };
 
     window.addEventListener("mouseover", mouseoverHandler);
@@ -779,13 +861,13 @@
       ev.preventDefault();
       var text = window.getSelection().toString();
       if (text.trim().length > 0) {
-        init(text);
+        jetzt.init(text);
         window.getSelection().removeAllRanges();
       } else {
-        selectmode();
+        jetzt.selectmode();
       }
     }
   })
 
 
-})();
+})(window);

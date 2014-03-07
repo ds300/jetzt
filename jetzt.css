@@ -136,3 +136,7 @@
 .sr-reader .sr-word-box .sr-word .sr-pivot {
   color: red;
 }
+
+.sr-highlight {
+  background-color: red !important;
+}

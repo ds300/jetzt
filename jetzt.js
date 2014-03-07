@@ -708,8 +708,47 @@
         if (instructions) toggleRunning();
         else throw new Error("jetzt not yet initialized")
       }
-    } 
+    }
   }
+
+  var selectmode = function () {
+    var previousElement;
+
+    var removeHighlight = function (element) {
+      element.className = element.className.replace(/\bsr-highlight\b/, "");
+    };
+
+    var addHighlight = function (element) {
+      element.className = element.className + " sr-highlight";
+    };
+
+    var mouseoverHandler = function (ev) {
+      if (previousElement && previousElement === ev.target) {
+	// same element
+	return;
+      }
+      if (previousElement) {
+	removeHighlight(previousElement);
+      }
+      addHighlight(ev.target);
+
+      previousElement = ev.target;
+    };
+
+    var clickHandler = function (ev) {
+      console.log(ev);
+      text = ev.target.textContent.trim();
+      window.removeEventListener("mouseover", mouseoverHandler);
+      window.removeEventListener("click", clickHandler);
+      removeHighlight(previousElement);
+      removeHighlight(ev.target);
+
+      init(text);
+    };
+
+    window.addEventListener("mouseover", mouseoverHandler);
+    window.addEventListener("click", clickHandler);
+  };
 
 
   window.addEventListener("keydown", function (ev) {
@@ -719,9 +758,11 @@
       if (text.trim().length > 0) {
         init(text);
         window.getSelection().removeAllRanges();
+      } else {
+	selectmode();
       }
     }
   })
 
-  
+
 })();

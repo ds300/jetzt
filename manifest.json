@@ -9,7 +9,7 @@
     {
       "matches": ["http://*/*", "https://*/*", "file:///*"],
       "css": ["jetzt.css"],
-      "js": ["jetzt.js"]
+      "js": ["jetzt.js", "content-script.js"]
     }
   ],
   "permissions": [

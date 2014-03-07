@@ -30,10 +30,6 @@
     return;
   }
 
-  var jetzt = {};
-
-  window.jetzt = jetzt;
-
   /*
     $$\   $$\ $$$$$$$$\ $$\       $$$$$$$\  $$$$$$$$\ $$$$$$$\   $$$$$$\
     $$ |  $$ |$$  _____|$$ |      $$  __$$\ $$  _____|$$  __$$\ $$  __$$\
@@ -120,7 +116,7 @@
      \______/  \______/ \__|  \__|\__|      \______| \______/
   */
 
-  jetzt.DEFAULT_OPTIONS = {
+  DEFAULT_OPTIONS = {
       target_wpm: 400,
       scale: 1,
       modifiers: {
@@ -137,7 +133,7 @@
       // keybindings and so forth soon
   };
 
-  var options = recursiveExtend({}, jetzt.DEFAULT_OPTIONS);
+  var options = recursiveExtend({}, DEFAULT_OPTIONS);
 
   // placeholder config backend for when there is no real backend.
   var configBackend = {
@@ -147,7 +143,13 @@
     set: function (opts) {}
   };
 
-  jetzt.setConfigBackend = function (backend) {
+  /**
+   * jetzt.setConfigBackend
+   * Set the config 'backend' store. Should be an object with methods
+   * void get(cb(opts))
+   * void set(opts)
+   */
+  function setConfigBackend (backend) {
     configBackend = backend;
     backend.get(function (opts) {
       if (realTypeOf(opts) === 'Object') {
@@ -158,6 +160,7 @@
     });
   };
 
+  // recursive lookup
   function lookup (map, keyPath) {
     if (keyPath.length === 0) throw new Error("this should never happen");
 
@@ -173,7 +176,7 @@
         console.warn("config lookup: no key '"+key+"'");
         return;
       } else {
-        return _lookup(submap, keyPath.slice(1));
+        return lookup(submap, keyPath.slice(1));
       }
     }
   }
@@ -195,13 +198,39 @@
   }
 
 
-  jetzt.config = function (keyPath, val) {
+  /**
+   * jetzt.config
+   * get and set config variables.
+   *
+   * e.g.
+   *      jetzt.config("cheese", "Edam")
+   * 
+   * sets the "cheese" option to the string "Edam"
+   *
+   *      jetzt.config("cheese")
+   *
+   *      => "edam"
+   *
+   * It also has support for key paths
+   *
+   *      jetzt.config(["cheese", "color"], "blue")
+   *      jetzt.config(["cheese", "name"], "Stilton")
+   *
+   *      jetzt.config(["cheese", "name"])
+   *
+   *      => "Stilton"
+   *
+   *      jetzt.config("cheese")
+   * 
+   *      => {color: "blue", name: "Stilton"}
+   */
+  function config (keyPath, val) {
     if (typeof keyPath === 'string') keyPath = [keyPath];
 
     if (typeof val === 'undefined') {
-      return _lookup(options, keyPath);
+      return lookup(options, keyPath);
     } else {
-      _put(options, keyPath, val);
+      put(options, keyPath, val);
       configBackend.set(options);
     }
   }
@@ -272,7 +301,7 @@
    * Helper class for generating jetzt instructions.
    * Very subject to change.
    */
-  jetzt.Instructionator = function () {
+  function Instructionator () {
     // state
     var instructions = []
       , modifier = "normal"
@@ -366,14 +395,13 @@
     parens: {left: "(", right: ")"}
   };
 
-  jetzt.wraps = wraps;
 
   // convert raw text into instructions
-  jetzt.parseText = function (text) {
+  function parseText (text) {
                         // long dashes ↓
     var tokens = text.match(/["“”\(\)\/–—]|--+|\n+|[^\s"“”\(\)\/–—]+/g);
 
-    var $ = new jetzt.Instructionator();
+    var $ = new Instructionator();
 
     // doesn't handle nested double quotes, but that junk is *rare*;
     var double_quote_state = false;
@@ -532,20 +560,23 @@
       window.setTimeout(function () {
         blackout.remove();
         box.remove();
-        delete blackout;
-        delete box;
-        delete wordDiv;
-        delete wpmDiv;
-        delete leftSpan;
-        delete rightSpan;
-        delete progressBar;
-        delete reticle;
+        // delete blackout;
+        // delete box;
+        // delete wordDiv;
+        // delete wpmDiv;
+        // delete leftSpan;
+        // delete rightSpan;
+        // delete progressBar;
+        // delete reticle;
       }, 340);
   }
 
-  jetzt.adjustScale = function (diff) {
+  /**
+   * Adjust the size of the reader
+   */
+  function adjustScale (diff) {
     var current = config("scale");
-    var adjusted = clamp(0.1, current + diff, 2);
+    var adjusted = clamp(0.1, current + diff, 10);
     config("scale", adjusted);
 
     box.style.webkitTransform = "translate(-50%, -50%) scale("+adjusted+")";
@@ -587,7 +618,10 @@
     setProgress(100 * (index / instructions.length));
   }
 
-  jetzt.adjustWPM = function (diff) {
+  /**
+   * Adjust the speed of the reader (words per minute)
+   */
+  function adjustWPM (diff) {
     var current = config("target_wpm");
     var adjusted = clamp(100, current + diff, 1500);
 
@@ -669,7 +703,10 @@
     }, time);
   }
 
-  jetzt.toggleRunning = function (run) {
+  /**
+   * start and stop the reader
+   */
+  function toggleRunning (run) {
     if (run === running) return;
 
     if (running) {
@@ -679,44 +716,58 @@
       running = true;
       defer(0);
     }
-  };
+  }
 
   var startModifiers = {
     "start_sentence": true,
     "start_paragraph": true
   };
 
-  jetzt.prevSentence = function () {
+  /**
+   * Navigate to the start of the sentence, or the start of the previous
+   * sentence, if less than 5 words into current sentence.
+   */
+  function prevSentence () {
     index = Math.max(0, index - 5);
     while (index > 0 && !startModifiers[instructions[index].modifier]) {
       index--;
     }
     if (!running) setWord(instructions[index].token);
-  };
+  }
 
-  jetzt.nextSentence = function () {
+  /**
+   * Navigate to the start of the next sentence.
+   */
+  function nextSentence () {
     index = Math.min(index+1, instructions.length - 1);
     while (index < instructions.length - 1 && !startModifiers[instructions[index].modifier]) {
       index++;
     }
     if (!running) setWord(instructions[index].token);
-  };
+  }
 
-  jetzt.prevParagraph = function () {
+  /**
+   * Navigate to the start of the paragraph, or the start of the previous
+   * paragraph, if less than 5 words into current paragraph
+   */
+  function prevParagraph () {
     index = Math.max(0, index - 5);
     while (index > 0 && instructions[index].modifier != "start_paragraph") {
       index--;
     }
     if (!running) setWord(instructions[index].token);
-  };
+  }
 
-  jetzt.nextParagraph = function () {
+  /**
+   * Navigate to the start of the next paragraph.
+   */
+  function nextParagraph () {
     index = Math.min(index+1, instructions.length - 1);
     while (index < instructions.length - 1 && instructions[index].modifier != "start_paragraph") {
       index++;
     }
     if (!running) setWord(instructions[index].token);
-  };
+  }
 
   /*
      $$$$$$\   $$$$$$\  $$\   $$\ $$$$$$$$\ $$$$$$$\   $$$$$$\  $$\
@@ -757,7 +808,6 @@
         break;
       case 32: //space
         ev.preventDefault();
-        if (index == instructions.length) index = 0;
         toggleRunning();
         break;
       case 107:
@@ -776,17 +826,20 @@
   var existingOnKeyDown;
 
 
-  jetzt.init = function (content) {
+  /**
+   * Initialise the jetzt reader with some content (either a dom node or string)
+   */
+  function init (content) {
     if (!instructions) {
 
       // plain string
       if (typeof content === 'string' && content.trim().length > 0) {
-        instructions = parseText(text);
+        instructions = parseText(content.trim());
 
       // dom node
       } else if (content.textContent && content.textContent.trim().length > 0) {
         // TODO: write proper dom parsing function
-        instructions = parseText(textContent);
+        instructions = parseText(content.textContent.trim());
       } else {
         throw new Error("jetzt doesn't know how to deal with this object:", content);
       }
@@ -807,9 +860,12 @@
     }
   };
 
-  jetzt.close = function () {
+  /**
+   * Dismiss the jetzt reader
+   */
+  function close () {
     if (instructions) {
-      if (running) toggleRunning();
+      if (running) jetzt.toggleRunning();
       dismiss();
       instructions = null;
       window.onkeydown = existingOnKeyDown;
@@ -818,7 +874,10 @@
     }
   };
 
-  jetzt.selectMode = function () {
+  /**
+   * Begin interactive dom node selection.
+   */
+  function selectMode () {
     var previousElement;
 
     var removeHighlight = function (element) {
@@ -861,10 +920,10 @@
       ev.preventDefault();
       var text = window.getSelection().toString();
       if (text.trim().length > 0) {
-        jetzt.init(text);
+        init(text);
         window.getSelection().removeAllRanges();
       } else {
-        jetzt.selectmode();
+        selectMode();
       }
     }
   })

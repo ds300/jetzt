@@ -366,7 +366,7 @@
       }
     }
 
-    return instructions;
+    return $.getInstructions();
   }
 
 

@@ -64,7 +64,7 @@
 
 .sr-reader > .sr-wrap {
   min-width: 30px;
-  background-color: #EEE; 
+  background-color: #EEE;
   color: #666;
   font-size: 50px;
   flex: 1 1 auto;
@@ -135,4 +135,8 @@
 
 .sr-reader .sr-word-box .sr-word .sr-pivot {
   color: red;
+}
+
+.sr-highlight {
+  color: red !important;
 }

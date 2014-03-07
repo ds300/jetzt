@@ -42,6 +42,7 @@ I also welcome pull requests of all shapes and sizes. This project is still in h
 ### Contributors
 
 - [David Sheldrick](http://github.com/ds300)
+- [Gustav Ahlberg](http://github.com/Gyran)
 - [fusillicode](http://github.com/fusillicode)
 - [Brian Hanson](http://github.com/brianjhanson)
 

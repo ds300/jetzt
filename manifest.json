@@ -9,13 +9,13 @@
     {
       "matches": ["http://*/*", "https://*/*", "file:///*"],
       "css": ["jetzt.css"],
-      "js": ["jetzt.js", "content-script.js"]
+      "js": ["jetzt.js", "chrome-config.js"]
     }
   ],
   "permissions": [
     "storage"
   ],
-  "icons": { "16": "icon16.png",
-             "48": "icon48.png",
-             "128": "icon128.png" }
+  "icons": { "16": "img/icon16.png",
+             "48": "img/icon48.png",
+             "128": "img/icon128.png" }
 }

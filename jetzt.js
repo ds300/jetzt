@@ -188,40 +188,41 @@
     return result;
   }
 
-  var wraps = {
-    double_quote: {left: "“", right: "”"},
-    parens: {left: "(", right: ")"}
-  };
+  /**
+   * Helper class for generating jetzt instructions.
+   * Very subject to change.
+   */
+  function Instructionator () {
+    // state
+    var instructions = []
+      , modifier = "normal"
+      , leftWrap = ""
+      , rightWrap = ""
+      , spacerInstruction = null
+      , done = false;
 
-  // convert raw text into instructions
-  function parseText(text) {
-                        // long dashes ↓
-    var tokens = text.match(/["“”\(\)\/–—]|--+|\n+|[^\s"“”\(\)\/–—]+/g);
-
-    var instructions = [];
-
-    var modifier = "start_paragraph";
-
-    var modNext = function (mod) {
+    // add a modifier to the next token
+    this.modNext = function (mod) {
       modifier = maxModifier(modifier, mod);
     };
 
-    var modPrev = function (mod) {
+    // add a modifier to the previous token
+    this.modPrev = function (mod) {
       if (instructions.length > 0) {
         var current = instructions[instructions.length-1].modifier;
         instructions[instructions.length-1].modifier = maxModifier(current, mod);
       }
     };
 
-    var leftWrap = "";
-    var rightWrap = "";
-
-    var pushWrap = function (wrap) {
+    // start a wrap on the next token
+    this.pushWrap = function (wrap) {
       leftWrap += wrap.left;
       rightWrap = wrap.right + rightWrap;
     };
 
-    var popWrap = function (wrap) {
+    // stop the specified wrap before the next token.
+    // Pops off any wraps in the way
+    this.popWrap = function (wrap) {
       var left = "";
       while (left !== wrap.left && leftWrap.length > 0) {
         left = leftWrap.substr(leftWrap.length - 1);
@@ -230,14 +231,14 @@
       }
     };
 
-    var clearWrap = function (wrap) {
+    // pop all wraps
+    this.clearWrap = function (wrap) {
       leftWrap = "";
       rightWrap = "";
     };
 
-    var spacerInstruction = null;
-
-    var spacer = function () {
+    // put a spacer before the next token
+    this.spacer = function () {
       if (spacerInstruction) {
         spacerInstruction.modifier = "long_space";
       } else {
@@ -250,7 +251,7 @@
       }
     };
 
-    var emit = function (token) {
+    var _emit = function (token) {
       if (spacerInstruction) {
         instructions.push(spacerInstruction);
       }
@@ -266,79 +267,101 @@
       spacerInstruction = null;
     };
 
-    // doesn't handle nested double quotes, but that junk is *rare*.
-    var double_quote_state = false;
-
-    var handle_tkn = function (tkn) {
+    // add the token
+    this.token = function (tkn) {
       if (wordShouldBeSplitUp(tkn)) {
-        splitLongWord(tkn).forEach(emit);
+        splitLongWord(tkn).forEach(_emit);
       } else {
-        emit(tkn);
+        _emit(tkn);
       }
     };
-    
+
+    this.getInstructions = function () {
+      return instructions;
+    };
+  }
+
+  var wraps = {
+    double_quote: {left: "“", right: "”"},
+    parens: {left: "(", right: ")"}
+  };
+
+  // convert raw text into instructions
+  function parseText(text) {
+                        // long dashes ↓
+    var tokens = text.match(/["“”\(\)\/–—]|--+|\n+|[^\s"“”\(\)\/–—]+/g);
+
+    var $ = new Instructionator();
+
+    // doesn't handle nested double quotes, but that junk is *rare*;
+    var double_quote_state = false;
 
     for (var i=0; i<tokens.length; i++) {
       var tkn = tokens[i];
 
       switch (tkn) {
         case "“":
-          spacer();
-          pushWrap(wraps.double_quote);
-          modNext("start_clause");
+          $.spacer();
+          $.pushWrap(wraps.double_quote);
+          $.modNext("start_clause");
           break;
         case "”":
-          popWrap(wraps.double_quote);
-          modPrev("end_clause");
-          spacer();
+          $.popWrap(wraps.double_quote);
+          $.modPrev("end_clause");
+          $.spacer();
           break;
         case "\"":
           if (double_quote_state) {
-            popWrap(wraps.double_quote)
-            spacer();
-            modNext("start_clause");
+            $.popWrap(wraps.double_quote)
+            $.spacer();
+            $.modNext("start_clause");
           } else {
-            spacer();
-            pushWrap(wraps.double_quote);
-            modPrev("end_clause");
+            $.spacer();
+            $.pushWrap(wraps.double_quote);
+            $.modPrev("end_clause");
           }
           double_quote_state = !double_quote_state;
           break;
         case "(":
-          spacer();
-          pushWrap(wraps.parens);
-          modNext("start_clause");
+          $.spacer();
+          $.pushWrap(wraps.parens);
+          $.modNext("start_clause");
           break;
         case ")":
-          popWrap(wraps.parens);
-          modPrev("end_clause");
-          spacer();
+          $.popWrap(wraps.parens);
+          $.modPrev("end_clause");
+          $.spacer();
           break;
         default:
           if (tkn.match(/^(\/|--+|—|–)$/)) {
-            modNext("start_clause");
-            handle_tkn(tkn);
-            modNext("start_clause");
+            $.modNext("start_clause");
+            $.token(tkn);
+            $.modNext("start_clause");
           } else if (tkn.match(/[.?!…]+$/)) {
-            modNext("end_sentence");
-            handle_tkn(tkn);
-            modNext("start_sentence");
+            $.modNext("end_sentence");
+            $.token(tkn);
+            $.modNext("start_sentence");
           } else if (tkn.match(/[,;:]$/)) {
-            modNext("end_clause");
-            handle_tkn(tkn);
-            modNext("start_clause");
+            $.modNext("end_clause");
+            $.token(tkn);
+            $.modNext("start_clause");
           } else if (tkn.match(/\n+/)) {
-            clearWrap();
-            modPrev("end_paragraph");
-            spacer();
-            modNext("start_paragraph");
-            double_quote_state = false;
+            if (tkn.length > 1
+                // hack for linefeed-based word wrapping. Ugly. So ugly.
+                || (i > 0 && tokens[i - 1].match(/[.?!…'"”]+$/))) {
+
+              $.clearWrap();
+              $.modPrev("end_paragraph");
+              $.spacer();
+              $.modNext("start_paragraph");
+              double_quote_state = false;
+            }
           } else if (tkn.match(/^".+$/)) {
             double_quote_state = true;
-            modNext("start_clause");
-            handle_tkn(tkn.substr(1));
+            $.modNext("start_clause");
+            $.token(tkn.substr(1));
           } else {
-            handle_tkn(tkn);
+            $.token(tkn);
           }
       }
     }
@@ -724,11 +747,11 @@
 
     var mouseoverHandler = function (ev) {
       if (previousElement && previousElement === ev.target) {
-	// same element
-	return;
+        // same element
+        return;
       }
       if (previousElement) {
-	removeHighlight(previousElement);
+        removeHighlight(previousElement);
       }
       addHighlight(ev.target);
 
@@ -759,7 +782,7 @@
         init(text);
         window.getSelection().removeAllRanges();
       } else {
-	selectmode();
+        selectmode();
       }
     }
   })

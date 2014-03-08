@@ -41,6 +41,13 @@
     \__|  \__|\________|\________|\__|      \________|\__|  \__| \______/
   */
 
+  function removeFromArray (arr, item) {
+    var pos = arr.indexOf(item);
+    if (pos > -1) {
+      arr.splice(pos, 1);
+    }
+  }
+
   // make an element of the specified tag and class
   function elem (tagName, className, kids) {
     var result = document.createElement(tagName);
@@ -57,6 +64,30 @@
 
   function span (className, kids) {
     return elem('span', className, kids);
+  }
+
+  function _modClass (elem, classes, cb) {
+    var elemClasses = [];
+    if (elem.className.trim().length >= 0) {
+      elemClasses = elem.className.split(/\s+/)
+    }
+
+    classes.split(/\s+/).forEach(function (klass) {
+      cb(elemClasses, klass);
+    });
+
+    elem.className = elemClasses.join(" ");
+  }
+
+  function addClass (elem, classesToAdd) {
+    _modClass(elem, classesToAdd, function (acc, klass) {
+      removeFromArray(acc, klass);
+      acc.push(klass);
+    });
+  }
+
+  function removeClass (elem, classesToRemove) {
+    _modClass(elem, classesToRemove, removeFromArray);
   }
 
   function realTypeOf (thing) {
@@ -496,7 +527,8 @@
   var running = false, // whether or not the reader is running
       instructions,    // the list of instructions
       index,           // the index of the current instruction
-      runLoop;         // the run loop timeout
+      runLoop,         // the run loop timeout
+      reader;          // the reader, man.
 
 
   /*
@@ -509,80 +541,6 @@
        \$  /   $$$$$$\ $$$$$$$$\ $$  /   \$$ |
         \_/    \______|\________|\__/     \__|
   */
-
-  // elements
-  var blackout, // the dark backdrop div
-      box,      // the reader box div
-      wordDiv,
-      wpmDiv,
-      leftSpan,
-      rightSpan,
-      progressBar,
-      reticle;
-
-  function makeBlackout () {
-    blackout = div("sr-blackout");
-    document.body.appendChild(blackout);
-    blackout.offsetWidth;
-    blackout.className = "sr-blackout in";
-  }
-
-  function makeBox () {
-    wordDiv = div("sr-word");
-    wpmDiv = div("sr-wpm");
-    reticle = div("sr-reticle");
-    leftSpan = span();
-    rightSpan = span();
-    progressBar = div("sr-progress");
-
-    box = div("sr-reader", [
-      div("sr-wrap sr-left", [leftSpan]),
-      div("sr-word-box", [
-        reticle,
-        progressBar,
-        wordDiv,
-        wpmDiv
-      ]),
-      div("sr-wrap sr-right", [rightSpan]),
-    ]);
-
-    document.body.appendChild(box);
-
-    box.offsetWidth;
-    box.style.top = "50%";
-    adjustScale(0);
-    adjustWPM(0);
-  }
-
-  function dismiss () {
-    blackout.className = "sr-blackout";
-      box.style.top = "-50%";
-      window.setTimeout(function () {
-        blackout.remove();
-        box.remove();
-        // delete blackout;
-        // delete box;
-        // delete wordDiv;
-        // delete wpmDiv;
-        // delete leftSpan;
-        // delete rightSpan;
-        // delete progressBar;
-        // delete reticle;
-      }, 340);
-  }
-
-  /**
-   * Adjust the size of the reader
-   */
-  function adjustScale (diff) {
-    var current = config("scale");
-    var adjusted = clamp(0.1, current + diff, 10);
-    config("scale", adjusted);
-
-    box.style.webkitTransform = "translate(-50%, -50%) scale("+adjusted+")";
-    box.style.mozTransform = "translate(-50%, -50%) scale("+adjusted+")";
-    box.style.transform = "translate(-50%, -50%) scale("+adjusted+")";
-  };
 
   // calculate the focal character index
   function calculatePivot (word) {
@@ -600,52 +558,93 @@
     }
   }
 
-  function setProgress (percent) {
-    progressBar.style.borderLeftWidth = Math.ceil(percent * 4) + "px";
+  function Reader () {
+    // elements
+    var backdrop = div("sr-blackout")
+      , wpm = div("sr-wpm")
+      , leftWrap = div("sr-wrap sr-left")
+      , rightWrap = div("sr-wrap sr-right")
+      , leftWord = span()
+      , rightWord = span()
+      , pivotChar = span("sr-pivot")
+      , word = div("sr-word", [leftWord, pivotChar, rightWord])
+      , progressBar = div("sr-progress")
+      , reticle = div("sr-reticle")
+
+      , box = div("sr-reader", [
+          leftWrap,
+          div("sr-word-box", [reticle, progressBar, word, wpm]),
+          rightWrap
+        ]);
+
+    this.onBackdropClick = function (cb) {
+      backdrop.onclick = cb;
+    };
+
+    this.show = function (cb) {
+      // fade in backdrop
+      document.body.appendChild(backdrop);
+      backdrop.offsetWidth;
+      addClass(backdrop, "in");
+
+      // pull down box;
+      document.body.appendChild(box);
+      box.offsetWidth;
+      addClass(box, "in");
+
+      // initialise custom size/wpm
+      this.setScale(config("scale"));
+      this.setWPM(config("target_wpm"));
+
+      typeof cb === 'function' && window.setTimeout(cb, 340);
+    };
+
+
+    this.hide = function (cb) {
+      removeClass(backdrop, "in");
+      removeClass(box, "in");
+      window.setTimeout(function () {
+        backdrop.remove();
+        box.remove();
+        typeof cb === 'function' && cb();
+      }, 340);
+    };
+
+    this.setScale = function (scale) {
+      box.style.webkitTransform = "translate(-50%, -50%) scale("+scale+")";
+      box.style.mozTransform = "translate(-50%, -50%) scale("+scale+")";
+      box.style.transform = "translate(-50%, -50%) scale("+scale+")";
+    };
+
+    this.setWPM = function (target_wpm) {
+      wpm.innerHTML = target_wpm + "";
+    };
+
+    this.setProgress = function (percent) {
+      progressBar.style.borderLeftWidth = Math.ceil(percent * 4) + "px";
+    };
+
+    this.setWord = function (token) {
+      var pivot = calculatePivot(token);
+      leftWord.innerHTML = token.substr(0, pivot);
+      pivotChar.innerHTML = token.substr(pivot, 1);
+      rightWord.innerHTML = token.substr(pivot + 1)
+
+      word.offsetWidth;
+      var pivotCenter = reticle.offsetLeft + (reticle.offsetWidth / 2);
+      word.style.left = (pivotCenter - pivotChar.offsetLeft - (pivotChar.offsetWidth / 2)) + "px";
+    };
+
+    this.setWrap = function (left, right) {
+      leftWrap.innerHTML = left;
+      rightWrap.innerHTML = right;
+    };
+
   }
 
-  function setWord (word) {
-    var pivot = calculatePivot(word);
-    wordDiv.innerHTML = word.substr(0, pivot)
-                        + "<span class='sr-pivot'>"
-                        + word.substr(pivot, 1)
-                        + "</span>"
-                        + word.substr(pivot + 1);
-    wordDiv.offsetWidth;
-    var pivotElem = wordDiv.getElementsByClassName("sr-pivot")[0];
-    var pivotCenter = reticle.offsetLeft + (reticle.offsetWidth / 2);
-    wordDiv.style.left = (pivotCenter - pivotElem.offsetLeft - (pivotElem.offsetWidth / 2)) + "px";
-    setProgress(100 * (index / instructions.length));
-  }
+  
 
-  /**
-   * Adjust the speed of the reader (words per minute)
-   */
-  function adjustWPM (diff) {
-    var current = config("target_wpm");
-    var adjusted = clamp(100, current + diff, 1500);
 
-    config("target_wpm", adjusted);
-
-    wpmDiv.innerHTML = adjusted + "";
-  };
-
-  function setWrap (left, right) {
-    if (left !== leftSpan.innerHTML) {
-      leftSpan.innerHTML = left;
-      rightSpan.innerHTML = right;
-    }
-  }
-
-  function popWrap () {
-    leftSpan.innerHTML = leftSpan.innerHTML.substr(0, leftSpan.innerHTML.length - 1);
-    rightSpan.innerHTML = rightSpan.innerHTML.substr(1);
-  }
-
-  function clearWrap () {
-    leftSpan.innerHTML = "";
-    rightSpan.innerHTML = "";
-  }
 
 
   /*
@@ -687,9 +686,21 @@
     }
   }
 
+  function updateReader (instr) {
+    if (typeof instr === "undefined") {
+      if (index < instructions.length) {
+        instr = instructions[index];
+      } else {
+        instr = instructions[instructions.length - 1];
+      }
+    }
+    reader.setWord(instr.token);
+    reader.setWrap(instr.leftWrap, instr.rightWrap);
+    reader.setProgress(100 * (index / instructions.length));
+  }
+
   function handleInstruction (instr) {
-    setWord(instr.token);
-    setWrap(instr.leftWrap, instr.rightWrap);
+    updateReader(instr);
     defer(calculateDelay(instr));
   }
 
@@ -708,11 +719,15 @@
    */
   function toggleRunning (run) {
     if (run === running) return;
+    if (!instructions) throw new Error("jetzt has not been initialized");
 
     if (running) {
       clearTimeout(runLoop);
       running = false;
     } else {
+      if (index === instructions.length) {
+        index = 0;
+      }
       running = true;
       defer(0);
     }
@@ -732,7 +747,7 @@
     while (index > 0 && !startModifiers[instructions[index].modifier]) {
       index--;
     }
-    if (!running) setWord(instructions[index].token);
+    if (!running) updateReader();
   }
 
   /**
@@ -743,7 +758,7 @@
     while (index < instructions.length - 1 && !startModifiers[instructions[index].modifier]) {
       index++;
     }
-    if (!running) setWord(instructions[index].token);
+    if (!running) updateReader();
   }
 
   /**
@@ -755,7 +770,7 @@
     while (index > 0 && instructions[index].modifier != "start_paragraph") {
       index--;
     }
-    if (!running) setWord(instructions[index].token);
+    if (!running) updateReader();
   }
 
   /**
@@ -766,7 +781,7 @@
     while (index < instructions.length - 1 && instructions[index].modifier != "start_paragraph") {
       index++;
     }
-    if (!running) setWord(instructions[index].token);
+    if (!running) updateReader();
   }
 
   /*
@@ -780,49 +795,79 @@
      \______/  \______/ \__|  \__|   \__|   \__|  \__| \______/ \________|
   */
 
+  /**
+   * Adjust the size of the reader
+   */
+  function adjustScale (diff) {
+    var current = config("scale");
+    var adjusted = clamp(0.1, current + diff, 10);
+
+    config("scale", adjusted);
+
+    reader && reader.setScale(adjusted);
+  };
+
+
+  /**
+   * Adjust the speed of the reader (words per minute)
+   */
+  function adjustWPM (diff) {
+    var current = config("target_wpm");
+    var adjusted = clamp(100, current + diff, 1500);
+
+    config("target_wpm", adjusted);
+
+    reader && reader.setWPM(adjusted);
+  };
+
 
   function handleKeydown (ev) {
+    var killEvent = function () {
+      ev.preventDefault();
+      ev.stopImmediatePropagation();
+    };
     // handle custom keybindings eventually
     switch (ev.keyCode) {
       case 27: //esc
-        ev.preventDefault();
+        killEvent();
         close();
         break;
       case 38: //up
-        ev.preventDefault();
+        killEvent();
         adjustWPM(10);
         break;
       case 40: //down
-        ev.preventDefault();
+        killEvent();
         adjustWPM(-10);
         break;
       case 37: //left
-        ev.preventDefault();
+        killEvent();
         if (ev.altKey) prevParagraph();
         else prevSentence();
         break;
       case 39: //right
-        ev.preventDefault();
+        killEvent();
         if (ev.altKey) nextParagraph();
         else nextSentence();
         break;
       case 32: //space
-        ev.preventDefault();
+        killEvent();
         toggleRunning();
         break;
       case 107:
       case 187: //plus
-        ev.preventDefault();
+        killEvent();
         adjustScale(0.1);
         break;
       case 109:
       case 189: //minus
-        ev.preventDefault();
+        killEvent();
         adjustScale(-0.1);
         break;
     }
   }
 
+  // save any existing window.keydown here.
   var existingOnKeyDown;
 
 
@@ -847,10 +892,9 @@
         throw new Error("jetzt doesn't know how to deal with this object:", content);
       }
 
-      makeBlackout();
-      makeBox();
-
-      blackout.onclick = close;
+      reader = new Reader();
+      reader.onBackdropClick(close);
+      reader.show();
 
       index = 0;
 
@@ -869,7 +913,8 @@
   function close () {
     if (instructions) {
       if (running) jetzt.toggleRunning();
-      dismiss();
+      reader.hide();
+      reader = null;
       instructions = null;
       window.onkeydown = existingOnKeyDown;
     } else {

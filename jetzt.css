@@ -44,6 +44,10 @@
   transition: top 0.34s ease;
 }
 
+.sr-reader.in {
+  top: 50%;
+}
+
 .sr-blackout {
   z-index: 999998;
   position: fixed;

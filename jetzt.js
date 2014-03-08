@@ -87,6 +87,13 @@
     var storageEnabled = function () {
       return !!(window.chrome && chrome.storage);
     };
+    var html5StorageEnabled = function ()  {
+      try {
+        return 'localStorage' in window && window['localStorage'] !== null;
+      } catch (e) {
+        return false;
+      }
+    };
 
     var default_options = {
       target_wpm: 400,
@@ -95,13 +102,30 @@
 
     var options = default_options;
 
-    if (storageEnabled())
+    if (storageEnabled()) {
       chrome.storage.local.get(default_options, function (value) {
         options = value;
       });
+    } else if(html5StorageEnabled()) {
+      for (var option in default_options) {
+      	var value = localStorage.getItem(option);
+        if(value != null) {
+        	var valueType = localStorage.getItem(option+"-type");
+        	switch(valueType) {
+        		case "boolean":
+        			value = (value == "true");
+        			break;
+        		case "number":
+        			value = parseFloat(value);
+        			break;
+        	}
+        	options[option] = value
+        }
+      }
+    }
 
     return function (key, val) {
-      if (typeof val === 'undefined') {
+    	if (typeof val === 'undefined') {
         if (options.hasOwnProperty(key)) {
           return options[key];
         } else {
@@ -109,8 +133,12 @@
         }
       } else if (options.hasOwnProperty(key) && typeof val === typeof options[key]){
         options[key] = val;
-        if (storageEnabled())
+        if (storageEnabled()) {
           chrome.storage.local.set(options);
+        } else if(html5StorageEnabled()) {
+          localStorage.setItem(key,val);
+          localStorage.setItem(key+"-type",typeof val);
+        }
       } else {
         throw new Error("bad key/val: " + key + ": " + val);
       }

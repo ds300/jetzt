@@ -153,9 +153,9 @@
       modifiers: {
         normal: 1,
         start_clause: 1,
-        end_clause: 2.5,
+        end_clause: 1.8,
         start_sentence: 1.3,
-        end_sentence: 2.5,
+        end_sentence: 2.2,
         start_paragraph: 2.0,
         end_paragraph: 2.8,
         short_space: 1.5,

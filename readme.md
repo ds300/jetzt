@@ -8,13 +8,6 @@ This is very much beta software so a proper chrome extension package is not curr
 
 Remember to pull every now and then for bugfixes and new features.
 
-### Bookmarklet
-
-You can also use it as a bookmarklet by:
-- Copying the content of bookmarklet.js
-- Manually adding a new bookmark
-- Pasting the content into the location field. 
-
 ### Usage
 
 Control is currently keyboard-only.
@@ -35,6 +28,13 @@ Control is currently keyboard-only.
 
 [Here](http://ds300.github.com/jetzt/)
 
+### Bookmarklet
+
+You can also use it as a bookmarklet by:
+- Copying the content of bookmarklet.js
+- Manually adding a new bookmark
+- Pasting the content into the location field. 
+
 ### ToDo
 
 Check out the [ToDo](https://github.com/ds300/jetzt/wiki/ToDo) section of the wiki.
@@ -49,6 +49,7 @@ I also welcome pull requests of all shapes and sizes. This project is still in h
 
 - [David Sheldrick](http://github.com/ds300)
 - [Gustav Ahlberg](http://github.com/Gyran)
+- [Peter Uithoven](http://github.com/peteruithoven)
 - [fusillicode](http://github.com/fusillicode)
 - [Brian Hanson](http://github.com/brianjhanson)
 

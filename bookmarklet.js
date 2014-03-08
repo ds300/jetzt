@@ -14,8 +14,7 @@ javascript: (function() {
       }
 		};
 		var script = document.createElement('script');
-		script.src = 'https://rawgithub.com/peteruithoven/jetzt/gh-pages/jetzt.js?callback=cb&time'
-				+ (new Date().getTime());
+		script.src = 'https://rawgithub.com/peteruithoven/jetzt/gh-pages/jetzt.js?callback=cb';
 		script.onload = cb;
 		document.body.appendChild(script);
 	} else {

@@ -963,6 +963,17 @@
   };
 
 
+  function select() {
+    var text = window.getSelection().toString();
+    if (text.trim().length > 0) {
+      init(text);
+      window.getSelection().removeAllRanges();
+    } else {
+      selectMode();
+    }
+  }
+
+
   window.jetzt = {
     selectMode: selectMode
     , init: init
@@ -978,19 +989,14 @@
     , nextSentence: nextSentence
     , prevParagraph: prevParagraph
     , prevSentence: prevSentence
+    , select: select
   };
 
 
   window.addEventListener("keydown", function (ev) {
     if (!instructions && ev.altKey && ev.keyCode === 83) {
       ev.preventDefault();
-      var text = window.getSelection().toString();
-      if (text.trim().length > 0) {
-        init(text);
-        window.getSelection().removeAllRanges();
-      } else {
-        selectMode();
-      }
+      select();
     }
   })
 

@@ -4,7 +4,7 @@ javascript: (function() {
 			var style = document.createElement('link');
 			style.rel = 'stylesheet';
 			style.type = 'text/css';
-			style.href = 'https://rawgithub.com/peteruithoven/jetzt/gh-pages/jetzt.css';
+			style.href = 'https://rawgithub.com/ds300/jetzt/gh-pages/jetzt.css';
 			document.head.appendChild(style);
 			
 			var text = window.getSelection().toString();
@@ -14,7 +14,7 @@ javascript: (function() {
       }
 		};
 		var script = document.createElement('script');
-		script.src = 'https://rawgithub.com/peteruithoven/jetzt/gh-pages/jetzt.js?callback=cb';
+		script.src = 'https://rawgithub.com/ds300/jetzt/gh-pages/jetzt.js?callback=cb';
 		script.onload = cb;
 		document.body.appendChild(script);
 	} else {

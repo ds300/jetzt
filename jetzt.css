@@ -142,5 +142,8 @@
 }
 
 .sr-highlight {
-  background-color: red !important;
+  background-color: #fff;
+  box-shadow: 0px 0px 0px 5px #fff, 
+              0px 0px 6px 10px rgba(127, 127, 127, 0.50);
+  cursor: pointer;
 }

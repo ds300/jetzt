@@ -34,7 +34,6 @@
   height: 100px;
   display: flex;
   flex-direction: row;
-  font-family: Consolas, monaco, monospace;
   -webkit-box-shadow: 2px 2px 19px 0px rgba(50, 50, 50, 0.75);
   -moz-box-shadow: 2px 2px 19px 0px rgba(50, 50, 50, 0.75);
   box-shadow: 2px 2px 19px 0px rgba(50, 50, 50, 0.75);
@@ -70,6 +69,7 @@
   min-width: 30px;
   background-color: #EEE;
   color: #666;
+  font-family: Consolas, monaco, monospace;
   font-size: 50px;
   flex: 1 1 auto;
   padding: 15px 5px;
@@ -91,8 +91,6 @@
   width: 400px;
   background: white;
   position: relative;
-  font-size: 50px;
-  color: black;
 }
 
 .sr-reader .sr-word-box .sr-progress {
@@ -124,6 +122,8 @@
   position: absolute;
   right: 4px;
   bottom: 0px;
+  font-family: Consolas, monaco, monospace;
+  color: black;
   font-size: 20px;
   color: #777;
   box-sizing: border-box;
@@ -135,6 +135,12 @@
   -webkit-transform: translateY(-50%);
   -moz-transform: translateY(-50%);
   transform: translateY(-50%);
+}
+
+.sr-reader .sr-word-box .sr-word > span {
+  font-family: Consolas, monaco, monospace;
+  font-size: 50px;
+  color: black;
 }
 
 .sr-reader .sr-word-box .sr-word .sr-pivot {

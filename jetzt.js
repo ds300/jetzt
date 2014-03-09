@@ -423,25 +423,34 @@
 
   var wraps = {
     double_quote: {left: "“", right: "”"},
-    parens: {left: "(", right: ")"}
+    parens: {left: "(", right: ")"},
+    heading1: {left: "H1", right: ""}
   };
 
   function parseDom(topnode,$instructionator) {
     var inst =  ($instructionator) ? $instructionator :  new Instructionator();
     var node=null;
 
-    for(var i=0;i<topnode.children.length;i++) {
-        node=topnode.children[i];
+    for(var i=0;i<topnode.childNodes.length;i++) {
+        node=topnode.childNodes[i];
 
-        //TODO add modifiers, e.g. based on node.tagName
-
-        //parse contained text for now, better would be to call recursive
-        if(node) parseDom(node,inst);
+        //TODO add modifiers, e.g. based on node.nodeName
+        switch(node.nodeName) {
+          case "H1":
+            inst.pushWrap(wraps.heading1);
+            inst.modNext("start_paragraph");
+            parseDom(node,inst);
+            inst.spacer();
+            inst.clearWrap();
+            inst.modPrev("end_paragraph");
+            break;
+          case "#text":
+            if(node.textContent.trim().length > 0) parseText(node.textContent.trim(),inst);
+            break;
+          default:
+            parseDom(node,inst);
+        }
     }
-
-    if(topnode.children.length==0 && topnode.textContent.trim().length > 0)  {
-      parseText(topnode.textContent,inst);
-    } 
 
     return inst.getInstructions();
   }

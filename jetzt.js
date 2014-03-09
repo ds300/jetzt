@@ -934,15 +934,8 @@
    * Begin interactive dom node selection.
    */
   function selectMode () {
+    var highlight = "sr-highlight";
     var previousElement;
-
-    var removeHighlight = function (element) {
-      element.className = element.className.replace(/\bsr-highlight\b/, "");
-    };
-
-    var addHighlight = function (element) {
-      element.className = element.className + " sr-highlight";
-    };
 
     var mouseoverHandler = function (ev) {
       if (previousElement && previousElement === ev.target) {
@@ -950,24 +943,40 @@
         return;
       }
       if (previousElement) {
-        removeHighlight(previousElement);
+        removeClass(previousElement, highlight);
       }
-      addHighlight(ev.target);
+      addClass(ev.target, highlight);
 
       previousElement = ev.target;
     };
 
-    var clickHandler = function (ev) {
+    var stop = function () {
       window.removeEventListener("mouseover", mouseoverHandler);
       window.removeEventListener("click", clickHandler);
-      removeHighlight(previousElement);
-      removeHighlight(ev.target);
+      previousElement && removeClass(previousElement, highlight);
+    };
 
+    var clickHandler = function (ev) {
+      stop();
       init(ev.target);
+    };
+
+    var moveHandler = function (ev) {
+      mouseoverHandler(ev);
+      window.removeEventListener("mousemove", moveHandler);
+    };
+
+    var escHandler = function (ev) {
+      if (ev.keyCode === 27) {
+        stop();
+      }
+      window.removeEventListener("keydown", escHandler);
     };
 
     window.addEventListener("mouseover", mouseoverHandler);
     window.addEventListener("click", clickHandler);
+    window.addEventListener("mousemove", moveHandler);
+    window.addEventListener("keydown", escHandler);
   };
 
 

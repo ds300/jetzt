@@ -998,7 +998,6 @@
       ev.preventDefault();
       select();
     }
-  })
-
+  });
 
 })(window);

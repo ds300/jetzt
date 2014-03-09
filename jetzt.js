@@ -444,6 +444,8 @@
             inst.clearWrap();
             inst.modPrev("end_paragraph");
             break;
+          case "SCRIPT":
+            break;
           case "#text":
             if(node.textContent.trim().length > 0) parseText(node.textContent.trim(),inst);
             break;

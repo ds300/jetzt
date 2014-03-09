@@ -578,6 +578,10 @@
           rightWrap
         ]);
 
+    var grabFocus = function () {
+      hiddenInput.focus();
+    };
+
     this.onBackdropClick = function (cb) {
       backdrop.onclick = cb;
     };
@@ -601,13 +605,15 @@
       this.setScale(config("scale"));
       this.setWPM(config("target_wpm"));
 
-      hiddenInput.focus();
+      grabFocus();
+      hiddenInput.onblur = grabFocus;
 
       typeof cb === 'function' && window.setTimeout(cb, 340);
     };
 
 
     this.hide = function (cb) {
+      hiddenInput.onblur = null;
       hiddenInput.blur();
       removeClass(backdrop, "in");
       removeClass(box, "in");
@@ -649,10 +655,6 @@
     };
 
   }
-
-  
-
-
 
 
   /*

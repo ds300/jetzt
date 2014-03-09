@@ -6,15 +6,15 @@ chrome.browserAction.onClicked.addListener(function(tab) {
 });
 
 chrome.contextMenus.create({
-	"id": "spritzMenu"
-	,"title": "OpenSpritz this"
+	"id": "jetztMenu"
+	,"title": "Speed-read this with Jetzt"
 	,"contexts": [
 		"selection"
 	]
 });
 
 chrome.contextMenus.onClicked.addListener(function(data) {
-  if (data.menuItemId == 'spritzMenu') {
+  if (data.menuItemId == 'jetztMenu') {
     chrome.tabs.executeScript(null,{
       code: 'window.jetzt.select()'
     });

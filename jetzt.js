@@ -570,15 +570,29 @@
       , word = div("sr-word", [leftWord, pivotChar, rightWord])
       , progressBar = div("sr-progress")
       , reticle = div("sr-reticle")
+      , hiddenInput = elem("input", "sr-input")
 
       , box = div("sr-reader", [
           leftWrap,
-          div("sr-word-box", [reticle, progressBar, word, wpm]),
+          div("sr-word-box", [reticle, progressBar, word, wpm, hiddenInput]),
           rightWrap
         ]);
 
+    hiddenInput.onkeyup = hiddenInput.onkeypress = function (ev) {
+      ev.stopImmediatePropagation();
+      return false;
+    };
+
+    var grabFocus = function () {
+      hiddenInput.focus();
+    };
+
     this.onBackdropClick = function (cb) {
       backdrop.onclick = cb;
+    };
+
+    this.onKeyDown = function (cb) {
+      hiddenInput.onkeydown = cb;
     };
 
     this.show = function (cb) {
@@ -596,11 +610,16 @@
       this.setScale(config("scale"));
       this.setWPM(config("target_wpm"));
 
+      grabFocus();
+      hiddenInput.onblur = grabFocus;
+
       typeof cb === 'function' && window.setTimeout(cb, 340);
     };
 
 
     this.hide = function (cb) {
+      hiddenInput.onblur = null;
+      hiddenInput.blur();
       removeClass(backdrop, "in");
       removeClass(box, "in");
       window.setTimeout(function () {
@@ -641,10 +660,6 @@
     };
 
   }
-
-  
-
-
 
 
   /*
@@ -867,10 +882,6 @@
     }
   }
 
-  // save any existing window.keydown here.
-  var existingOnKeyDown;
-
-
   /**
    * Initialise the jetzt reader with some content,
    * content being either a dom node, a string, or some instructions.
@@ -894,12 +905,10 @@
 
       reader = new Reader();
       reader.onBackdropClick(close);
+      reader.onKeyDown(handleKeydown)
       reader.show();
 
       index = 0;
-
-      existingOnKeyDown = window.onkeydown;
-      window.onkeydown = handleKeydown;
 
       setTimeout(toggleRunning, 500);
     } else {
@@ -916,7 +925,6 @@
       reader.hide();
       reader = null;
       instructions = null;
-      window.onkeydown = existingOnKeyDown;
     } else {
       throw new Error("jetzt not yet initialized");
     }

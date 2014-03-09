@@ -147,3 +147,13 @@
               0px 0px 6px 10px rgba(127, 127, 127, 0.50);
   cursor: pointer;
 }
+
+.sr-input {
+  position: absolute;
+  width: 0px;
+  opacity: 0;
+  padding: 0;
+  border: none;
+  outline: none;
+  overflow: hidden;
+}

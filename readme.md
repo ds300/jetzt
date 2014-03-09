@@ -50,6 +50,7 @@ I also welcome pull requests of all shapes and sizes. This project is still in h
 - [David Sheldrick](http://github.com/ds300)
 - [Gustav Ahlberg](http://github.com/Gyran)
 - [Peter Uithoven](http://github.com/peteruithoven)
+- [h0ru5](http://github.com/h0ru5)
 - [fusillicode](http://github.com/fusillicode)
 - [Brian Hanson](http://github.com/brianjhanson)
 

@@ -578,6 +578,11 @@
           rightWrap
         ]);
 
+    hiddenInput.onkeyup = hiddenInput.onkeypress = function (ev) {
+      ev.stopImmediatePropagation();
+      return false;
+    };
+
     var grabFocus = function () {
       hiddenInput.focus();
     };

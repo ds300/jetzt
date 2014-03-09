@@ -426,13 +426,32 @@
     parens: {left: "(", right: ")"}
   };
 
+  function parseDom(topnode) {
+    var inst =  new Instructionator();
+    var node=null;
+
+    if(topnode.children.length==0)  {
+      parseText(topnode.textContent,inst);
+    }
+
+    for(var i=0;i<topnode.children.length;i++) {
+      node=topnode.children[i];
+
+      //TODO add modifiers, e.g. based on node.tagName
+
+      //parse contained text for now, better would be to call recursive
+      parseText(node.textContent,inst);
+    }
+
+    return inst.getInstructions();
+  }
 
   // convert raw text into instructions
-  function parseText (text) {
+  function parseText (text,$instructionator) {
                         // long dashes ↓
     var tokens = text.match(/["“”\(\)\/–—]|--+|\n+|[^\s"“”\(\)\/–—]+/g);
 
-    var $ = new Instructionator();
+    var $ = ($instructionator) ? $instructionator :  new Instructionator();
 
     // doesn't handle nested double quotes, but that junk is *rare*;
     var double_quote_state = false;
@@ -896,7 +915,8 @@
       // dom node
       } else if (content.textContent && content.textContent.trim().length > 0) {
         // TODO: write proper dom parsing function
-        instructions = parseText(content.textContent.trim());
+        //instructions = parseText(content.textContent.trim());
+        instructions = parseDom(content);
       } else if (realTypeOf(content) === "Array") {
         instructions = content;
       } else {

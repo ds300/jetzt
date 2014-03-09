@@ -423,16 +423,44 @@
 
   var wraps = {
     double_quote: {left: "“", right: "”"},
-    parens: {left: "(", right: ")"}
+    parens: {left: "(", right: ")"},
+    heading1: {left: "H1", right: ""}
   };
 
+  function parseDom(topnode,$instructionator) {
+    var inst =  ($instructionator) ? $instructionator :  new Instructionator();
+    var node=null;
+
+    for(var i=0;i<topnode.childNodes.length;i++) {
+        node=topnode.childNodes[i];
+
+        //TODO add modifiers, e.g. based on node.nodeName
+        switch(node.nodeName) {
+          case "H1":
+            inst.pushWrap(wraps.heading1);
+            inst.modNext("start_paragraph");
+            parseDom(node,inst);
+            inst.spacer();
+            inst.clearWrap();
+            inst.modPrev("end_paragraph");
+            break;
+          case "#text":
+            if(node.textContent.trim().length > 0) parseText(node.textContent.trim(),inst);
+            break;
+          default:
+            parseDom(node,inst);
+        }
+    }
+
+    return inst.getInstructions();
+  }
 
   // convert raw text into instructions
-  function parseText (text) {
+  function parseText (text,$instructionator) {
                         // long dashes ↓
     var tokens = text.match(/["“”\(\)\/–—]|--+|\n+|[^\s"“”\(\)\/–—]+/g);
 
-    var $ = new Instructionator();
+    var $ = ($instructionator) ? $instructionator :  new Instructionator();
 
     // doesn't handle nested double quotes, but that junk is *rare*;
     var double_quote_state = false;
@@ -896,7 +924,8 @@
       // dom node
       } else if (content.textContent && content.textContent.trim().length > 0) {
         // TODO: write proper dom parsing function
-        instructions = parseText(content.textContent.trim());
+        //instructions = parseText(content.textContent.trim());
+        instructions = parseDom(content);
       } else if (realTypeOf(content) === "Array") {
         instructions = content;
       } else {

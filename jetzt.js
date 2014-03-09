@@ -426,22 +426,22 @@
     parens: {left: "(", right: ")"}
   };
 
-  function parseDom(topnode) {
-    var inst =  new Instructionator();
+  function parseDom(topnode,$instructionator) {
+    var inst =  ($instructionator) ? $instructionator :  new Instructionator();
     var node=null;
 
-    if(topnode.children.length==0)  {
-      parseText(topnode.textContent,inst);
-    }
-
     for(var i=0;i<topnode.children.length;i++) {
-      node=topnode.children[i];
+        node=topnode.children[i];
 
-      //TODO add modifiers, e.g. based on node.tagName
+        //TODO add modifiers, e.g. based on node.tagName
 
-      //parse contained text for now, better would be to call recursive
-      parseText(node.textContent,inst);
+        //parse contained text for now, better would be to call recursive
+        if(node) parseDom(node,inst);
     }
+
+    if(topnode.children.length==0 && topnode.textContent.trim().length > 0)  {
+      parseText(topnode.textContent,inst);
+    } 
 
     return inst.getInstructions();
   }

@@ -336,8 +336,7 @@
     // state
     var instructions = []
       , modifier = "normal"
-      , leftWrap = ""
-      , rightWrap = ""
+      , wraps = []
       , spacerInstruction = null
       , done = false;
 
@@ -356,38 +355,37 @@
 
     // start a wrap on the next token
     this.pushWrap = function (wrap) {
-      leftWrap += wrap.left;
-      rightWrap = wrap.right + rightWrap;
+      wraps.push(wrap);
     };
 
     // stop the specified wrap before the next token.
     // Pops off any wraps in the way
     this.popWrap = function (wrap) {
-      var left = "";
-      while (left !== wrap.left && leftWrap.length > 0) {
-        left = leftWrap.substr(leftWrap.length - 1);
-        leftWrap = leftWrap.substr(0, leftWrap.length - 1);
-        rightWrap = rightWrap.substr(1);
-      }
+      var idx = wraps.lastIndexOf(wrap);
+      if (idx > -1)
+        wraps.splice(wraps.lastIndexOf(wrap), wraps.length);
     };
 
     // pop all wraps
     this.clearWrap = function (wrap) {
-      leftWrap = "";
-      rightWrap = "";
+      wraps = [];
     };
+
+    var _addWraps = function (instr) {
+      instr.leftWrap = wraps.map(function (w) { return w.left; }).join("");
+      instr.rightWrap = wraps.map(function (w) { return w.right; }).reverse().join("");
+      return instr;
+    }
 
     // put a spacer before the next token
     this.spacer = function () {
       if (spacerInstruction) {
         spacerInstruction.modifier = "long_space";
       } else {
-        spacerInstruction = {
-          leftWrap: leftWrap,
-          rightWrap: rightWrap,
+        spacerInstruction = _addWraps({
           token: "   ",
           modifier: "short_space"
-        };
+        });
       }
     };
 
@@ -396,12 +394,10 @@
         instructions.push(spacerInstruction);
       }
 
-      instructions.push({
+      instructions.push(_addWraps({
         token: token,
-        leftWrap: leftWrap,
-        rightWrap: rightWrap,
         modifier: modifier
-      });
+      }));
 
       modifier = "normal";
       spacerInstruction = null;

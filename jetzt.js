@@ -437,12 +437,15 @@
         //TODO add modifiers, e.g. based on node.nodeName
         switch(node.nodeName) {
           case "H1":
-            inst.pushWrap(wraps.heading1);
+            //commented out until view for headings is implemented    
+            //inst.pushWrap(wraps.heading1);
             inst.modNext("start_paragraph");
             parseDom(node,inst);
             inst.spacer();
             inst.clearWrap();
             inst.modPrev("end_paragraph");
+            break;
+          case "SCRIPT":
             break;
           case "#text":
             if(node.textContent.trim().length > 0) parseText(node.textContent.trim(),inst);

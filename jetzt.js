@@ -336,8 +336,7 @@
     // state
     var instructions = []
       , modifier = "normal"
-      , leftWrap = ""
-      , rightWrap = ""
+      , wraps = []
       , spacerInstruction = null
       , done = false;
 
@@ -356,38 +355,37 @@
 
     // start a wrap on the next token
     this.pushWrap = function (wrap) {
-      leftWrap += wrap.left;
-      rightWrap = wrap.right + rightWrap;
+      wraps.push(wrap);
     };
 
     // stop the specified wrap before the next token.
     // Pops off any wraps in the way
     this.popWrap = function (wrap) {
-      var left = "";
-      while (left !== wrap.left && leftWrap.length > 0) {
-        left = leftWrap.substr(leftWrap.length - 1);
-        leftWrap = leftWrap.substr(0, leftWrap.length - 1);
-        rightWrap = rightWrap.substr(1);
-      }
+      var idx = wraps.lastIndexOf(wrap);
+      if (idx > -1)
+        wraps.splice(wraps.lastIndexOf(wrap), wraps.length);
     };
 
     // pop all wraps
     this.clearWrap = function (wrap) {
-      leftWrap = "";
-      rightWrap = "";
+      wraps = [];
     };
+
+    var _addWraps = function (instr) {
+      instr.leftWrap = wraps.map(function (w) { return w.left; }).join("");
+      instr.rightWrap = wraps.map(function (w) { return w.right; }).reverse().join("");
+      return instr;
+    }
 
     // put a spacer before the next token
     this.spacer = function () {
       if (spacerInstruction) {
         spacerInstruction.modifier = "long_space";
       } else {
-        spacerInstruction = {
-          leftWrap: leftWrap,
-          rightWrap: rightWrap,
+        spacerInstruction = _addWraps({
           token: "   ",
           modifier: "short_space"
-        };
+        });
       }
     };
 
@@ -396,12 +394,10 @@
         instructions.push(spacerInstruction);
       }
 
-      instructions.push({
+      instructions.push(_addWraps({
         token: token,
-        leftWrap: leftWrap,
-        rightWrap: rightWrap,
         modifier: modifier
-      });
+      }));
 
       modifier = "normal";
       spacerInstruction = null;
@@ -423,16 +419,56 @@
 
   var wraps = {
     double_quote: {left: "“", right: "”"},
-    parens: {left: "(", right: ")"}
+    parens: {left: "(", right: ")"},
+    heading1: {left: "H1", right: ""}
   };
 
+  function parseDom(topnode,$instructionator) {
+    var inst =  ($instructionator) ? $instructionator :  new Instructionator();
+    var node=null;
+
+    for(var i=0;i<topnode.childNodes.length;i++) {
+        node=topnode.childNodes[i];
+
+        //TODO add modifiers, e.g. based on node.nodeName
+        switch(node.nodeName) {
+          case "H1":
+            //commented out until view for headings is implemented    
+            //inst.pushWrap(wraps.heading1);
+            inst.modNext("start_paragraph");
+            parseDom(node,inst);
+            inst.spacer();
+            inst.clearWrap();
+            inst.modPrev("end_paragraph");
+            break;
+          case "SCRIPT":
+            break;
+          case "#text":
+            if(node.textContent.trim().length > 0) parseText(node.textContent.trim(),inst);
+            break;
+          case "P":
+            inst.clearWrap();
+            inst.modNext("start_paragraph");
+            parseDom(node, inst)
+            inst.modPrev("end_paragraph");
+            inst.clearWrap();
+            break;
+          case "#comment":
+            break;
+          default:
+            parseDom(node,inst);
+        }
+    }
+
+    return inst.getInstructions();
+  }
 
   // convert raw text into instructions
-  function parseText (text) {
+  function parseText (text,$instructionator) {
                         // long dashes ↓
     var tokens = text.match(/["“”\(\)\/–—]|--+|\n+|[^\s"“”\(\)\/–—]+/g);
 
-    var $ = new Instructionator();
+    var $ = ($instructionator) ? $instructionator :  new Instructionator();
 
     // doesn't handle nested double quotes, but that junk is *rare*;
     var double_quote_state = false;
@@ -896,7 +932,8 @@
       // dom node
       } else if (content.textContent && content.textContent.trim().length > 0) {
         // TODO: write proper dom parsing function
-        instructions = parseText(content.textContent.trim());
+        //instructions = parseText(content.textContent.trim());
+        instructions = parseDom(content);
       } else if (realTypeOf(content) === "Array") {
         instructions = content;
       } else {

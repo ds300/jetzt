@@ -49,13 +49,14 @@ I also welcome pull requests of all shapes and sizes. This project is still in h
 
 ### Contributors
 
-- [David Sheldrick](http://github.com/ds300)
-- [Gustav Ahlberg](http://github.com/Gyran)
-- [Peter Uithoven](http://github.com/peteruithoven)
-- [h0ru5](http://github.com/h0ru5)
-- [fusillicode](http://github.com/fusillicode)
-- [Brian Hanson](http://github.com/brianjhanson)
-- [ianzapolsky](http://github.com/ianzapolsky)
+- [David Sheldrick](https://github.com/ds300)
+- [Gustav Ahlberg](https://github.com/Gyran)
+- [Peter Uithoven](https://github.com/peteruithoven)
+- [h0ru5](https://github.com/h0ru5)
+- [fusillicode](https://github.com/fusillicode)
+- [Brian Hanson](https://github.com/brianjhanson)
+- [ianzapolsky](https://github.com/ianzapolsky)
+- [Martin Butt](https://github.com/martinbutt)
 
 
 ### License

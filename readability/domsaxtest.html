@@ -1,0 +1,32 @@
+<!doctype html>
+<title>DOMasSAX test</title>
+<body>
+	<div id=s>
+		<article class=hentry>
+			<h1>Just a random test for the good of some nation!</h1>
+			<p>asd, asdf asdf asdf, asdf asdf ,asdf asdf asdf aasdfasdfasdfasdfasdfadsfasdfsdafasdfsdf, asdf asdf, asdfasdfasdfasdfasdfasdf</p>
+			<embed src="http://youtube.com/" height=5/>
+			<p>asdfas, asdf asdf, asdf adsf</p>
+		</article>
+		<p id=sponsor style="background:green"> This is trash!</p>
+		<aside> and this doesn't matter</aside>
+		<div class=hentry><p>This is more text, so make it readable!</p>
+		<p>
+			<a href="#" onclick="makeReadable(); return false;">Boom!</a>
+		</p></div>
+		<a href="/page/2">next</a>
+	</div>
+	
+<script src="DOMasSAX.js"></script>
+<script src="readabilitySAX.js"></script>
+<script>
+	var readable = new Readability();
+	readable.setSkipLevel(3);
+	saxParser(document.childNodes[document.childNodes.length-1], readable);
+	article = readable.getArticle();
+	console.log(article);
+	function makeReadable(){
+		document.body.innerHTML = "<h1>" + article.title + "</h1>" + article.html;
+	}
+</script>
+</body>

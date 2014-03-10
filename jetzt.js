@@ -1046,7 +1046,20 @@
       init(text);
       window.getSelection().removeAllRanges();
     } else {
-      selectMode();
+        var autofind = window.confirm("no text selected,\n should jetzt try to automatically scrape the text?\n (Cancel starts selectMode)");
+        if (autofind) {
+            var readable = new Readability();
+            readable.setSkipLevel(3);
+            saxParser(document.childNodes[document.childNodes.length - 1], readable);
+            var article = readable.getArticle();
+
+            //Hack because article.hmtl is a string
+            var pseudo = window.document.createElement('div');
+            pseudo.innerHTML = article.html;
+
+            init(pseudo);
+        } else 
+            selectMode();
     }
   }
 

@@ -24,6 +24,8 @@ Control is currently keyboard-only.
 
 - Close with escape.
 
+- Switch between light/dark themes with `0`
+
 ### Online Demo
 
 [Here](http://ds300.github.com/jetzt/)

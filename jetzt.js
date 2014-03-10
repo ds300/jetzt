@@ -446,6 +446,15 @@
           case "#text":
             if(node.textContent.trim().length > 0) parseText(node.textContent.trim(),inst);
             break;
+          case "P":
+            inst.clearWrap();
+            inst.modNext("start_paragraph");
+            parseDom(node, inst)
+            inst.modPrev("end_paragraph");
+            inst.clearWrap();
+            break;
+          case "#comment":
+            break;
           default:
             parseDom(node,inst);
         }

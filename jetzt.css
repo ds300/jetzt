@@ -67,7 +67,7 @@
 
 .sr-reader > .sr-wrap {
   min-width: 30px;
-  background-color: #555;
+  background-color: #CCC;
   color: #666;
   font-family: Consolas, monaco, monospace;
   font-size: 50px;
@@ -80,6 +80,12 @@
   color: white;
   background-color: #888;
 }
+
+.sr-reader.sr-dark > .sr-wrap {
+  color: white;
+  background-color: #888;
+}
+
 
 .sr-reader .sr-wrap.sr-left {
   border-top-left-radius: 8px;
@@ -106,7 +112,7 @@
   position: absolute;
   bottom: -10px;
   width: 400px;
-  height: 4px;
+  height: 3px;
   background-color: black;
   border-left: 0px solid red;
   -moz-box-sizing: border-box;
@@ -126,6 +132,13 @@
   -moz-box-sizing: border-box;
   box-sizing: border-box;
 }
+
+.sr-reader.sr-dark .sr-word-box .sr-reticle {
+  border-top: 20px solid #888;
+  border-bottom: 20px solid #888;
+}
+
+
 
 .sr-reader .sr-word-box .sr-wpm {
   position: absolute;

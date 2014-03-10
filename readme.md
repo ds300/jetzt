@@ -53,6 +53,7 @@ I also welcome pull requests of all shapes and sizes. This project is still in h
 - [h0ru5](http://github.com/h0ru5)
 - [fusillicode](http://github.com/fusillicode)
 - [Brian Hanson](http://github.com/brianjhanson)
+- [ianzapolsky](http://github.com/ianzapolsky)
 
 
 ### License

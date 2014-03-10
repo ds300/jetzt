@@ -62,12 +62,12 @@
 }
 
 .sr-blackout.in {
-  opacity: 0.18;
+  opacity: 0.6;
 }
 
 .sr-reader > .sr-wrap {
   min-width: 30px;
-  background-color: #EEE;
+  background-color: #555;
   color: #666;
   font-family: Consolas, monaco, monospace;
   font-size: 50px;
@@ -78,7 +78,7 @@
 
 .sr-reader.sr-dark > .sr-wrap {
   color: white;
-  background-color: #555;
+  background-color: #888;
 }
 
 .sr-reader .sr-wrap.sr-left {
@@ -106,9 +106,9 @@
   position: absolute;
   bottom: -10px;
   width: 400px;
-  height: 3px;
+  height: 4px;
   background-color: black;
-  border-left: 0px solid green;
+  border-left: 0px solid red;
   -moz-box-sizing: border-box;
   box-sizing: border-box;
   -webkit-transition: border 0.34s ease;
@@ -166,7 +166,7 @@
 }
 
 .sr-reader.sr-dark .sr-word-box .sr-word .sr-pivot {
-  color: #00ff00;
+  color: red;
 }
 
 .sr-highlight {

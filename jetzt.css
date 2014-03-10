@@ -62,12 +62,12 @@
 }
 
 .sr-blackout.in {
-  opacity: 0.18;
+  opacity: 0.6;
 }
 
 .sr-reader > .sr-wrap {
   min-width: 30px;
-  background-color: #EEE;
+  background-color: #CCC;
   color: #666;
   font-family: Consolas, monaco, monospace;
   font-size: 50px;
@@ -78,7 +78,12 @@
 
 .sr-reader.sr-dark > .sr-wrap {
   color: white;
-  background-color: #555;
+  background-color: #888;
+}
+
+.sr-reader.sr-dark > .sr-wrap {
+  color: white;
+  background-color: #888;
 }
 
 .sr-reader .sr-wrap.sr-left {
@@ -108,7 +113,7 @@
   width: 400px;
   height: 3px;
   background-color: black;
-  border-left: 0px solid green;
+  border-left: 0px solid red;
   -moz-box-sizing: border-box;
   box-sizing: border-box;
   -webkit-transition: border 0.34s ease;
@@ -125,6 +130,11 @@
   border-bottom: 20px solid #CCC;
   -moz-box-sizing: border-box;
   box-sizing: border-box;
+}
+
+.sr-reader.sr-dark .sr-word-box .sr-reticle {
+  border-top: 20px solid #888;
+  border-bottom: 20px solid #888;
 }
 
 .sr-reader .sr-word-box .sr-wpm {
@@ -166,7 +176,7 @@
 }
 
 .sr-reader.sr-dark .sr-word-box .sr-word .sr-pivot {
-  color: #00ff00;
+  color: red;
 }
 
 .sr-highlight {

@@ -1038,7 +1038,18 @@
     window.addEventListener("mousemove", moveHandler);
     window.addEventListener("keydown", escHandler);
   };
+  
+  function scrape() {
+      var readable = new Readability();
+      readable.setSkipLevel(3);
+      saxParser(document.childNodes[document.childNodes.length - 1], readable);
+      var article = readable.getArticle();
 
+      //Hack because article.hmtl is a string
+      var pseudo = window.document.createElement('div');
+      pseudo.innerHTML = article.html;
+      return pseudo;
+  }
 
   function select() {
     var text = window.getSelection().toString();
@@ -1048,16 +1059,8 @@
     } else {
         var autofind = window.confirm("no text selected,\n should jetzt try to automatically scrape the text?\n (Cancel starts selectMode)");
         if (autofind) {
-            var readable = new Readability();
-            readable.setSkipLevel(3);
-            saxParser(document.childNodes[document.childNodes.length - 1], readable);
-            var article = readable.getArticle();
-
-            //Hack because article.hmtl is a string
-            var pseudo = window.document.createElement('div');
-            pseudo.innerHTML = article.html;
-
-            init(pseudo);
+          var article = scrape();
+          init(article);
         } else 
             selectMode();
     }

@@ -76,6 +76,11 @@
   line-height: 60px;
 }
 
+.sr-reader.sr-dark > .sr-wrap {
+  color: white;
+  background-color: #555;
+}
+
 .sr-reader .sr-wrap.sr-left {
   border-top-left-radius: 8px;
   border-bottom-left-radius: 8px;
@@ -91,6 +96,10 @@
   width: 400px;
   background: white;
   position: relative;
+}
+
+.sr-reader.sr-dark .sr-word-box {
+  background-color: black;
 }
 
 .sr-reader .sr-word-box .sr-progress {
@@ -129,6 +138,11 @@
   box-sizing: border-box;
 }
 
+.sr-reader.sr-dark .sr-word-box .sr-wpm {
+  color: white;
+  background-color: black;
+}
+
 .sr-reader .sr-word-box .sr-word {
   position: absolute;
   top: 50%;
@@ -143,8 +157,16 @@
   color: black;
 }
 
+.sr-reader.sr-dark .sr-word-box .sr-word > span {
+  color: white;
+}
+
 .sr-reader .sr-word-box .sr-word .sr-pivot {
   color: red;
+}
+
+.sr-reader.sr-dark .sr-word-box .sr-word .sr-pivot {
+  color: #00ff00;
 }
 
 .sr-highlight {

@@ -163,3 +163,15 @@
   outline: none;
   overflow: hidden;
 }
+
+/* CSS for the dark theme reader */
+.sr-reader .sr-word-box .sr-word .sr-pivot-dark {
+  color:green;
+  background:black;
+}
+
+.dark-theme {
+  background: black !important;
+  background-color: black !important;
+  color: white !important;
+}

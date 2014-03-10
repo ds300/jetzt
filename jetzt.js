@@ -607,12 +607,16 @@
       , progressBar = div("sr-progress")
       , reticle = div("sr-reticle")
       , hiddenInput = elem("input", "sr-input")
-
+      // expose wordBox as its own element so we can add and remove css classes 
+      , wordBox = div("sr-word-box", [reticle, progressBar, word, wpm, hiddenInput])
       , box = div("sr-reader", [
           leftWrap,
-          div("sr-word-box", [reticle, progressBar, word, wpm, hiddenInput]),
+          wordBox,
           rightWrap
         ]);
+
+    // current theme (true = light, false = dark)
+    var theme = true;
 
     hiddenInput.onkeyup = hiddenInput.onkeypress = function (ev) {
       ev.stopImmediatePropagation();
@@ -663,6 +667,36 @@
         box.remove();
         typeof cb === 'function' && cb();
       }, 340);
+    };
+
+    this.toggleTheme = function () {
+      if (theme === true) {
+        // make leftWrap and rightWrap black
+        addClass(leftWrap, "dark-theme");
+        addClass(rightWrap, "dark-theme");
+        // make leftWord and rightWord white on black
+        addClass(leftWord, "dark-theme");
+        addClass(rightWord, "dark-theme");
+        // make wpm white on black
+        addClass(wpm, "dark-theme");
+        // make the entire word box black
+        addClass(wordBox, "dark-theme");
+        // change pivot from red on white to green on black
+        removeClass(pivotChar, "sr-pivot");
+        addClass(pivotChar, "sr-pivot-dark");
+        theme = false;
+      } else {
+        removeClass(leftWrap, "dark-theme");
+        removeClass(rightWrap, "dark-theme");
+        removeClass(leftWord, "dark-theme");
+        removeClass(rightWord, "dark-theme");
+        removeClass(wpm, "dark-theme");
+        removeClass(wordBox, "dark-theme");
+
+        removeClass(pivotChar, "sr-pivot-dark");
+        addClass(pivotChar, "sr-pivot");
+        theme = true;
+      }
     };
 
     this.setScale = function (scale) {
@@ -871,6 +905,13 @@
     reader && reader.setWPM(adjusted);
   };
 
+  /**
+   * Toggle from dark to light theme
+   */
+   function toggleTheme () {
+      reader && reader.toggleTheme();
+   }
+
 
   function handleKeydown (ev) {
     var killEvent = function () {
@@ -914,6 +955,10 @@
       case 189: //minus
         killEvent();
         adjustScale(-0.1);
+        break;
+      case 48: //0 - change the theme by pressing 0
+        killEvent();
+        toggleTheme();
         break;
     }
   }

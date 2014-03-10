@@ -941,40 +941,68 @@
     }
   }
 
+  // wrap a function to make sure it only gets called it jetzt isn't open
+  function assertClosed(fn) {
+    return function () {
+      if (instructions) throw new Error("jetzt already open");
+      else fn.apply(this, arguments);
+    };
+  }
+
+  // wrap a function to make sure it only gets called it jetzt is open
+  function assertOpen(fn) {
+    return function () {
+      if (!instructions) throw new Error("jetzt not currently open");
+      else fn.apply(this, arguments);
+    };
+  }
+
   /**
-   * Initialise the jetzt reader with some content,
-   * content being either a dom node, a string, or some instructions.
+   * Read the given instructions.
    */
-  function init (content) {
-    if (!instructions) {
+  function read (instrs) {
+    instructions = instrs;
 
-      // plain string
-      if (typeof content === 'string' && content.trim().length > 0) {
-        instructions = parseText(content.trim());
+    reader = new Reader();
+    reader.onBackdropClick(close);
+    reader.onKeyDown(handleKeydown)
+    reader.show();
 
-      // dom node
-      } else if (content.textContent && content.textContent.trim().length > 0) {
-        // TODO: write proper dom parsing function
-        //instructions = parseText(content.textContent.trim());
-        instructions = parseDom(content);
-      } else if (realTypeOf(content) === "Array") {
-        instructions = content;
-      } else {
-        throw new Error("jetzt doesn't know how to deal with this object:", content);
-      }
+    index = 0;
 
-      reader = new Reader();
-      reader.onBackdropClick(close);
-      reader.onKeyDown(handleKeydown)
-      reader.show();
+    setTimeout(toggleRunning, 500);
+  }
 
-      index = 0;
-
-      setTimeout(toggleRunning, 500);
+  function readStuff (parse, content) {
+    var instr = new Instructionator();
+    if (realTypeOf(content) === "Array") {
+      content.forEach(function (item) {
+        instr.modNext("start_paragraph");
+        parse(item, instr);
+        instr.clearWrap();
+        instr.modPrev("end_paragraph");
+      });
     } else {
-      throw new Error("jetzt already initialized");
+      parse(content, instr);
     }
-  };
+
+    read(instr.getInstructions());
+  }
+
+  /**
+   * Read the given string, or array of strings.
+   */
+  function readString (str) {
+    readStuff(parseText, str);
+  }
+
+  /**
+   * Read the given DOM element, or array of DOM elements.
+   */
+  function readDOM (dom) {
+    readStuff(parseDom, dom);
+  }
+
 
   /**
    * Dismiss the jetzt reader
@@ -994,56 +1022,141 @@
    * Begin interactive dom node selection.
    */
   function selectMode () {
-    var highlight = "sr-highlight";
-    var previousElement;
+    var selection = [] // selected DOM nodes. must all have .tagName
+      , overlays = []
+      , info = div("sr-selectmode-info");
+
+    info.innerHTML = "Hold <em>shift</em> to select following paragraphs.";
+    document.body.appendChild(info);
+
+    var removeOverlays = function () {
+      overlays.forEach(function (el) {
+        el.remove();
+      });
+      overlays = [];
+    };
+
+    var showSelection = function () {
+      removeOverlays();
+
+      var scrollBottom = document.body.scrollTop + window.innerHeight;
+
+      overlays = [];
+
+      for (var i = 0; i < selection.length; i++) {
+        var el = selection[i];
+
+        var top = el.offsetTop;
+        var left = el.offsetLeft;
+
+        for (var p = el.offsetParent; p; p = p.offsetParent) {
+          top += p.offsetTop;
+          left += p.offsetLeft;
+        }
+
+        if (top >= scrollBottom) {
+          break;
+        } else {
+          var overlay = div("sr-overlay");
+          var width = el.offsetWidth;
+          var height = el.offsetHeight;
+
+          overlay.style.top = top + "px";
+          overlay.style.left = left + "px";
+          overlay.style.width = width + "px";
+          overlay.style.height = height + "px";
+
+          document.body.appendChild(overlay);
+          overlays.push(overlay);
+        }
+      }
+    };
+
+    // given a target element and whether or not to include it's siblings,
+    // create and show the selection
+    var makeSelection = function (el, selectSiblings) {
+      if (selectSiblings) {
+        selection = getSiblings(el); 
+      } else {
+        selection = [el];
+      }
+      showSelection();
+    };
+
+
+    var keydownHandler = function (ev) {
+      // shift for sibling selection
+      if (ev.shiftKey && selection.length === 1) 
+        makeSelection(selection[0], true);
+
+      // escape to cancel
+      if (ev.keyCode === 27) {
+        stop();
+      }
+    };
+
+    var keyupHandler = function (ev) {
+      if (!ev.shiftKey && selection.length > 1) 
+        // unselect siblings
+        makeSelection(selection[0]);
+
+    };
+
+    // derive siblings from element
+    var getSiblings = function (el) {
+      var allSiblings = el.parentNode.childNodes;
+      var afterSiblings = [];
+      for (var i=allSiblings.length; i--;) {
+        var sibling = allSiblings[i];
+        if (sibling === el) {
+          break;
+        } else {
+          afterSiblings.unshift(sibling);
+        }
+      }
+      afterSiblings.unshift(el);
+      return afterSiblings.filter(function (el) {return el.tagName});
+    };
 
     var mouseoverHandler = function (ev) {
-      if (previousElement && previousElement === ev.target) {
-        // same element
-        return;
-      }
-      if (previousElement) {
-        removeClass(previousElement, highlight);
-      }
-      addClass(ev.target, highlight);
-
-      previousElement = ev.target;
+      makeSelection(ev.target, ev.shiftKey);
     };
 
     var stop = function () {
+      info.remove();
+      removeOverlays();
       window.removeEventListener("mouseover", mouseoverHandler);
       window.removeEventListener("click", clickHandler);
-      previousElement && removeClass(previousElement, highlight);
+      window.removeEventListener("keydown", keydownHandler);
+      window.removeEventListener("keyup", keyupHandler);
     };
 
     var clickHandler = function (ev) {
+      ev.preventDefault();
       stop();
-      init(ev.target);
+      readDOM(selection);
     };
 
+    // grab first selection using mousemove to avoid the need to roll mouse
+    // over the edge of it's current target element. it would be nice if
+    // we could get mouse's current target when selectMode is called.
     var moveHandler = function (ev) {
       mouseoverHandler(ev);
       window.removeEventListener("mousemove", moveHandler);
     };
 
-    var escHandler = function (ev) {
-      if (ev.keyCode === 27) {
-        stop();
-      }
-      window.removeEventListener("keydown", escHandler);
-    };
-
     window.addEventListener("mouseover", mouseoverHandler);
     window.addEventListener("click", clickHandler);
     window.addEventListener("mousemove", moveHandler);
-    window.addEventListener("keydown", escHandler);
-  };
+    window.addEventListener("keydown", keydownHandler);
+    window.addEventListener("keyup", keyupHandler);
+  }
 
 
   function select() {
     var text = window.getSelection().toString();
     if (text.trim().length > 0) {
-      init(text);
+      readString(text);
       window.getSelection().removeAllRanges();
     } else {
       selectMode();
@@ -1053,20 +1166,22 @@
 
   window.jetzt = {
     selectMode: selectMode
-    , init: init
-    , close: close
-    , toggleRunning: toggleRunning
+    , read: assertClosed(read)
+    , readString: assertClosed(readString)
+    , readDOM: assertClosed(readDOM)
+    , close: assertOpen(close)
+    , toggleRunning: assertOpen(toggleRunning)
     , adjustWPM: adjustWPM
     , adjustScale: adjustScale
     , DEFAULT_OPTIONS: DEFAULT_OPTIONS
     , config: config
     , setConfigBackend: setConfigBackend
     , Instructionator: Instructionator
-    , nextParagraph: nextParagraph
-    , nextSentence: nextSentence
-    , prevParagraph: prevParagraph
-    , prevSentence: prevSentence
-    , select: select
+    , nextParagraph: assertOpen(nextParagraph)
+    , nextSentence: assertOpen(nextSentence)
+    , prevParagraph: assertOpen(prevParagraph)
+    , prevSentence: assertOpen(prevSentence)
+    , select: assertClosed(select)
   };
 
 

@@ -86,7 +86,6 @@
   background-color: #888;
 }
 
-
 .sr-reader .sr-wrap.sr-left {
   border-top-left-radius: 8px;
   border-bottom-left-radius: 8px;
@@ -137,8 +136,6 @@
   border-top: 20px solid #888;
   border-bottom: 20px solid #888;
 }
-
-
 
 .sr-reader .sr-word-box .sr-wpm {
   position: absolute;

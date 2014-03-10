@@ -150,6 +150,7 @@
   var DEFAULT_OPTIONS = {
       target_wpm: 400,
       scale: 1,
+      dark: "false",
       modifiers: {
         normal: 1,
         start_clause: 1,
@@ -284,7 +285,7 @@
     $$  __$$\ $$  __$$\ $$  __$$\ $$  __$$\ \_$$  _|$$$\  $$ |$$  __$$\
     $$ |  $$ |$$ /  $$ |$$ |  $$ |$$ /  \__|  $$ |  $$$$\ $$ |$$ /  \__|
     $$$$$$$  |$$$$$$$$ |$$$$$$$  |\$$$$$$\    $$ |  $$ $$\$$ |$$ |$$$$\
-    $$  ____/ $$  __$$ |$$  __$$<  \____$$\   $$ |  $$ \$$$$ |$$ |\_$$ |
+    $$  ____/ $$  __$$ |$$  __$$   \____$$\   $$ |  $$ \$$$$ |$$ |\_$$ |
     $$ |      $$ |  $$ |$$ |  $$ |$$\   $$ |  $$ |  $$ |\$$$ |$$ |  $$ |
     $$ |      $$ |  $$ |$$ |  $$ |\$$$$$$  |$$$$$$\ $$ | \$$ |\$$$$$$  |
     \__|      \__|  \__|\__|  \__| \______/ \______|\__|  \__| \______/
@@ -646,6 +647,9 @@
       this.setScale(config("scale"));
       this.setWPM(config("target_wpm"));
 
+      // initialise custom theme
+      this.setTheme(config("dark"));
+
       grabFocus();
       hiddenInput.onblur = grabFocus;
 
@@ -673,6 +677,13 @@
 
     this.setWPM = function (target_wpm) {
       wpm.innerHTML = target_wpm + "";
+    };
+
+    this.setTheme = function (dark) {
+      if (dark)
+        addClass(box, "sr-dark");
+      else
+        removeClass(box, "sr-dark");
     };
 
     this.setProgress = function (percent) {
@@ -871,6 +882,14 @@
     reader && reader.setWPM(adjusted);
   };
 
+  /**
+   * Toggle the theme of the reader
+   */
+  function toggleTheme () {
+    var current = config("dark");
+    config("dark", !current);
+    reader && reader.setTheme(config("dark"));
+  };
 
   function handleKeydown (ev) {
     var killEvent = function () {
@@ -914,6 +933,10 @@
       case 189: //minus
         killEvent();
         adjustScale(-0.1);
+        break;
+      case 48: //0 key, for changing the theme
+        killEvent();
+        toggleTheme();
         break;
     }
   }

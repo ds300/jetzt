@@ -150,6 +150,7 @@
   var DEFAULT_OPTIONS = {
       target_wpm: 400,
       scale: 1,
+      dark: "false",
       modifiers: {
         normal: 1,
         start_clause: 1,

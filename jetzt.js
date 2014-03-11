@@ -616,8 +616,10 @@
         ]);
 
     hiddenInput.onkeyup = hiddenInput.onkeypress = function (ev) {
-      ev.stopImmediatePropagation();
-      return false;
+      if(!ev.ctrlKey && !ev.metaKey) {
+	    	ev.stopImmediatePropagation();
+	      return false;
+	    }
     };
 
     var grabFocus = function () {
@@ -892,6 +894,9 @@
   };
 
   function handleKeydown (ev) {
+    if(ev.ctrlKey || ev.metaKey) {
+    	return;
+    } 
     var killEvent = function () {
       ev.preventDefault();
       ev.stopImmediatePropagation();

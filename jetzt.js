@@ -924,13 +924,15 @@
         killEvent();
         toggleRunning();
         break;
-      case 107:
-      case 187: //plus
+      case 187: // =/+ (MSIE, Safari, Chrome)
+      case 107: // =/+ (Firefox, numpad)
+      case 61: // =/+ (Firefox, Opera)
         killEvent();
         adjustScale(0.1);
         break;
-      case 109:
-      case 189: //minus
+      case 109: // -/_ (numpad, Opera, Firefox)
+      case 189: // -/_ (MSIE, Safari, Chrome)
+      case 173: // -/_ (Firefox)
         killEvent();
         adjustScale(-0.1);
         break;

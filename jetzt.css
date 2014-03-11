@@ -184,6 +184,7 @@
   opacity: 0.2;
   position: absolute;
   pointer-events: none;
+  cursor: pointer;
   z-index: 99999;
 }
 
@@ -203,4 +204,8 @@
   background-color: #EEE;
   border-radius: 1px;
   padding: 3px;
+}
+
+.sr-pointer {
+  cursor: pointer;
 }

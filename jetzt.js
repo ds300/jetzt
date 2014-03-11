@@ -1022,72 +1022,195 @@
    * Begin interactive dom node selection.
    */
   function selectMode () {
-    var selection = [] // selected DOM nodes. must all have .tagName
-      , overlays = []
+    var ranges = [] // 2d array of selected dom nodes. must all have .tagname
+
+      , currentRange = [] // working selection, changes on mouseovers
+
+      // key used to store overlay elems on selected elems
+      , _overlay = "___jetzt_overlay"
+      // key used to indicate whether or not elem is in working selection
+      , _selected = "___jetzt_selected"
+      // key used to specify which range an elem is in
+      , _range = "___jetzt_range"
+
+      , redrawTimeout = null // redraw selectionRanges on scroll
+      , lastRedrawScrollBottom = 0 // keep track of scrollTop so we know when to redraw
       , info = div("sr-selectmode-info");
 
-    info.innerHTML = "Hold <em>shift</em> to select following paragraphs.";
-    document.body.appendChild(info);
 
-    var removeOverlays = function () {
-      overlays.forEach(function (el) {
-        el.remove();
-      });
-      overlays = [];
+    var getScrollBottom = function () {
+      return document.body.scrollTop + window.innerHeight;
     };
 
-    var showSelection = function () {
-      removeOverlays();
+    lastRedrawScrollBottom = getScrollBottom();
 
-      var scrollBottom = document.body.scrollTop + window.innerHeight;
 
-      overlays = [];
+    var makeOverlay = function (el) {
+      var top = el.offsetTop
+        , left = el.offsetLeft;
 
-      for (var i = 0; i < selection.length; i++) {
-        var el = selection[i];
+      for (var p = el.offsetParent; p; p = p.offsetParent) {
+        top += p.offsetTop;
+        left += p.offsetLeft;
+      }
 
-        var top = el.offsetTop;
-        var left = el.offsetLeft;
+      var width = el.offsetWidth;
+      var height = el.offsetHeight;
 
-        for (var p = el.offsetParent; p; p = p.offsetParent) {
-          top += p.offsetTop;
-          left += p.offsetLeft;
-        }
+      var overlayElem = div("sr-overlay");
+      overlayElem.__top = top;
+      overlayElem.style.top = top + "px";
+      overlayElem.style.left = left + "px";
+      overlayElem.style.width = width + "px";
+      overlayElem.style.height = height + "px";
 
-        if (top >= scrollBottom) {
-          break;
+      el[_overlay] = overlayElem;
+    };
+
+
+    var showCurrentRange = function () {
+      var scrollBottom = getScrollBottom();
+
+      for (var i = 0; i < currentRange.length; i++) {
+        var el = currentRange[i];
+
+        // if it's already been selected before
+        if (el.hasOwnProperty(_selected)) {
+          if (el[_overlay]) {
+            // intersect with existing selection
+            if (el[_selected]) {
+              el[_overlay].remove();
+            } else {
+              document.body.appendChild(el[_overlay]);
+            }
+            continue;
+          } else {
+            // if no overlay, then hasn't been rendered yet,
+            // so the rest of these won't need rendering either
+            break;
+          }
+
+        // was never selected but was in currentRange at some point
+        } else if (el[_overlay]) {
+          if (el[_overlay].__top < scrollBottom) {
+            document.body.appendChild(el[_overlay]);
+          } else {
+            break;
+          }
+
+        // never seen before
         } else {
-          var overlay = div("sr-overlay");
-          var width = el.offsetWidth;
-          var height = el.offsetHeight;
+          makeOverlay(el);
 
-          overlay.style.top = top + "px";
-          overlay.style.left = left + "px";
-          overlay.style.width = width + "px";
-          overlay.style.height = height + "px";
-
-          document.body.appendChild(overlay);
-          overlays.push(overlay);
+          if (el[_overlay].__top >= scrollBottom) {
+            break;
+          } else {
+            document.body.appendChild(el[_overlay]);
+          }
         }
       }
+    };
+
+    var hideCurrentRange = function () {
+      for (var i=0; i<currentRange.length; i++) {
+        var el = currentRange[i];
+        if (!el[_overlay]) {
+          break;
+        } else {
+          if (el[_selected]) {
+            document.body.appendChild(el[_overlay]);
+          } else {
+            el[_overlay].remove();
+          }
+        }
+      }
+    };
+
+    // adds elems in current range to ranges array, set difference style
+    var addCurrentRange = function () {
+      var scrollBottom = getScrollBottom();
+
+      var result = []
+        , foundNextToRender = false;
+
+      result.nextToRender = 0;
+
+      for (var i=0; i<currentRange.length; i++) {
+        var el = currentRange[i];
+
+        el[_selected] = !el[_selected];
+
+        if (el[_selected]) {
+          result.push(el);
+          el[_range] = result;
+          if (!foundNextToRender &&
+               (!el[_overlay] || el[_overlay].__top >= scrollBottom)) {
+            result.nextToRender = result.length - 1;
+            foundNextToRender = true;
+          }
+        } else {
+          var idx = el[_range].indexOf(el);
+          el[_range].splice(idx, 1);
+          if (idx < el[_range].nextToRender) {
+            el[_range].nextToRender--;
+          }
+        }
+      }
+
+      ranges.push(result);
+      currentRange = [];
+    };
+
+    var redraw = function () {
+      var scrollBottom = getScrollBottom();
+      
+      ranges.forEach(function (range) {
+        for (; range.nextToRender < range.length; range.nextToRender++) {
+          var el = range[range.nextToRender];
+
+          if (!el[_overlay]) makeOverlay(el);
+
+          if (el[_overlay].__top < scrollBottom) {
+            document.body.append(el[_overlay]);
+          } else {
+            break;
+          }
+        }
+      });
+
+      lastRedrawScrollBottom = scrollBottom;
+      redrawTimeout = null;
     };
 
     // given a target element and whether or not to include it's siblings,
     // create and show the selection
     var makeSelection = function (el, selectSiblings) {
-      if (selectSiblings) {
-        selection = getSiblings(el); 
-      } else {
-        selection = [el];
-      }
-      showSelection();
+      if (selectSiblings) return getSiblings(el);
+      else return [el];
     };
 
+    var scrollHandler = function (ev) {
+      if (redrawTimeout) {
+          window.clearTimeout(redrawTimeout);
+      }
+      if (getScrollBottom() - lastRedrawScrollBottom > 100) {
+        redraw();
+      } else {
+        redrawTimeout = window.setTimeout(redraw, 100);
+      }
+    };
+
+    var setCurrentRange = function (range) {
+      hideCurrentRange();
+      currentRange = range;
+      showCurrentRange();
+    };
 
     var keydownHandler = function (ev) {
-      // shift for sibling selection
-      if (ev.shiftKey && selection.length === 1) 
-        makeSelection(selection[0], true);
+      // alt for no sibling selection
+      if (ev.altKey && currentRange.length > 1) {
+        setCurrentRange([currentRange[0]]);
+      }
 
       // escape to cancel
       if (ev.keyCode === 27) {
@@ -1096,10 +1219,17 @@
     };
 
     var keyupHandler = function (ev) {
-      if (!ev.shiftKey && selection.length > 1) 
-        // unselect siblings
-        makeSelection(selection[0]);
+      if (!ev.altKey && currentRange.length === 1) 
+        // select siblings
+        setCurrentRange(makeSelection(currentRange[0], true));
 
+      if (ranges.length > 0 && !ev.shiftKey) {
+        stop();
+        var elems = flatten(ranges);
+        if (elems.length > 0) {
+          readDom(elems);
+        }
+      }
     };
 
     // derive siblings from element
@@ -1119,22 +1249,17 @@
     };
 
     var mouseoverHandler = function (ev) {
-      makeSelection(ev.target, ev.shiftKey);
-    };
-
-    var stop = function () {
-      info.remove();
-      removeOverlays();
-      window.removeEventListener("mouseover", mouseoverHandler);
-      window.removeEventListener("click", clickHandler);
-      window.removeEventListener("keydown", keydownHandler);
-      window.removeEventListener("keyup", keyupHandler);
+      setCurrentRange(makeSelection(ev.target, !ev.altKey));
     };
 
     var clickHandler = function (ev) {
       ev.preventDefault();
-      stop();
-      readDOM(selection);
+      if (ev.shiftKey) {
+        addCurrentRange();
+      } else {
+        stop();
+        readDOM(currentRange);
+      }
     };
 
     // grab first selection using mousemove to avoid the need to roll mouse
@@ -1150,6 +1275,27 @@
     window.addEventListener("mousemove", moveHandler);
     window.addEventListener("keydown", keydownHandler);
     window.addEventListener("keyup", keyupHandler);
+
+
+    info.innerHTML = "Hold <em>shift</em> to make multiple selections. "
+                     + "Hold <em>alt</em> to target individual paragraphs.";
+    document.body.appendChild(info);
+
+    addClass(document.body, "sr-pointer");
+
+
+    var stop = function () {
+      info.remove();
+      flatten(ranges).forEach(function (el) {
+        if (el[_overlay]) el[_overlay].remove();
+      });
+      window.removeEventListener("mouseover", mouseoverHandler);
+      window.removeEventListener("mousemove", moveHandler);
+      window.removeEventListener("click", clickHandler);
+      window.removeEventListener("keydown", keydownHandler);
+      window.removeEventListener("keyup", keyupHandler);
+      removeClass(document.body, "sr-pointer");
+    };
   }
 
 

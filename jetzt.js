@@ -693,7 +693,7 @@
     };
 
     this.setWord = function (token) {
-      var pivot = calculatePivot(token);
+      var pivot = calculatePivot(token.replace(/[?.,!:;*-]+$/, ""));
       leftWord.innerHTML = token.substr(0, pivot);
       pivotChar.innerHTML = token.substr(pivot, 1);
       rightWord.innerHTML = token.substr(pivot + 1)

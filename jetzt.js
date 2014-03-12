@@ -1051,21 +1051,19 @@
     var previousElement = null;
 
     var showSelection = function () {
-      var scrollBottom = document.body.scrollTop + window.innerHeight;
+      var scrollTop = document.body.scrollTop;
+      var scrollLeft = document.body.scrollLeft;
+      var scrollBottom = scrollTop + window.innerHeight;
 
       overlays = [];
 
       for (var i=0, len=selection.length; i < len; i++) {
         var el = selection[i]
-          , top = el.offsetTop
-          , left = el.offsetLeft
-          , width = el.offsetWidth
-          , height = el.offsetHeight;
-
-        for (var p = el.offsetParent; p; p = p.offsetParent) {
-          top += p.offsetTop;
-          left += p.offsetLeft;
-        }
+          , rect = el.getBoundingClientRect()
+          , top = rect.top + scrollTop
+          , left = rect.left + scrollLeft
+          , width = rect.width
+          , height = rect.height;
 
         if (top >= scrollBottom) {
           break;

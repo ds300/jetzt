@@ -56,7 +56,7 @@ I also welcome pull requests of all shapes and sizes. This project is still in h
 - [fusillicode](https://github.com/fusillicode)
 - [Brian Hanson](https://github.com/brianjhanson)
 - [ianzapolsky](https://github.com/ianzapolsky)
-- [Martin Butt](https://github.com/martinbutt)
+- [Martin Butt](https://github.com/martinkiva)
 
 
 ### License

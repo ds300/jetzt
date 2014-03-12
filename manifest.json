@@ -9,7 +9,7 @@
     {
       "matches": ["http://*/*", "https://*/*", "file:///*"],
       "css": ["jetzt.css"],
-      "js": ["jetzt.js", "chrome-config.js"]
+      "js": ["jetzt.js", "chrome-config.js","readability/DOMasSAX.js","readability/readabilitySAX.js"]
     }
   ],
   "permissions": [

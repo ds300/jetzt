@@ -650,7 +650,11 @@
       // initialise custom theme
       this.setTheme(config("dark"));
 
+      // need to stop the input focus from scrolling the page up.
+      var scrollTop = document.body.scrollTop;
       grabFocus();
+      document.body.scrollTop = scrollTop;
+
       hiddenInput.onblur = grabFocus;
 
       typeof cb === 'function' && window.setTimeout(cb, 340);
@@ -1070,19 +1074,7 @@
       showSelection();
     };
 
-    var mouseoverHandler = function (ev) {
-      previousElement && removeClass(previousElement, "sr-pointer");
-
-      addClass(ev.target, "sr-pointer");
-
-      previousElement = ev.target;
-
-      if (ev.altKey) {
-        setSelection([ev.target]);
-      } else {
-        setSelection(selectSiblings(ev.target));
-      }
-    };
+    
 
     var validParents = {
       "DIV": true,
@@ -1152,9 +1144,23 @@
       previousElement && removeClass(previousElement, "sr-pointer");
     };
 
+    var mouseoverHandler = function (ev) {
+      previousElement && removeClass(previousElement, "sr-pointer");
+
+      addClass(ev.target, "sr-pointer");
+
+      previousElement = ev.target;
+
+      if (ev.altKey) {
+        setSelection([ev.target]);
+      } else {
+        setSelection(selectSiblings(ev.target));
+      }
+    };
+
     var clickHandler = function (ev) {
       stop();
-      init(ev.target);
+      readDOM(selection);
     };
 
     var moveHandler = function (ev) {
@@ -1163,19 +1169,15 @@
     };
 
     var keydownHandler = function (ev) {
-      console.log("yep");
       if (ev.keyCode === 27) {
         stop();
       } else if (ev.altKey && selection.length > 1) {
-        console.log("bro");
         setSelection([selection[0]]);
       }
     };
 
     var keyupHandler = function (ev) {
-        console.log("whut");
       if (!ev.altKey && selection.length === 1) {
-        console.log("scene");
         setSelection(selectSiblings(selection[0]));
       }
     };

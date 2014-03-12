@@ -1051,28 +1051,20 @@
     var previousElement = null;
 
     var showSelection = function () {
-      var scrollTop = document.body.scrollTop;
-      var scrollLeft = document.body.scrollLeft;
-      var scrollBottom = scrollTop + window.innerHeight;
 
       overlays = [];
 
       for (var i=0, len=selection.length; i < len; i++) {
-        var el = selection[i]
-          , rect = el.getBoundingClientRect()
-          , top = rect.top + scrollTop
-          , left = rect.left + scrollLeft
-          , width = rect.width
-          , height = rect.height;
+        var rect = selection[i].getBoundingClientRect();
 
-        if (top >= scrollBottom) {
+        if (rect.top >= window.innerHeight) {
           break;
         } else {
           var overlay = div("sr-overlay");
-          overlay.style.top = top + "px";
-          overlay.style.left = left + "px";
-          overlay.style.width = width + "px";
-          overlay.style.height = height + "px";
+          overlay.style.top = (document.body.scrollTop + rect.top) + "px";
+          overlay.style.left = (document.body.scrollLeft + rect.left) + "px";
+          overlay.style.width = rect.width + "px";
+          overlay.style.height = rect.height + "px";
           document.body.appendChild(overlay);
           overlays.push(overlay);
         }

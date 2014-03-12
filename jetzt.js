@@ -1018,256 +1018,166 @@
     }
   };
 
+
   /**
    * Begin interactive dom node selection.
    */
   function selectMode () {
-    var ranges = [] // 2d array of selected dom nodes. must all have .tagname
+    var selection = [];
+    var overlays = [];
+    var previousElement = null;
 
-      , currentRange = [] // working selection, changes on mouseovers
+    var showSelection = function () {
+      var scrollBottom = document.body.scrollTop + window.innerHeight;
 
-      // key used to store overlay elems on selected elems
-      , _overlay = "___jetzt_overlay"
-      // key used to indicate whether or not elem is in working selection
-      , _selected = "___jetzt_selected"
-      // key used to specify which range an elem is in
-      , _range = "___jetzt_range"
+      overlays = [];
 
-      , redrawTimeout = null // redraw selectionRanges on scroll
-      , lastRedrawScrollBottom = 0 // keep track of scrollTop so we know when to redraw
-      , info = div("sr-selectmode-info");
+      for (var i=0, len=selection.length; i < len; i++) {
+        var el = selection[i]
+          , top = el.offsetTop
+          , left = el.offsetLeft
+          , width = el.offsetWidth
+          , height = el.offsetHeight;
 
-
-    var getScrollBottom = function () {
-      return document.body.scrollTop + window.innerHeight;
-    };
-
-    lastRedrawScrollBottom = getScrollBottom();
-
-
-    var makeOverlay = function (el) {
-      var top = el.offsetTop
-        , left = el.offsetLeft;
-
-      for (var p = el.offsetParent; p; p = p.offsetParent) {
-        top += p.offsetTop;
-        left += p.offsetLeft;
-      }
-
-      var width = el.offsetWidth;
-      var height = el.offsetHeight;
-
-      var overlayElem = div("sr-overlay");
-      overlayElem.__top = top;
-      overlayElem.style.top = top + "px";
-      overlayElem.style.left = left + "px";
-      overlayElem.style.width = width + "px";
-      overlayElem.style.height = height + "px";
-
-      el[_overlay] = overlayElem;
-    };
-
-
-    var showCurrentRange = function () {
-      var scrollBottom = getScrollBottom();
-
-      for (var i = 0; i < currentRange.length; i++) {
-        var el = currentRange[i];
-
-        // if it's already been selected before
-        if (el.hasOwnProperty(_selected)) {
-          if (el[_overlay]) {
-            // intersect with existing selection
-            if (el[_selected]) {
-              el[_overlay].remove();
-            } else {
-              document.body.appendChild(el[_overlay]);
-            }
-            continue;
-          } else {
-            // if no overlay, then hasn't been rendered yet,
-            // so the rest of these won't need rendering either
-            break;
-          }
-
-        // was never selected but was in currentRange at some point
-        } else if (el[_overlay]) {
-          if (el[_overlay].__top < scrollBottom) {
-            document.body.appendChild(el[_overlay]);
-          } else {
-            break;
-          }
-
-        // never seen before
-        } else {
-          makeOverlay(el);
-
-          if (el[_overlay].__top >= scrollBottom) {
-            break;
-          } else {
-            document.body.appendChild(el[_overlay]);
-          }
+        for (var p = el.offsetParent; p; p = p.offsetParent) {
+          top += p.offsetTop;
+          left += p.offsetLeft;
         }
-      }
-    };
 
-    var hideCurrentRange = function () {
-      for (var i=0; i<currentRange.length; i++) {
-        var el = currentRange[i];
-        if (!el[_overlay]) {
+        if (top >= scrollBottom) {
           break;
         } else {
-          if (el[_selected]) {
-            document.body.appendChild(el[_overlay]);
-          } else {
-            el[_overlay].remove();
-          }
+          var overlay = div("sr-overlay");
+          overlay.style.top = top + "px";
+          overlay.style.left = left + "px";
+          overlay.style.width = width + "px";
+          overlay.style.height = height + "px";
+          document.body.appendChild(overlay);
+          overlays.push(overlay);
         }
       }
     };
 
-    // adds elems in current range to ranges array, set difference style
-    var addCurrentRange = function () {
-      var scrollBottom = getScrollBottom();
-
-      var result = []
-        , foundNextToRender = false;
-
-      result.nextToRender = 0;
-
-      for (var i=0; i<currentRange.length; i++) {
-        var el = currentRange[i];
-
-        el[_selected] = !el[_selected];
-
-        if (el[_selected]) {
-          result.push(el);
-          el[_range] = result;
-          if (!foundNextToRender &&
-               (!el[_overlay] || el[_overlay].__top >= scrollBottom)) {
-            result.nextToRender = result.length - 1;
-            foundNextToRender = true;
-          }
-        } else {
-          var idx = el[_range].indexOf(el);
-          el[_range].splice(idx, 1);
-          if (idx < el[_range].nextToRender) {
-            el[_range].nextToRender--;
-          }
-        }
-      }
-
-      ranges.push(result);
-      currentRange = [];
-    };
-
-    var redraw = function () {
-      var scrollBottom = getScrollBottom();
-      
-      ranges.forEach(function (range) {
-        for (; range.nextToRender < range.length; range.nextToRender++) {
-          var el = range[range.nextToRender];
-
-          if (!el[_overlay]) makeOverlay(el);
-
-          if (el[_overlay].__top < scrollBottom) {
-            document.body.append(el[_overlay]);
-          } else {
-            break;
-          }
-        }
+    var hideSelection = function () {
+      overlays.forEach(function (el) {
+        el.remove();
       });
-
-      lastRedrawScrollBottom = scrollBottom;
-      redrawTimeout = null;
     };
 
-    // given a target element and whether or not to include it's siblings,
-    // create and show the selection
-    var makeSelection = function (el, selectSiblings) {
-      if (selectSiblings) return getSiblings(el);
-      else return [el];
+    var setSelection = function (sel) {
+      hideSelection();
+      selection = sel;
+      showSelection();
     };
 
-    var scrollHandler = function (ev) {
-      if (redrawTimeout) {
-          window.clearTimeout(redrawTimeout);
-      }
-      if (getScrollBottom() - lastRedrawScrollBottom > 100) {
-        redraw();
+    var mouseoverHandler = function (ev) {
+      previousElement && removeClass(previousElement, "sr-pointer");
+
+      addClass(ev.target, "sr-pointer");
+
+      previousElement = ev.target;
+
+      if (ev.altKey) {
+        setSelection([ev.target]);
       } else {
-        redrawTimeout = window.setTimeout(redraw, 100);
+        setSelection(selectSiblings(ev.target));
       }
     };
 
-    var setCurrentRange = function (range) {
-      hideCurrentRange();
-      currentRange = range;
-      showCurrentRange();
+    var validParents = {
+      "DIV": true,
+      "ARTICLE": true,
+      "BLOCKQUOTE": true,
+      "MAIN": true,
+      "SECTION": true,
+      "UL": true,
+      "OL": true,
+      "DL": true
+    };
+
+    var validChildren = {
+      "P": true,
+      "H1": true,
+      "H2": true,
+      "H3": true,
+      "H4": true,
+      "H5": true,
+      "H6": true,
+      "SPAN": true,
+      "DL": true,
+      "OL": true,
+      "UL": true,
+      "BLOCKQUOTE": true,
+      "SECTION": true,
+    };
+
+    var selectSiblings = function (el) {
+      var firstChild = el;
+      var parent = el.parentNode;
+      while (parent && !validParents[parent.tagName]) {
+        firstChild = parent;
+        parent = firstChild.parentNode;
+
+      }
+
+      if (parent) {
+        var kids = parent.childNodes
+          , len = kids.length
+          , result = []
+          , i = 0;
+
+          while (kids[i] !== firstChild) i++;
+
+          for (; i < len; i++) {
+            var kid = kids[i];
+            if (validChildren[kid.tagName]) {
+              result.push(kid);
+            }
+          }
+
+          return result;
+
+      } else {
+        return [el];
+      }
+    };
+
+    var stop = function () {
+      hideSelection();
+      window.removeEventListener("mouseover", mouseoverHandler);
+      window.removeEventListener("mousemove", moveHandler);
+      window.removeEventListener("keydown", keydownHandler);
+      window.removeEventListener("keyup", keyupHandler);
+      window.removeEventListener("click", clickHandler);
+      previousElement && removeClass(previousElement, "sr-pointer");
+    };
+
+    var clickHandler = function (ev) {
+      stop();
+      init(ev.target);
+    };
+
+    var moveHandler = function (ev) {
+      mouseoverHandler(ev);
+      window.removeEventListener("mousemove", moveHandler);
     };
 
     var keydownHandler = function (ev) {
-      // alt for no sibling selection
-      if (ev.altKey && currentRange.length > 1) {
-        setCurrentRange([currentRange[0]]);
-      }
-
-      // escape to cancel
+      console.log("yep");
       if (ev.keyCode === 27) {
         stop();
+      } else if (ev.altKey && selection.length > 1) {
+        console.log("bro");
+        setSelection([selection[0]]);
       }
     };
 
     var keyupHandler = function (ev) {
-      if (!ev.altKey && currentRange.length === 1) 
-        // select siblings
-        setCurrentRange(makeSelection(currentRange[0], true));
-
-      if (ranges.length > 0 && !ev.shiftKey) {
-        stop();
-        var elems = flatten(ranges);
-        if (elems.length > 0) {
-          readDom(elems);
-        }
+        console.log("whut");
+      if (!ev.altKey && selection.length === 1) {
+        console.log("scene");
+        setSelection(selectSiblings(selection[0]));
       }
-    };
-
-    // derive siblings from element
-    var getSiblings = function (el) {
-      var allSiblings = el.parentNode.childNodes;
-      var afterSiblings = [];
-      for (var i=allSiblings.length; i--;) {
-        var sibling = allSiblings[i];
-        if (sibling === el) {
-          break;
-        } else {
-          afterSiblings.unshift(sibling);
-        }
-      }
-      afterSiblings.unshift(el);
-      return afterSiblings.filter(function (el) {return el.tagName});
-    };
-
-    var mouseoverHandler = function (ev) {
-      setCurrentRange(makeSelection(ev.target, !ev.altKey));
-    };
-
-    var clickHandler = function (ev) {
-      ev.preventDefault();
-      if (ev.shiftKey) {
-        addCurrentRange();
-      } else {
-        stop();
-        readDOM(currentRange);
-      }
-    };
-
-    // grab first selection using mousemove to avoid the need to roll mouse
-    // over the edge of it's current target element. it would be nice if
-    // we could get mouse's current target when selectMode is called.
-    var moveHandler = function (ev) {
-      mouseoverHandler(ev);
-      window.removeEventListener("mousemove", moveHandler);
     };
 
     window.addEventListener("mouseover", mouseoverHandler);
@@ -1275,29 +1185,7 @@
     window.addEventListener("mousemove", moveHandler);
     window.addEventListener("keydown", keydownHandler);
     window.addEventListener("keyup", keyupHandler);
-
-
-    info.innerHTML = "Hold <em>shift</em> to make multiple selections. "
-                     + "Hold <em>alt</em> to target individual paragraphs.";
-    document.body.appendChild(info);
-
-    addClass(document.body, "sr-pointer");
-
-
-    var stop = function () {
-      info.remove();
-      flatten(ranges).forEach(function (el) {
-        if (el[_overlay]) el[_overlay].remove();
-      });
-      window.removeEventListener("mouseover", mouseoverHandler);
-      window.removeEventListener("mousemove", moveHandler);
-      window.removeEventListener("click", clickHandler);
-      window.removeEventListener("keydown", keydownHandler);
-      window.removeEventListener("keyup", keyupHandler);
-      removeClass(document.body, "sr-pointer");
-    };
-  }
-
+  };
 
   function select() {
     var text = window.getSelection().toString();

@@ -644,7 +644,7 @@
 
       // pull down box;
       document.body.appendChild(wrapper);
-      box.offsetWidth;
+      wrapper.offsetWidth;
       addClass(wrapper, "in");
 
       // initialise custom size/wpm
@@ -665,10 +665,10 @@
       hiddenInput.onblur = null;
       hiddenInput.blur();
       removeClass(backdrop, "in");
-      removeClass(box, "in");
+      removeClass(wrapper, "in");
       window.setTimeout(function () {
         backdrop.remove();
-        box.remove();
+        wrapper.remove();
         typeof cb === 'function' && cb();
       }, 340);
     };

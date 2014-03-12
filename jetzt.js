@@ -613,7 +613,9 @@
           leftWrap,
           div("sr-word-box", [reticle, progressBar, word, wpm, hiddenInput]),
           rightWrap
-        ]);
+        ])
+
+      , wrapper = div("sr-reader-wrapper", [box]);
 
     hiddenInput.onkeyup = hiddenInput.onkeypress = function (ev) {
       if(!ev.ctrlKey && !ev.metaKey) {
@@ -641,9 +643,9 @@
       addClass(backdrop, "in");
 
       // pull down box;
-      document.body.appendChild(box);
+      document.body.appendChild(wrapper);
       box.offsetWidth;
-      addClass(box, "in");
+      addClass(wrapper, "in");
 
       // initialise custom size/wpm
       this.setScale(config("scale"));
@@ -672,9 +674,9 @@
     };
 
     this.setScale = function (scale) {
-      box.style.webkitTransform = "translate(-50%, -50%) scale("+scale+")";
-      box.style.mozTransform = "translate(-50%, -50%) scale("+scale+")";
-      box.style.transform = "translate(-50%, -50%) scale("+scale+")";
+      wrapper.style.webkitTransform = "translate(-50%, -50%) scale("+scale+")";
+      wrapper.style.mozTransform = "translate(-50%, -50%) scale("+scale+")";
+      wrapper.style.transform = "translate(-50%, -50%) scale("+scale+")";
     };
 
     this.setWPM = function (target_wpm) {
@@ -706,8 +708,18 @@
     this.setWrap = function (left, right) {
       leftWrap.innerHTML = left;
       rightWrap.innerHTML = right;
-    };
 
+      var lw = leftWrap.offsetWidth;
+      var rw = rightWrap.offsetWidth;
+
+      wrapper.style.paddingLeft = "50px";
+      wrapper.style.paddingRight = "50px";
+      if (lw > rw) {
+        wrapper.style.paddingRight = 50 + (lw - rw) + "px";
+      } else if (rw > lw) {
+        wrapper.style.paddingLeft = 50 + (rw - lw) + "px";
+      }
+    };
   }
 
 

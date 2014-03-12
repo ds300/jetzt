@@ -23,14 +23,21 @@
 */
 
 
-.sr-reader {
+.sr-reader-wrapper {
   z-index: 999999;
   position: fixed;
+  padding: 50px;
   top: -50%;
   left: 50%;
   -webkit-transform: translate(-50%, -50%);
   -moz-transform: translate(-50%, -50%);
   transform: translate(-50%, -50%);
+  -webkit-transition: top 0.34s ease;
+  -moz-transition: top 0.34s ease;
+  transition: top 0.34s ease;
+}
+
+.sr-reader {
   height: 100px;
   display: flex;
   flex-direction: row;
@@ -38,12 +45,9 @@
   -moz-box-shadow: 2px 2px 19px 0px rgba(50, 50, 50, 0.75);
   box-shadow: 2px 2px 19px 0px rgba(50, 50, 50, 0.75);
   border-radius: 10px;
-  -webkit-transition: top 0.34s ease;
-  -moz-transition: top 0.34s ease;
-  transition: top 0.34s ease;
 }
 
-.sr-reader.in {
+.sr-reader-wrapper.in {
   top: 50%;
 }
 

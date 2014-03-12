@@ -616,8 +616,10 @@
         ]);
 
     hiddenInput.onkeyup = hiddenInput.onkeypress = function (ev) {
-      ev.stopImmediatePropagation();
-      return false;
+      if(!ev.ctrlKey && !ev.metaKey) {
+	    	ev.stopImmediatePropagation();
+	      return false;
+	    }
     };
 
     var grabFocus = function () {
@@ -691,7 +693,7 @@
     };
 
     this.setWord = function (token) {
-      var pivot = calculatePivot(token);
+      var pivot = calculatePivot(token.replace(/[?.,!:;*-]+$/, ""));
       leftWord.innerHTML = token.substr(0, pivot);
       pivotChar.innerHTML = token.substr(pivot, 1);
       rightWord.innerHTML = token.substr(pivot + 1)
@@ -892,6 +894,9 @@
   };
 
   function handleKeydown (ev) {
+    if(ev.ctrlKey || ev.metaKey) {
+    	return;
+    } 
     var killEvent = function () {
       ev.preventDefault();
       ev.stopImmediatePropagation();
@@ -924,13 +929,15 @@
         killEvent();
         toggleRunning();
         break;
-      case 107:
-      case 187: //plus
+      case 187: // =/+ (MSIE, Safari, Chrome)
+      case 107: // =/+ (Firefox, numpad)
+      case 61: // =/+ (Firefox, Opera)
         killEvent();
         adjustScale(0.1);
         break;
-      case 109:
-      case 189: //minus
+      case 109: // -/_ (numpad, Opera, Firefox)
+      case 189: // -/_ (MSIE, Safari, Chrome)
+      case 173: // -/_ (Firefox)
         killEvent();
         adjustScale(-0.1);
         break;

@@ -30,5 +30,7 @@
     "background": {
 	    "scripts": ["background.js"],
 	    "persistent": false
-	}
+	},
+  "web_accessible_resources": ["fonts/nn_medien_bold-webfont.ttf",
+                               "fonts/nn_medien_medium-webfont.ttf"]
 }

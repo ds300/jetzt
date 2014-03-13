@@ -613,7 +613,9 @@
           leftWrap,
           div("sr-word-box", [reticle, progressBar, word, wpm, hiddenInput]),
           rightWrap
-        ]);
+        ])
+
+      , wrapper = div("sr-reader-wrapper", [box]);
 
     hiddenInput.onkeyup = hiddenInput.onkeypress = function (ev) {
       if(!ev.ctrlKey && !ev.metaKey) {
@@ -641,9 +643,9 @@
       addClass(backdrop, "in");
 
       // pull down box;
-      document.body.appendChild(box);
-      box.offsetWidth;
-      addClass(box, "in");
+      document.body.appendChild(wrapper);
+      wrapper.offsetWidth;
+      addClass(wrapper, "in");
 
       // initialise custom size/wpm
       this.setScale(config("scale"));
@@ -652,7 +654,11 @@
       // initialise custom theme
       this.setTheme(config("dark"));
 
+      // need to stop the input focus from scrolling the page up.
+      var scrollTop = document.body.scrollTop;
       grabFocus();
+      document.body.scrollTop = scrollTop;
+
       hiddenInput.onblur = grabFocus;
 
       typeof cb === 'function' && window.setTimeout(cb, 340);
@@ -663,18 +669,18 @@
       hiddenInput.onblur = null;
       hiddenInput.blur();
       removeClass(backdrop, "in");
-      removeClass(box, "in");
+      removeClass(wrapper, "in");
       window.setTimeout(function () {
         backdrop.remove();
-        box.remove();
+        wrapper.remove();
         typeof cb === 'function' && cb();
       }, 340);
     };
 
     this.setScale = function (scale) {
-      box.style.webkitTransform = "translate(-50%, -50%) scale("+scale+")";
-      box.style.mozTransform = "translate(-50%, -50%) scale("+scale+")";
-      box.style.transform = "translate(-50%, -50%) scale("+scale+")";
+      wrapper.style.webkitTransform = "translate(-50%, -50%) scale("+scale+")";
+      wrapper.style.mozTransform = "translate(-50%, -50%) scale("+scale+")";
+      wrapper.style.transform = "translate(-50%, -50%) scale("+scale+")";
     };
 
     this.setWPM = function (target_wpm) {
@@ -706,8 +712,18 @@
     this.setWrap = function (left, right) {
       leftWrap.innerHTML = left;
       rightWrap.innerHTML = right;
-    };
 
+      var lw = leftWrap.offsetWidth;
+      var rw = rightWrap.offsetWidth;
+
+      wrapper.style.paddingLeft = "50px";
+      wrapper.style.paddingRight = "50px";
+      if (lw > rw) {
+        wrapper.style.paddingRight = 50 + (lw - rw) + "px";
+      } else if (rw > lw) {
+        wrapper.style.paddingLeft = 50 + (rw - lw) + "px";
+      }
+    };
   }
 
 
@@ -948,40 +964,68 @@
     }
   }
 
+  // wrap a function to make sure it only gets called it jetzt isn't open
+  function assertClosed(fn) {
+    return function () {
+      if (instructions) throw new Error("jetzt already open");
+      else fn.apply(this, arguments);
+    };
+  }
+
+  // wrap a function to make sure it only gets called it jetzt is open
+  function assertOpen(fn) {
+    return function () {
+      if (!instructions) throw new Error("jetzt not currently open");
+      else fn.apply(this, arguments);
+    };
+  }
+
   /**
-   * Initialise the jetzt reader with some content,
-   * content being either a dom node, a string, or some instructions.
+   * Read the given instructions.
    */
-  function init (content) {
-    if (!instructions) {
+  function read (instrs) {
+    instructions = instrs;
 
-      // plain string
-      if (typeof content === 'string' && content.trim().length > 0) {
-        instructions = parseText(content.trim());
+    reader = new Reader();
+    reader.onBackdropClick(close);
+    reader.onKeyDown(handleKeydown)
+    reader.show();
 
-      // dom node
-      } else if (content.textContent && content.textContent.trim().length > 0) {
-        // TODO: write proper dom parsing function
-        //instructions = parseText(content.textContent.trim());
-        instructions = parseDom(content);
-      } else if (realTypeOf(content) === "Array") {
-        instructions = content;
-      } else {
-        throw new Error("jetzt doesn't know how to deal with this object:", content);
-      }
+    index = 0;
 
-      reader = new Reader();
-      reader.onBackdropClick(close);
-      reader.onKeyDown(handleKeydown)
-      reader.show();
+    setTimeout(toggleRunning, 500);
+  }
 
-      index = 0;
-
-      setTimeout(toggleRunning, 500);
+  function readStuff (parse, content) {
+    var instr = new Instructionator();
+    if (realTypeOf(content) === "Array") {
+      content.forEach(function (item) {
+        instr.modNext("start_paragraph");
+        parse(item, instr);
+        instr.clearWrap();
+        instr.modPrev("end_paragraph");
+      });
     } else {
-      throw new Error("jetzt already initialized");
+      parse(content, instr);
     }
-  };
+
+    read(instr.getInstructions());
+  }
+
+  /**
+   * Read the given string, or array of strings.
+   */
+  function readString (str) {
+    readStuff(parseText, str);
+  }
+
+  /**
+   * Read the given DOM element, or array of DOM elements.
+   */
+  function readDOM (dom) {
+    readStuff(parseDom, dom);
+  }
+
 
   /**
    * Dismiss the jetzt reader
@@ -997,35 +1041,135 @@
     }
   };
 
+
   /**
    * Begin interactive dom node selection.
    */
   function selectMode () {
-    var highlight = "sr-highlight";
-    var previousElement;
+    var selection = [];
+    var overlays = [];
+    var previousElement = null;
 
-    var mouseoverHandler = function (ev) {
-      if (previousElement && previousElement === ev.target) {
-        // same element
-        return;
-      }
-      if (previousElement) {
-        removeClass(previousElement, highlight);
-      }
-      addClass(ev.target, highlight);
+    var showSelection = function () {
 
-      previousElement = ev.target;
+      overlays = [];
+
+      for (var i=0, len=selection.length; i < len; i++) {
+        var rect = selection[i].getBoundingClientRect();
+
+        if (rect.top >= window.innerHeight) {
+          break;
+        } else {
+          var overlay = div("sr-overlay");
+          overlay.style.top = (document.body.scrollTop + rect.top) + "px";
+          overlay.style.left = (document.body.scrollLeft + rect.left) + "px";
+          overlay.style.width = rect.width + "px";
+          overlay.style.height = rect.height + "px";
+          document.body.appendChild(overlay);
+          overlays.push(overlay);
+        }
+      }
+    };
+
+    var hideSelection = function () {
+      overlays.forEach(function (el) {
+        el.remove();
+      });
+    };
+
+    var setSelection = function (sel) {
+      hideSelection();
+      selection = sel;
+      showSelection();
+    };
+
+    
+
+    var validParents = {
+      "DIV": true,
+      "ARTICLE": true,
+      "BLOCKQUOTE": true,
+      "MAIN": true,
+      "SECTION": true,
+      "UL": true,
+      "OL": true,
+      "DL": true
+    };
+
+    var validChildren = {
+      "P": true,
+      "H1": true,
+      "H2": true,
+      "H3": true,
+      "H4": true,
+      "H5": true,
+      "H6": true,
+      "SPAN": true,
+      "DL": true,
+      "OL": true,
+      "UL": true,
+      "BLOCKQUOTE": true,
+      "SECTION": true,
+    };
+
+    var selectSiblings = function (el) {
+      var firstChild = el;
+      var parent = el.parentNode;
+      while (parent && !validParents[parent.tagName]) {
+        firstChild = parent;
+        parent = firstChild.parentNode;
+
+      }
+
+      if (parent) {
+        var kids = parent.childNodes
+          , len = kids.length
+          , result = []
+          , i = 0;
+
+          while (kids[i] !== firstChild) i++;
+
+          for (; i < len; i++) {
+            var kid = kids[i];
+            if (validChildren[kid.tagName]) {
+              result.push(kid);
+            }
+          }
+
+          return result;
+
+      } else {
+        return [el];
+      }
     };
 
     var stop = function () {
+      hideSelection();
       window.removeEventListener("mouseover", mouseoverHandler);
+      window.removeEventListener("mousemove", moveHandler);
+      window.removeEventListener("keydown", keydownHandler);
+      window.removeEventListener("keyup", keyupHandler);
       window.removeEventListener("click", clickHandler);
-      previousElement && removeClass(previousElement, highlight);
+      previousElement && removeClass(previousElement, "sr-pointer");
+    };
+
+    var mouseoverHandler = function (ev) {
+      previousElement && removeClass(previousElement, "sr-pointer");
+
+      addClass(ev.target, "sr-pointer");
+
+      previousElement = ev.target;
+
+      if (ev.altKey) {
+        setSelection([ev.target]);
+      } else {
+        setSelection(selectSiblings(ev.target));
+      }
     };
 
     var clickHandler = function (ev) {
       stop();
-      init(ev.target);
+      readDOM(selection);
     };
 
     var moveHandler = function (ev) {
@@ -1033,24 +1177,31 @@
       window.removeEventListener("mousemove", moveHandler);
     };
 
-    var escHandler = function (ev) {
+    var keydownHandler = function (ev) {
       if (ev.keyCode === 27) {
         stop();
+      } else if (ev.altKey && selection.length > 1) {
+        setSelection([selection[0]]);
       }
-      window.removeEventListener("keydown", escHandler);
+    };
+
+    var keyupHandler = function (ev) {
+      if (!ev.altKey && selection.length === 1) {
+        setSelection(selectSiblings(selection[0]));
+      }
     };
 
     window.addEventListener("mouseover", mouseoverHandler);
     window.addEventListener("click", clickHandler);
     window.addEventListener("mousemove", moveHandler);
-    window.addEventListener("keydown", escHandler);
+    window.addEventListener("keydown", keydownHandler);
+    window.addEventListener("keyup", keyupHandler);
   };
-
 
   function select() {
     var text = window.getSelection().toString();
     if (text.trim().length > 0) {
-      init(text);
+      readString(text);
       window.getSelection().removeAllRanges();
     } else {
       selectMode();
@@ -1060,20 +1211,22 @@
 
   window.jetzt = {
     selectMode: selectMode
-    , init: init
-    , close: close
-    , toggleRunning: toggleRunning
+    , read: assertClosed(read)
+    , readString: assertClosed(readString)
+    , readDOM: assertClosed(readDOM)
+    , close: assertOpen(close)
+    , toggleRunning: assertOpen(toggleRunning)
     , adjustWPM: adjustWPM
     , adjustScale: adjustScale
     , DEFAULT_OPTIONS: DEFAULT_OPTIONS
     , config: config
     , setConfigBackend: setConfigBackend
     , Instructionator: Instructionator
-    , nextParagraph: nextParagraph
-    , nextSentence: nextSentence
-    , prevParagraph: prevParagraph
-    , prevSentence: prevSentence
-    , select: select
+    , nextParagraph: assertOpen(nextParagraph)
+    , nextSentence: assertOpen(nextSentence)
+    , prevParagraph: assertOpen(prevParagraph)
+    , prevSentence: assertOpen(prevSentence)
+    , select: assertClosed(select)
   };
 
 

@@ -22,6 +22,10 @@
 
 */
 
+@font-face {
+  font-family: medien;
+  src: url('chrome-extension://__MSG_@@extension_id__/fonts/nn_medien_medium-webfont.ttf');
+}
 
 .sr-reader {
   z-index: 999999;
@@ -69,7 +73,7 @@
   min-width: 40px;
   background-color: #EEE;
   color: #666;
-  font-family: Consolas, monaco, monospace;
+  font-family: medien, Consolas, monaco, monospace;
   font-size: 50px;
   flex: 1 1 auto;
   padding: 15px 5px;
@@ -133,7 +137,7 @@
   position: absolute;
   right: 4px;
   bottom: 0px;
-  font-family: Consolas, monaco, monospace;
+  font-family: medien, Consolas, monaco, monospace;
   color: black;
   font-size: 20px;
   color: #777;
@@ -154,7 +158,7 @@
 }
 
 .sr-reader .sr-word-box .sr-word > span {
-  font-family: Consolas, monaco, monospace;
+  font-family: medien, Consolas, monaco, monospace;
   font-size: 50px;
   color: black;
 }

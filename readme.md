@@ -2,6 +2,12 @@
 
 *jetzt* is a speed-reader extension for [chrome](http://google.com/chrome) inspired by [Spritz](http://www.spritzinc.com/).
 
+### Screenshot
+
+Here's what jetzt looks like in your browser:
+
+![](screenshot.png)
+
 ### Installation
 
 This is very much beta software so a proper chrome extension package is not currently provided. Instead: clone this repository, then, in chrome, navigate to chrome://extensions , enable developer mode, click "Load unpacked extension..." and select the directory you cloned.

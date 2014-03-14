@@ -48,6 +48,15 @@
     }
   }
 
+  function getScrollTop () {
+    return document.body.scrollTop || document.documentElement.scrollTop;
+  }
+
+  function getScrollLeft () {
+    return document.body.scrollLeft || document.documentElement.scrollLeft;
+  }
+
+
   // make an element of the specified tag and class
   function elem (tagName, className, kids) {
     var result = document.createElement(tagName);
@@ -655,9 +664,10 @@
       this.setTheme(config("dark"));
 
       // need to stop the input focus from scrolling the page up.
-      var scrollTop = document.body.scrollTop;
+      var scrollTop = getScrollTop();
       grabFocus();
       document.body.scrollTop = scrollTop;
+      document.documentElement.scrollTop = scrollTop;
 
       hiddenInput.onblur = grabFocus;
 
@@ -1061,8 +1071,8 @@
           break;
         } else {
           var overlay = div("sr-overlay");
-          overlay.style.top = (document.body.scrollTop + rect.top) + "px";
-          overlay.style.left = (document.body.scrollLeft + rect.left) + "px";
+          overlay.style.top = (getScrollTop() + rect.top) + "px";
+          overlay.style.left = (getScrollTop() + rect.left) + "px";
           overlay.style.width = rect.width + "px";
           overlay.style.height = rect.height + "px";
           document.body.appendChild(overlay);

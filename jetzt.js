@@ -606,12 +606,15 @@
       , pivotChar = span("sr-pivot")
       , word = div("sr-word", [leftWord, pivotChar, rightWord])
       , progressBar = div("sr-progress")
+      , message = div("sr-message")
       , reticle = div("sr-reticle")
       , hiddenInput = elem("input", "sr-input")
 
       , box = div("sr-reader", [
           leftWrap,
-          div("sr-word-box", [reticle, progressBar, word, wpm, hiddenInput]),
+          div("sr-word-box", [
+            reticle, progressBar, message, word, wpm, hiddenInput
+          ]),
           rightWrap
         ]);
 
@@ -692,6 +695,17 @@
       progressBar.style.borderLeftWidth = Math.ceil(percent * 4) + "px";
     };
 
+    this.setMessage = function (msg) {
+      message.innerHTML = msg;
+    };
+
+    this.toggleMessage = function () {
+      message.style.display =
+        (message.style.display === "block") ? "none" : "block";
+    };
+
+    this.started = false;
+
     this.setWord = function (token) {
       var pivot = calculatePivot(token.replace(/[?.,!:;*-]+$/, ""));
       leftWord.innerHTML = token.substr(0, pivot);
@@ -758,9 +772,28 @@
         instr = instructions[instructions.length - 1];
       }
     }
+
     reader.setWord(instr.token);
     reader.setWrap(instr.leftWrap, instr.rightWrap);
     reader.setProgress(100 * (index / instructions.length));
+
+    if (index === 1) {
+      startedReading();
+    } else if (index === instructions.length) {
+      finishedReading();
+    }
+  }
+
+  function startedReading () {
+    var timestamp = Math.round(new Date().getTime() / 1000);
+    reader.started = timestamp;
+  }
+
+  function finishedReading () {
+    var words = instructions.length;
+    var timestamp = Math.round(new Date().getTime() / 1000);
+    var elapsed = timestamp - reader.started;
+    reader.setMessage(words + " words in " + elapsed + "s");
   }
 
   function handleInstruction (instr) {
@@ -944,6 +977,10 @@
       case 48: //0 key, for changing the theme
         killEvent();
         toggleTheme();
+        break;
+      case 191: // / and ?
+        killEvent();
+        reader && reader.toggleMessage();
         break;
     }
   }

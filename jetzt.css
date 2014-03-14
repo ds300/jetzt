@@ -118,6 +118,17 @@
   transition: border 0.34s ease;
 }
 
+.sr-reader .sr-word-box .sr-message {
+  position: absolute;
+  display: none;
+  top: 0;
+  right: 4px;
+  font-size: 20px;
+  font-family: Consolas, monaco, monospace;
+  color: #777;
+  text-align: right;
+}
+
 .sr-reader .sr-word-box .sr-reticle {
   position: absolute;
   left: 110px;

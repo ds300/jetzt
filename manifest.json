@@ -9,7 +9,7 @@
     {
       "matches": ["http://*/*", "https://*/*", "file:///*"],
       "css": ["jetzt.css"],
-      "js": ["modules/config.js","modules/control.js","modules/helpers.js","modules/parsing.js","modules/running.js","modules/selectmode.js","modules/state.js","modules/view.js",
+      "js": ["modules/helpers.js","modules/config.js","modules/control.js","modules/parsing.js","modules/running.js","modules/selectmode.js","modules/state.js","modules/view.js",
              "jetzt.js", "chrome-config.js"],
       "all_frames": true
     }

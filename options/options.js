@@ -1,3 +1,4 @@
+/* storage backends */
 var chromeConfigStorage = {
     get: function (cb) {
       chrome.storage.local.get(DEFAULT_OPTIONS, function (value) {
@@ -23,32 +24,23 @@ var localConfigStorage = {
     }
 };
 
-
-// Saves options to config-backend.
-function save_options() {
-    //get options from view
-    var select = document.getElementById("color");
-  	options.view.selection_color = select.children[select.selectedIndex].value;
-
-   //store items
-	configBackend.set(options);
-
-  // Update status to let user know options were saved.
+/* give some feedback to the user */
+function confirmSave() {
   var status = document.getElementById("status");
   status.innerHTML = "Options Saved.";
   setTimeout(function() { status.innerHTML = ""; }, 750);
 }
 
-function init() {
-	setConfigBackend(chromeConfigStorage); //this should maybe be flexible (e.g. sync options between chromes)
-	configBackend.get(restore_options);
+/* set view to current options */
+function view2opts() {
+    var select = document.getElementById("color");
+  	options.view.selection_color = select.children[select.selectedIndex].value;
+
+	return options;
 }
 
-// set view to loaded options
-function restore_options(opts) {
-    options = recursiveExtend({}, options, opts);
-
-    console.log("resetting options UI");
+/* get currently set options */
+function opts2view(options) {
   var select = document.getElementById("color");
   for (var i = 0; i < select.children.length; i++) {
     var child = select.children[i];
@@ -57,6 +49,27 @@ function restore_options(opts) {
       break;
     }
   }
+}
+
+/* saves options to config-backend. */
+function save_options() {
+    //get options from view
+	options = view2opts();
+
+   //store items
+	configBackend.set(options);
+}
+
+/* (re-) load options from backend */
+function init() {
+	setConfigBackend(chromeConfigStorage); //this should maybe be determined flexible (e.g. sync options between chromes)
+	configBackend.get(restore_options);
+}
+
+/* set view to loaded options */
+function restore_options(opts) {
+   options = recursiveExtend({}, options, opts);
+   opts2view(options);
 }
 
 document.addEventListener('DOMContentLoaded', init);

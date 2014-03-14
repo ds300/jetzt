@@ -1,13 +1,16 @@
 <html>
 <head><title>Jetzt Options</title></head>
 
-<body ng-app="optApp">
+<body ng-app="optsApp" ng-controller="OptionsController" ng-csp>
     <h1>Jetzt Options</h1>
-    
+	<p>Debug output:
+    <pre>{{options | json}}</pre>
+	</p>
+	
     <div class="section view-section">
         <h2>View</h2>
         <h3>Selection Color:</h3>
-        <select id="color">
+        <select id="color" ng-model="options.view.selection_color">
             <option value="red">red</option>
             <option value="green">green</option>
             <option value="blue">blue</option>
@@ -28,7 +31,7 @@
     <div class="section behavior-section">
         <h2>Behavior</h2>
         <h3>Default WPM</h3>
-        <input type="number" placeholder="400" id="wpm">
+        <input type="number" placeholder="400" id="wpm" ng-model="options.target_wpm">
         
         <h2>Mouse Events</h2>
         <p>Left Click:
@@ -52,14 +55,14 @@
 
     <br>
     <div id="status"></div>
-    <button id="save">Save</button>
-    <button id="cancel">Cancel</button>
+    <button id="save" ng-click="save()">Save</button>
+    <button id="cancel" ng-click="load()">Cancel</button>
 </body>
 
 <script src="../modules/helpers.js"></script>
 <script src="../modules/config.js"></script>
+<script src="../modules/storage.js"></script>
 
-<script src="options.js"></script>
 <script src="angular.min.js"></script>
 <script src="options-ng.js"></script>
 	

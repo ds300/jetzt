@@ -148,7 +148,7 @@
   */
 
   var DEFAULT_OPTIONS = {
-      target_wpm: 400,
+      target_wpm: localStorage['jetzt_wpm'] || 400,
       scale: 1,
       dark: false,
       modifiers: {

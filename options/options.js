@@ -35,6 +35,7 @@ function confirmSave() {
 function view2opts() {
     var select = document.getElementById("color");
   	options.view.selection_color = select.children[select.selectedIndex].value;
+	options.target_wpm = document.getElementById("wpm").value;
 
 	return options;
 }
@@ -49,6 +50,7 @@ function opts2view(options) {
       break;
     }
   }
+  document.getElementById("wpm").value = options.target_wpm;
 }
 
 /* saves options to config-backend. */

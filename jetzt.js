@@ -1072,7 +1072,7 @@
         } else {
           var overlay = div("sr-overlay");
           overlay.style.top = (getScrollTop() + rect.top) + "px";
-          overlay.style.left = (getScrollTop() + rect.left) + "px";
+          overlay.style.left = (getScrollLeft() + rect.left) + "px";
           overlay.style.width = rect.width + "px";
           overlay.style.height = rect.height + "px";
           document.body.appendChild(overlay);

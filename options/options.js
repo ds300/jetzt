@@ -74,6 +74,6 @@ function restore_options(opts) {
    opts2view(options);
 }
 
-document.addEventListener('DOMContentLoaded', init);
+/* document.addEventListener('DOMContentLoaded', init);
 document.querySelector('#save').addEventListener('click', save_options);
-document.querySelector('#cancel').addEventListener('click', init);
+document.querySelector('#cancel').addEventListener('click', init); */

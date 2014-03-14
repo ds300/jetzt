@@ -23,7 +23,10 @@
         end_paragraph: 2.8,
         short_space: 1.5,
         long_space: 2.2
-      }
+      },
+	  view : {
+	  	selection_color : "red"
+	  }
       // keybindings and so forth soon
   };
 

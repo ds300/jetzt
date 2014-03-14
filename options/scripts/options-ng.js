@@ -12,6 +12,10 @@ optsApp.controller('OptionsController',['$scope',function($scope) {
 	$scope.options = options;
 	$scope.save = function() { configBackend.set($scope.options) };
 	$scope.load = loadOptions;
+	$scope.showLab = function() {
+		document.getElementById('overlayDetails').show();	
+	}
+	
 	
 	angular.element(document).ready(loadOptions);
 	setConfigBackend(chromeConfigStorage);

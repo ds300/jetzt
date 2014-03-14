@@ -2,27 +2,35 @@
 <head><title>Jetzt Options</title></head>
 
 <body>
-<h1>jetzt options</h1>
+    <h1>Jetzt Options</h1>
+    
+    <h2>View</h2>
+    <h3>Selection Color:</h3>
+    <select id="color">
+        <option value="red">red</option>
+        <option value="green">green</option>
+        <option value="blue">blue</option>
+        <option value="yellow">yellow</option>
+    </select>
+    
+    <h3>Font:</h3>
+    <input type="text" placeholder="Font Name" id="font-custom">
+    <select id="font">
+        <option value="Arial">Arial</option>
+        <option value="Courier New">Courier New</option>
+        <option value="Georgia">Georgia</option>
+        <option value="Times New Roman">Times New Roman</option>
+        <option value="Verdana">Verdana</option>
+    </select>
+    
+    <h2>Behavior</h2>
+    <h3>Default WPM</h3>
+    <input type="number" placeholder="400" id="wpm">
 
-<h2>View</h2>
-<p>Selection Color:
-<select id="color">
- <option value="red">red</option>
- <option value="green">green</option>
- <option value="blue">blue</option>
- <option value="yellow">yellow</option>
-</select>
-</p>
-<hr/>
-<h2>Reader</h2>
-<p>Target WPM:
-	<input type="number" id="wpm" placeholder="400">
-	</p>
-
-<br>
-<div id="status"></div>
-<button id="save">Save</button>
-<button id="cancel">Cancel</button>
+    <br>
+    <div id="status"></div>
+    <button id="save">Save</button>
+    <button id="cancel">Cancel</button>
 </body>
 
 <script src="../modules/helpers.js"></script>

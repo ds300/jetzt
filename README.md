@@ -35,7 +35,7 @@ Control is currently keyboard-only.
 You can also use it as a bookmarklet by:
 - Copying the content of bookmarklet.js
 - Manually adding a new bookmark
-- Pasting the content into the location field. 
+- Pasting the content into the location field.
 
 ### ToDo
 
@@ -43,7 +43,7 @@ Check out the [ToDo](https://github.com/ds300/jetzt/wiki/ToDo) section of the wi
 
 ### Feature Requests/Contributions
 
-Feel free to open an issue for anything you would like to see in jetzt. 
+Feel free to open an issue for anything you would like to see in jetzt.
 
 I also welcome pull requests of all shapes and sizes. This project is still in heavy flux, though, so if you want to make a big change it might be best to open an issue to check that it's not already being worked on.
 

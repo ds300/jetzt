@@ -1,0 +1,117 @@
+.closeButton {
+	width: 14px;
+	height: 14px;
+	min-width: 0;
+	min-height: 0;
+	padding: 0;
+	
+	background-color: transparent;
+	background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAA4AAAAOCAQAAAC1QeVaAAAAUklEQVR4XqXPYQrAIAhAYW/gXd8NJxTopVqsGEhtf+L9/ERU2k/HSMFQpKcYJeNFI9Be0LCMij8cYyjj5EHIivGBkwLfrbX3IF8PqumVmnDpEG+eDsKibPG2JwAAAABJRU5ErkJggg==');
+	background-position: center;
+	background-repeat: no-repeat;
+	
+	color: transparent;
+	-webkit-box-shadow: none;
+	        box-shadow: none;
+	border: 0 none transparent;
+	outline: 0 none transparent;
+	-webkit-user-select: none;
+	        user-select: none;
+}
+	.closeButton:enabled:hover {
+		background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAA4AAAAOCAQAAAC1QeVaAAAAnUlEQVR4XoWQQQ6CQAxFewjkJkMCyXgJPMk7AiYczyBeZEAX6AKctGIaN+bt+trk9wtGQc/IkhnoKGxqqiWxOSZalapWFZ6VrIUDExsN0a5JRBq9LoVOR0eEQMoEhKizXhhsn0p1sCWVo7CwOf1RytPL8CPvwuBUoHL6ugeK30CVD1TqK7V/hdpe+VNChhOzV8xWny/+xosHF8578W/Hmc1OOC3wmwAAAABJRU5ErkJggg==');
+		
+		color: transparent;
+		-webkit-box-shadow: none;
+		        box-shadow: none;
+		border: 0 none transparent;
+		outline: 0 none transparent;
+		-webkit-user-select: none;
+		        user-select: none;
+	}
+	.closeButton:enabled:active {
+		background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAA4AAAAOCAQAAAC1QeVaAAAAnElEQVR4Xn2QQQqDQAxFcwjrQR6MoDC9hD2RBY9XrL3IaLuwXWg1BgldlLfLS0LyBYWMlp5ppaMh26uqqEksjoFapapZhWfetHBiYKEi2nQiUul0LjRaOiME0kpAiFprhc76C9Vhb1LZCxOL06aUt5fhRz6PtbawcPpuBxGPgwp/UK6vlP4VSnvlfwgbF0avGC0+F/yDDy9uXLHgv9HQnE67Dt6aAAAAAElFTkSuQmCC');
+		
+		color: transparent;
+		-webkit-box-shadow: none;
+		        box-shadow: none;
+		border: 0 none transparent;
+		outline: 0 none transparent;
+		-webkit-user-select: none;
+		        user-select: none;
+	}
+
+.overlay {
+	position: fixed;
+	left: 0;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	
+	display: -webkit-box;
+	-webkit-box-align: center;
+	        box-align: center;
+	-webkit-box-orient: vertical;
+	        box-orient: vertical;
+	-webkit-box-pack: center;
+	        box-pack: center;
+	
+	background-color: rgba(255,255,255,0.75);
+	
+	opacity: 1;
+	
+	-webkit-transition-duration: 200ms;
+	        transition-duration: 200ms;
+	-webkit-transition-property: opacity;
+	        transition-property: opacity;
+	
+	z-index: 11;
+}
+	.overlay .page {
+		position: relative;
+		display: -webkit-box;
+		-webkit-box-orient: vertical;
+		        box-orient: vertical;
+		
+		min-width: 400px;
+		
+		border-radius: 3px;
+		background-color: white;
+		box-shadow: 0 4px 23px 5px rgba(0,0,0,0.2), 0 2px 6px rgba(0,0,0,0.15);
+		
+		-webkit-transition-duration: 200ms;
+		        transition-duration: 200ms;
+		-webkit-transition-property: -webkit-transform;
+		        transition-property: -webkit-transform, transform;
+	}
+		.overlay .page h1 {
+			margin: 0;
+			padding: 14px 17px;
+			font-size: 120%;
+			color: #333333;
+			text-shadow: white 0 1px 2px;
+		}
+		.overlay > .page > .closeButton {
+			position: absolute;
+			right: 7px;
+			top: 7px;
+		}
+		.overlay .page .content {
+			-webkit-box-flex: 1;
+			        box-flex: 1;
+			overflow: auto;
+			padding: 6px 17px 6px;
+		}
+		.overlay .page.hidden {
+			display: none;
+		}
+	.overlay.transparent {
+		opacity: 0;
+	}
+		.overlay.transparent .page {
+			-webkit-transform: scale(0.99) translateY(-20px);
+					transform: scale(0.99) translateY(-20px);
+		}
+	.overlay.hidden {
+		display: none;
+	}

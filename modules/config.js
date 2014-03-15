@@ -25,7 +25,8 @@
         long_space: 2.2
       },
 	  view : {
-	  	selection_color : "red"
+	  	selection_color : "red",
+	  	font_family: "Georgia"
 	  }
       // keybindings and so forth soon
   };

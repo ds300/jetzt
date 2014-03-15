@@ -80,7 +80,7 @@
       // initialise custom size/wpm
       this.setScale(config("scale"));
       this.setWPM(config("target_wpm"));
-      this.setFont(config("font"));
+      this.setFont(config(["view","font_family"]));
 
       // initialise custom theme
       this.setTheme(config("dark"));

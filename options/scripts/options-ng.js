@@ -1,6 +1,6 @@
 var optsApp = angular.module('optsApp',[]);
 
-optsApp.controller('OptionsController',['$scope',function($scope) {
+optsApp.controller('OptionsController',['$scope','$window',function($scope,$window) {
 	var loadOptions = function() {
 		configBackend.get(function(opts) {
 			$scope.$apply(function() {
@@ -9,14 +9,23 @@ optsApp.controller('OptionsController',['$scope',function($scope) {
 			});			
 		});
 	};
+	
+	var loadFonts = function() {
+		$window.chrome.fontSettings.getFontList(function(fonts){
+			$scope.$apply(function() {
+				$scope.installedFonts = fonts;
+			});
+		});
+	}
+	
 	$scope.options = options;
 	$scope.save = function() { configBackend.set($scope.options) };
 	$scope.load = loadOptions;
 	$scope.showLab = function() {
-		document.getElementById('overlayDetails').show();	
+		document.getElementById('labPopUp').show();	
 	}
 	
-	
+	setConfigBackend(chromeConfigStorage);	
 	angular.element(document).ready(loadOptions);
-	setConfigBackend(chromeConfigStorage);
+	angular.element(document).ready(loadFonts);
 }]);

@@ -655,7 +655,12 @@
       // initialise custom theme
       this.setTheme(config("dark"));
 
+      // need to stop the input focus from scrolling the page up.
+      var scrollTop = getScrollTop();
       grabFocus();
+      document.body.scrollTop = scrollTop;
+      document.documentElement.scrollTop = scrollTop;
+      
       hiddenInput.onblur = grabFocus;
 
       typeof cb === 'function' && window.setTimeout(cb, 340);

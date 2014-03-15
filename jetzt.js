@@ -656,7 +656,8 @@
       this.setTheme(config("dark"));
 
       // need to stop the input focus from scrolling the page up.
-      var scrollTop = getScrollTop();
+      var scrollTop = document.documentElement.scrollTop
+                      || document.body.scrollTop;
       grabFocus();
       document.body.scrollTop = scrollTop;
       document.documentElement.scrollTop = scrollTop;

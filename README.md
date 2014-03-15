@@ -32,6 +32,8 @@ Control is currently keyboard-only.
 
 - Switch between light/dark themes with `0`
 
+- Toggle summary stats with `/` or `?` at the end of a run
+
 ### Online Demo
 
 [Here](http://ds300.github.com/jetzt/)

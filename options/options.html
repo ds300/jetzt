@@ -36,7 +36,18 @@
 		
 		<section>
 			<h3>View</h3>
-			<p>Options to configure the visual appearance of the speed-reader:</p>
+			<p>Options to configure the visual appearance of the speed-reader</p>
+			<p>
+				<label for="scale">
+					Scale:	<input type="text" placeholder="1.0" ng-model="options.scale" size="3" />
+				</label>
+			</p>
+			<p>
+				<label for="dark">
+					<input type="checkbox" id="dark"  ng-model="options.dark" /> Use dark theme<br/>
+				</label>
+			</p>
+
 			<p>Color for Selection:</p>
 			<select id="selection_color" ng-model="options.view.selection_color">
 				<option value="red">red</option>

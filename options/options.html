@@ -61,11 +61,17 @@
 		</section>
 		<section>
 			<h3>Reading</h3>
-			<p>Options to tweak the speed-reader</p>
+			<p>General options to tweak the speed-reader</p>
 			<label for="wpm">
-				Target WPM: 
+				Target WPM:<br/> 
 				<input type="number" placeholder="400" id="wpm" ng-model="options.target_wpm">
 			</label>
+			
+			<p>Duration modifiers</p>
+			<label ng-repeat-start="(name,value) in options.modifiers" for="{{name}}">
+				{{name}}:<br/>
+				<input type="text" ng-model="value" id="{{name}}">				
+			</label><br ng-repeat-end/>	
 		</section>
 		<section>
 			<h3>Lab options</h3>

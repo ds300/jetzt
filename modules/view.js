@@ -80,6 +80,7 @@
       // initialise custom size/wpm
       this.setScale(config("scale"));
       this.setWPM(config("target_wpm"));
+      this.setFont(config("font"));
 
       // initialise custom theme
       this.setTheme(config("dark"));
@@ -117,6 +118,12 @@
     this.setWPM = function (target_wpm) {
       wpm.innerHTML = target_wpm + "";
     };
+    
+    this.setFont = function (font) {
+    	// really, we should be setting font-family of 
+    	//  ".sr-reader .sr-word-box .sr-word > span"
+    	word.style.fontFamily = font;
+    }
 
     this.setTheme = function (dark) {
       if (dark)

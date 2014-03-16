@@ -14,6 +14,8 @@
     , span = H.span
     , view = {};
 
+  jetzt.view = view;
+
   // calculate the focal character index
   function calculatePivot (word) {
     var l = word.length;
@@ -29,6 +31,7 @@
       return 4;
     }
   }
+
 
   function Reader () {
     // elements
@@ -179,9 +182,66 @@
     };
   }
 
-  jetzt.View = function () {
-    this.reader = new Reader();
-    // more stuff soon
+  // we only need one instance of Reader now.
+  var readerSingleton;
+
+  view.__defineGetter__("reader", function () {
+    if (!readerSingleton) readerSingleton = new Reader();
+
+    return readerSingleton;
+  });
+
+
+  var overlaidElems = [];
+
+  /**
+   * Makes an overlay for the given element.
+   * Returns false if the overlay is off the bottom of the screen,
+   * otherwise returns true;
+   */
+  view.addOverlay = function (elem) {
+    var rect = elem.getBoundingClientRect();
+
+    var overlay = H.div("sr-overlay");
+    overlay.style.top = (H.getScrollTop() + rect.top) + "px";
+    overlay.style.left = (H.getScrollLeft() + rect.left) + "px";
+    overlay.style.width = rect.width + "px";
+    overlay.style.height = rect.height + "px";
+    overlay.style.backgroundColor = config(["view", "selection_color"]);
+    document.body.appendChild(overlay);
+    elem.___jetztOverlay = overlay;
+
+    overlaidElems.push(overlay);
+
+    return rect.top < window.innerHeight;
   };
+
+  view.removeOverlay = function (elem) {
+    if (elem.___jetztOverlay) {
+      elem.___jetztOverlay.remove();
+      delete elem.___jetztOverlay;
+      H.removeFromArray(overlaidElems, elem);
+    }
+  };
+
+  view.removeAllOverlays = function () {
+    for (var i = overlaidElems.length; i--;) {
+      var elem = overlaidElems[i];
+      elem.___jetztOverlay.remove();
+      delete elem.___jetztOverlay;
+    }
+    overlaidElems = [];
+  };
+
+
+
+  var highlight;
+
+  view.highlightRange = function (range) {
+    // todo
+  };
+
+
+
 
 })(this);

@@ -5,157 +5,159 @@
    the file LICENSE-2.0 or at http://www.apache.org/licenses/LICENSE-2.0
 */
 
-/**
- * Begin interactive dom node selection.
- */
-function selectMode () {
-  var selection = [];
-  var overlays = [];
-  var previousElement = null;
+(function (window) {
 
-  var showSelection = function () {
+  var jetzt = window.jetzt
+    , view = jetzt.view
+    , H = jetzt.helpers
+    , config = jetzt.config;
 
-    overlays = [];
+  function on (event, cb) {
+    window.addEventListener(event, cb);
+  }
 
-    for (var i=0, len=selection.length; i < len; i++) {
-      var rect = selection[i].getBoundingClientRect();
+  function off (event, cb) {
+    window.removeEventListener(event, cb);
+  }
 
-      if (rect.top >= window.innerHeight) {
-        break;
-      } else {
-        var overlay = div("sr-overlay");
-        overlay.style.top = (getScrollTop() + rect.top) + "px";
-        overlay.style.left = (getScrollLeft() + rect.left) + "px";
-        overlay.style.width = rect.width + "px";
-        overlay.style.height = rect.height + "px";
-    	  overlay.style.backgroundColor = options.view.selection_color;
-        document.body.appendChild(overlay);
-        overlays.push(overlay);
-      }
-    }
-  };
+  /**
+   * Begin interactive dom node selection.
+   */
+  function selectMode () {
+    var selection = [];
+    var overlays = [];
+    var previousElement = null;
 
-  var hideSelection = function () {
-    overlays.forEach(function (el) {
-      el.remove();
-    });
-  };
+    var showSelection = function () {
 
-  var setSelection = function (sel) {
-    hideSelection();
-    selection = sel;
-    showSelection();
-  };
+      overlays = [];
 
-  var validParents = {
-    "DIV": true,
-    "ARTICLE": true,
-    "BLOCKQUOTE": true,
-    "MAIN": true,
-    "SECTION": true,
-    "UL": true,
-    "OL": true,
-    "DL": true
-  };
-
-  var validChildren = {
-    "P": true,
-    "H1": true,
-    "H2": true,
-    "H3": true,
-    "H4": true,
-    "H5": true,
-    "H6": true,
-    "SPAN": true,
-    "DL": true,
-    "OL": true,
-    "UL": true,
-    "BLOCKQUOTE": true,
-    "SECTION": true
-  };
-
-  var selectSiblings = function (el) {
-    var firstChild = el;
-    var parent = el.parentNode;
-    while (parent && !validParents[parent.tagName]) {
-      firstChild = parent;
-      parent = firstChild.parentNode;
-
-    }
-
-    if (parent) {
-      var kids = parent.childNodes
-        , len = kids.length
-        , result = []
-        , i = 0;
-
-        while (kids[i] !== firstChild) i++;
-
-        for (; i < len; i++) {
-          var kid = kids[i];
-          if (validChildren[kid.tagName]) {
-            result.push(kid);
-          }
+      for (var i=0, len=selection.length; i < len; i++) {
+        if (!view.addOverlay(selection[i])) {
+          break;
         }
+      }
+    };
 
-        return result;
+    var setSelection = function (sel) {
+      view.removeAllOverlays();
+      selection = sel;
+      showSelection();
+    };
 
-    } else {
-      return [el];
-    }
-  };
+    var validParents = {
+      "DIV": true,
+      "ARTICLE": true,
+      "BLOCKQUOTE": true,
+      "MAIN": true,
+      "SECTION": true,
+      "UL": true,
+      "OL": true,
+      "DL": true
+    };
 
-  var stop = function () {
-    hideSelection();
-    window.removeEventListener("mouseover", mouseoverHandler);
-    window.removeEventListener("mousemove", moveHandler);
-    window.removeEventListener("keydown", keydownHandler);
-    window.removeEventListener("keyup", keyupHandler);
-    window.removeEventListener("click", clickHandler);
-    previousElement && removeClass(previousElement, "sr-pointer");
-  };
+    var validChildren = {
+      "P": true,
+      "H1": true,
+      "H2": true,
+      "H3": true,
+      "H4": true,
+      "H5": true,
+      "H6": true,
+      "SPAN": true,
+      "DL": true,
+      "OL": true,
+      "UL": true,
+      "BLOCKQUOTE": true,
+      "SECTION": true
+    };
 
-  var mouseoverHandler = function (ev) {
-    previousElement && removeClass(previousElement, "sr-pointer");
+    var selectSiblings = function (el) {
+      var firstChild = el;
+      var parent = el.parentNode;
+      while (parent && !validParents[parent.tagName]) {
+        firstChild = parent;
+        parent = firstChild.parentNode;
 
-    addClass(ev.target, "sr-pointer");
+      }
 
-    previousElement = ev.target;
+      if (parent) {
+        var kids = parent.childNodes
+          , len = kids.length
+          , result = []
+          , i = 0;
 
-    if (ev.altKey) {
-      setSelection([ev.target]);
-    } else {
-      setSelection(selectSiblings(ev.target));
-    }
-  };
+          while (kids[i] !== firstChild) i++;
 
-  var clickHandler = function (ev) {
-    stop();
-    readDOM(selection);
-  };
+          for (; i < len; i++) {
+            var kid = kids[i];
+            if (validChildren[kid.tagName]) {
+              result.push(kid);
+            }
+          }
 
-  var moveHandler = function (ev) {
-    mouseoverHandler(ev);
-    window.removeEventListener("mousemove", moveHandler);
-  };
+          return result;
 
-  var keydownHandler = function (ev) {
-    if (ev.keyCode === 27) {
+      } else {
+        return [el];
+      }
+    };
+
+    var stop = function () {
+      view.removeAllOverlays();
+      off("mouseover", mouseoverHandler);
+      off("mousemove", moveHandler);
+      off("keydown", keydownHandler);
+      off("keyup", keyupHandler);
+      off("click", clickHandler);
+      previousElement && removeClass(previousElement, "sr-pointer");
+    };
+
+    var mouseoverHandler = function (ev) {
+      previousElement && removeClass(previousElement, "sr-pointer");
+
+      addClass(ev.target, "sr-pointer");
+
+      previousElement = ev.target;
+
+      if (ev.altKey) {
+        setSelection([ev.target]);
+      } else {
+        setSelection(selectSiblings(ev.target));
+      }
+    };
+
+    var clickHandler = function (ev) {
       stop();
-    } else if (ev.altKey && selection.length > 1) {
-      setSelection([selection[0]]);
-    }
-  };
+      readDOM(selection);
+    };
 
-  var keyupHandler = function (ev) {
-    if (!ev.altKey && selection.length === 1) {
-      setSelection(selectSiblings(selection[0]));
-    }
-  };
+    var moveHandler = function (ev) {
+      mouseoverHandler(ev);
+      off("mousemove", moveHandler);
+    };
 
-  window.addEventListener("mouseover", mouseoverHandler);
-  window.addEventListener("click", clickHandler);
-  window.addEventListener("mousemove", moveHandler);
-  window.addEventListener("keydown", keydownHandler);
-  window.addEventListener("keyup", keyupHandler);
-}
+    var keydownHandler = function (ev) {
+      if (ev.keyCode === 27) {
+        stop();
+      } else if (ev.altKey && selection.length > 1) {
+        setSelection([selection[0]]);
+      }
+    };
+
+    var keyupHandler = function (ev) {
+      if (!ev.altKey && selection.length === 1) {
+        setSelection(selectSiblings(selection[0]));
+      }
+    };
+
+    off("mouseover", mouseoverHandler);
+    off("click", clickHandler);
+    off("mousemove", moveHandler);
+    off("keydown", keydownHandler);
+    off("keyup", keyupHandler);
+  }
+
+})();
+
+

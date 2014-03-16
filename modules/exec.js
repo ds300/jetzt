@@ -8,6 +8,7 @@
 (function (window) {
 
   var jetzt  = window.jetzt
+    , view   = jetzt.view
     , config = jetzt.config;
 
   function calculateDelay(instr) {
@@ -48,9 +49,9 @@
    * Executor takes some instructions and a reader and updates the reader
    * based on the start/stop/naviation methods.
    */
-  function Executor (instructions, view) {
+  function Executor (instructions) {
     var reader = view.reader;
-    
+
     /*** STATE ***/
     var running = false // whether or not the reader is running
       , index = 0       // the index of the current instruction
@@ -165,10 +166,10 @@
   /**
    * jetzt.exec
    * creates an instruction execution interface for a given set of
-   * instructions and the given reader (see view.Reader)
+   * instructions
    */
-  jetzt.exec = function (instructions, reader) {
-    return new Executor(instructions, reader);
+  jetzt.exec = function (instructions) {
+    return new Executor(instructions);
   };
 
 })(this);

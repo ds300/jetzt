@@ -8,6 +8,7 @@
 (function (window) {
 
   var jetzt = window.jetzt
+    , view = jetzt.view
     , config = jetzt.config
     , control = {};
 
@@ -19,9 +20,9 @@
   }
 
   /**
-   * hooks a view and executor up to keyboard controls.
+   * hooks an executor up to keyboard controls.
    */
-  control.keyboard = function (view, executor) {
+  control.keyboard = function (executor) {
     var reader = view.reader;
     var onkeydown = function (ev) {
       if(ev.ctrlKey || ev.metaKey) {

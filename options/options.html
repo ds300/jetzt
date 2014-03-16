@@ -5,13 +5,6 @@
 		<link rel="stylesheet" type="text/css" href="styles/options.css" />
 		<link rel="stylesheet" type="text/css" href="styles/options-widgets.css" />
 		<link rel="stylesheet" type="text/css" href="../jetzt.css" />
-		<style type="text/css">
-			aside {
-				position: absolute;
-				top: 27%;
-				left: 65em;
-			}
-		</style>
 	</head>
 	<body ng-app="optsApp" ng-csp>
 		<nav class="sideBar">
@@ -79,7 +72,7 @@
 
 			<p>Duration modifiers</p>
 			<label ng-repeat-start="(name,value) in options.modifiers" for="{{name}}">
-				{{name}}:<br/>
+				<span class="{{name}}">{{name}}:</span><br/>
 				<input type="text" ng-model="value" id="{{name}}">
 			</label><br ng-repeat-end/>
 		</section>
@@ -107,7 +100,7 @@
     		<button id="cancel" ng-click="load()">Cancel</button>
 		</section>
 
-		<aside>
+		<aside id="reader-demo">
 			<div class="sr-reader in" style="-webkit-transform: translate(-50%, -50%) scale(1);">
 				<div class="sr-wrap sr-left"></div>
 				<div class="sr-word-box">
@@ -125,6 +118,16 @@
 				<div class="sr-wrap sr-right"></div>
 			</div>
 		</aside>
+
+
+		<aside id="spacing-demo">
+			<p>...occaecat cupidatat non proident<span class="end_clause">, </span>sunt in culpa qui officia deserunt mollit anim id est laborum<span class="end_sentence">. </span></p>
+			<span class="end_paragraph">&nbsp;</span>
+			<p><span class="start_paragraph">&nbsp;</span><span class="start_sentence">&nbsp;</span>Lorem ipsum dolor sit amet<span class="end_clause">, </span>consectetur adipisicing elit <span class="long_space">&mdash;</span> sed do eiusmod tempor incididunt ut labore et dolore magna aliqua<span class="end_sentence">. </span><span class="start_sentence">&nbsp;</span>Ut enim ad minim veniam<span class="end_clause">, </span>quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat<span class="end_sentence">. </span><span class="start_sentence">&nbsp;</span>Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur<span class="long_space">: </span>Excepteur sint occaecat cupidatat non proident<span class="end_clause">, </span>sunt in culpa<span class="short_space">; </span>qui officia deserunt mollit anim id est laborum<span class="end_sentence">. </span></p>
+			<p><span class="start_sentence">&nbsp;</span>Lorem ipsum dolor sit amet...</p>
+		</aside>
+
+
 		</div>
 
 

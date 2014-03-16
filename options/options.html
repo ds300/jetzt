@@ -3,15 +3,8 @@
 	<head>
 		<title>Options - jetzt speed reader</title>
 		<link rel="stylesheet" type="text/css" href="styles/options.css" />
-		<link rel="stylesheet" type="text/css" href="styles/options-widgets.css" />	
-		<style type="text/css">
-			.fontsample {
-				background-color: white;
-				border: 1px black solid;
-				padding: 5px;
-				font-size: 1.5em;
-			}
-		</style>
+		<link rel="stylesheet" type="text/css" href="styles/options-widgets.css" />
+		<link rel="stylesheet" type="text/css" href="../jetzt.css" />
 	</head>
 	<body ng-app="optsApp" ng-csp>
 		<nav class="sideBar">
@@ -31,9 +24,9 @@
 		<header>
 			<h1>jetzt speed reader</h1>
 		</header>
-		
+
 		<div ng-controller="OptionsController">
-		
+
 		<section>
 			<h3>View</h3>
 			<p>Options to configure the visual appearance of the speed-reader</p>
@@ -58,11 +51,10 @@
 			<p>Font:</p>
 			<p>
 				<select id="fav_font"  ng-options="fnt.displayName as fnt.displayName for fnt in installedFonts" ng-model="options.view.font_family"></select>
-				<span class="fontsample" ng-style="{'font-family' : options.view.font_family}">Sample</span>
 			</p>
-			
+
         </select>
-			
+
 			<br />
 		</section>
 		<section>
@@ -74,22 +66,22 @@
 			<h3>Reading</h3>
 			<p>General options to tweak the speed-reader</p>
 			<label for="wpm">
-				Target WPM:<br/> 
+				Target WPM:<br/>
 				<input type="number" placeholder="400" id="wpm" ng-model="options.target_wpm">
 			</label>
-			
+
 			<p>Duration modifiers</p>
 			<label ng-repeat-start="(name,value) in options.modifiers" for="{{name}}">
-				{{name}}:<br/>
-				<input type="text" ng-model="value" id="{{name}}">				
-			</label><br ng-repeat-end/>	
+				<span class="{{name}}">{{name}}:</span><br/>
+				<input type="text" ng-model="value" id="{{name}}">
+			</label><br ng-repeat-end/>
 		</section>
 		<section>
 			<h3>Lab options</h3>
 			<p>Advanced and experimental settings</p>
 			<button ng-click="showLab()">I know what I am doing!</button>
 		</section>
-		
+
 		<div class="overlay transparent hidden">
 			<div class="page hidden" id="labPopUp">
 				<h1>Lab settings</h1>
@@ -102,21 +94,51 @@
 				</div>
 			</div>
 		</div>
-	
+
 		<section>
 			<button id="save" ng-click="save()">Save</button>
     		<button id="cancel" ng-click="load()">Cancel</button>
 		</section>
-		
+
+		<aside id="reader-demo">
+			<div class="sr-reader in {{options.dark ? 'sr-dark' : ''}}" style="-webkit-transform: translate(-50%, -50%) scale(1);">
+				<div class="sr-wrap sr-left"></div>
+				<div class="sr-word-box">
+					<div class="sr-reticle"></div>
+					<div class="sr-progress" style="border-left-width: 96px;"></div>
+					<div class="sr-message"></div>
+					<div class="sr-word" style="left: 47.5px;" ng-style="{'font-family' : options.view.font_family}">
+						<span class="">Sa</span>
+						<span class="sr-pivot" ng-style="{color: options.view.selection_color}">m</span>
+						<span class="">ple</span>
+					</div>
+					<div class="sr-wpm">{{options.target_wpm}}</div>
+					<input class="sr-input">
+				</div>
+				<div class="sr-wrap sr-right"></div>
+			</div>
+		</aside>
+
+
+		<aside id="spacing-demo">
+			<p>...occaecat cupidatat non proident<span class="end_clause">, </span>sunt in culpa qui officia deserunt mollit anim id est laborum<span class="end_sentence">. </span></p>
+			<span class="end_paragraph">&nbsp;</span>
+			<p><span class="start_paragraph">&nbsp;</span><span class="start_sentence">&nbsp;</span>Lorem ipsum dolor sit amet<span class="end_clause">, </span>consectetur adipisicing elit <span class="long_space">&mdash;</span> sed do eiusmod tempor incididunt ut labore et dolore magna aliqua<span class="end_sentence">. </span><span class="start_sentence">&nbsp;</span>Ut enim ad minim veniam<span class="end_clause">, </span>quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat<span class="end_sentence">. </span><span class="start_sentence">&nbsp;</span>Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur<span class="long_space">: </span>Excepteur sint occaecat cupidatat non proident<span class="end_clause">, </span>sunt in culpa<span class="short_space">; </span>qui officia deserunt mollit anim id est laborum<span class="end_sentence">. </span></p>
+			<p><span class="start_sentence">&nbsp;</span>Lorem ipsum dolor sit amet...</p>
+		</aside>
+
+
 		</div>
-		
+
+
+
 		<script type="text/javascript" src="scripts/options-setup.js"></script>
-		
+
 		<script src="../modules/helpers.js"></script>
 		<script src="../modules/config.js"></script>
 		<script src="../modules/storage.js"></script>
 
 		<script src="scripts/angular.min.js"></script>
-		<script src="scripts/options-ng.js"></script>		
+		<script src="scripts/options-ng.js"></script>
 	</body>
 </html>

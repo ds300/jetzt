@@ -45,7 +45,7 @@
       , word = div("sr-word", [leftWord, pivotChar, rightWord])
       , progressBar = div("sr-progress")
       , reticle = div("sr-reticle")
-      , hiddenInput = elem("input", "sr-input")
+      , hiddenInput = H.elem("input", "sr-input")
 
       , box = div("sr-reader", [
           leftWrap,

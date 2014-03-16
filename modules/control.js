@@ -23,8 +23,7 @@
    * hooks an executor up to keyboard controls.
    */
   control.keyboard = function (executor) {
-    var reader = view.reader;
-    var onkeydown = function (ev) {
+    view.reader.onKeyDown(function (ev) {
       if(ev.ctrlKey || ev.metaKey) {
         return;
       }
@@ -33,8 +32,7 @@
       switch (ev.keyCode) {
         case 27: //esc
           killEvent(ev);
-          executor.stop();
-          reader.hide();
+          jetzt.quit();
           break;
         case 38: //up
           killEvent(ev);
@@ -75,11 +73,17 @@
           config.toggleTheme();
           break;
       }
-    };
 
-    reader.onKeyDown(onkeydown);
+    });
   };
 
+  window.addEventListener("keydown", function (ev) {
+    console.log("bruv")
+    if (!jetzt.isOpen() && ev.altKey && ev.keyCode === 83) {
+      console.log("scene");
+      ev.preventDefault();
+      jetzt.select();
+    }
+  });
+
 })(this);
-
-

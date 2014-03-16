@@ -67,7 +67,7 @@
   };
 
   H.removeClass = function (elem, classesToRemove) {
-    _modClass(elem, classesToRemove, removeFromArray);
+    _modClass(elem, classesToRemove, H.removeFromArray);
   };
 
   H.hasClass = function (elem, classesToFind) {

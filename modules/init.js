@@ -31,4 +31,8 @@
     executor = null;
   };
 
+  jetzt.isOpen = function () {
+    return !!executor;
+  };
+
 })(this);

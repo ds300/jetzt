@@ -38,6 +38,8 @@
 
   // This is where we store the backend getters/setters. It is initialised
   // with a localStorage placeholder for the bookmarklet and demo page.
+  var KEY = "jetzt-options";
+
   var configBackend = {
     get: function (cb) {
       var options = localStorage.getItem(KEY);
@@ -48,7 +50,7 @@
       }
     },
     set: function (options) {
-      localStorage.setItem(KEY,JSON.stringify(options));
+      localStorage.setItem(KEY, JSON.stringify(options));
     }
   };
 

@@ -150,17 +150,17 @@
       }
     };
 
-    off("mouseover", mouseoverHandler);
-    off("click", clickHandler);
-    off("mousemove", moveHandler);
-    off("keydown", keydownHandler);
-    off("keyup", keyupHandler);
+    on("mouseover", mouseoverHandler);
+    on("click", clickHandler);
+    on("mousemove", moveHandler);
+    on("keydown", keydownHandler);
+    on("keyup", keyupHandler);
   }
 
   jetzt.select = function () {
     var text = window.getSelection().toString();
     if (text.trim().length > 0) {
-      jetzt.init(jetzt.parse.string(selection));
+      jetzt.init(jetzt.parse.string(text));
       window.getSelection().removeAllRanges();
     } else {
       selectMode();

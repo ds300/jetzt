@@ -16,7 +16,6 @@ javascript: (function() {
 	};
 	if (typeof window.jetzt === 'undefined') {
 		var cb = function() {
-			addScript('https://rawgithub.com/ds300/jetzt/master/localstorage-config.js');
 			window.jetzt.select();
 		};
 		addStyle('https://rawgithub.com/ds300/jetzt/master/jetzt.css');

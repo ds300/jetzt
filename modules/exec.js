@@ -8,8 +8,7 @@
 (function (window) {
 
   var jetzt  = window.jetzt
-    , config = jetzt.config
-    , Reader = jetzt.Reader;
+    , config = jetzt.config;
 
   function calculateDelay(instr) {
     var interval = 60 * 1000 / config("target_wpm");
@@ -45,6 +44,10 @@
   };
 
 
+  /**
+   * Executor takes some instructions and a reader and updates the reader
+   * based on the start/stop/naviation methods.
+   */
   function Executor (instructions, reader) {
     /*** STATE ***/
     var running = false // whether or not the reader is running
@@ -154,49 +157,16 @@
       }
       if (!running) updateReader();
     };
-
-    /**
-     * Dismiss the jetzt reader
-     */
-    this.close = function () {
-      if (instructions) {
-        if (running) jetzt.toggleRunning();
-        reader.hide();
-        reader = null;
-        instructions = null;
-      } else {
-        throw new Error("jetzt not yet initialized");
-      }
-    };
-
   }
 
+
+  /**
+   * jetzt.exec
+   * creates an instruction execution interface for a given set of
+   * instructions and the given reader (see view.Reader)
+   */
   jetzt.exec = function (instructions, reader) {
     return new Executor(instructions, reader);
   };
 
-
-
-
-
-  /**
-   * Read the given instructions.
-   */
-  function open (instrs) {
-    instructions = instrs;
-
-    reader = new Reader();
-    reader.onBackdropClick(close);
-    reader.onKeyDown(handleKeydown)
-    reader.show();
-
-    index = 0;
-
-    setTimeout(toggleRunning, 500);
-  }
-
-
-
 })(this);
-
-

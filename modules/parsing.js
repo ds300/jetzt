@@ -86,8 +86,10 @@ Word.prototype.exec = function (reader, interval) {
   return interval * modifier(this.modifier);
 };
 
-function Block (elem) {
+// blocks are e.g. images, tables, unexpected DIVs, and so forth.
+function Block (elem, endMarker) {
   this.elem = elem;
+  this.end = endMarker;
 }
 
 Block.prototype.exec = function (reader, interval, cont) {
@@ -227,40 +229,26 @@ function wordShouldBeSplitUp(word) {
   return word.length > 13 || word.length > 9 && word.indexOf("-") > -1;
 }
 
-function _maybeSplitLongWord (word) {
-  if (wordShouldBeSplitUp(word)) {
-    var result = [];
-
-    var dashIdx = word.indexOf("-");
-    if (dashIdx > 0 && dashIdx < word.length - 1) {
-      result.push(word.substr(0, dashIdx));
-      result.push(word.substr(dashIdx + 1));
-      return flatten(result.map(_maybeSplitLongWord));
-    } else {
-      var partitions = Math.ceil(word.length / 8);
-      var partitionLength = Math.ceil(word.length / partitions);
-      while (partitions--) {
-        result.push(word.substr(0, partitionLength));
-        word = word.substr(partitionLength);
-      }
-      return result;
-    }
-  } else {
-    return [word];
-  }
-}
-
-// split a long word into sensible sections
 function splitLongWord (word) {
-  var result = _maybeSplitLongWord(word);
-  if (result.length > 1) {
-    for (var i=0; i<result.length-1; i++) {
-      result[i] += "-";
-    }
-  }
-  return result;
-}
+  if (!wordShouldBeSplitUp(word)) return [word];
+  
+  var result = [];
 
+  var dashIdx = word.indexOf("-");
+  if (dashIdx > 0 && dashIdx < word.length - 1) {
+    result.push(word.substr(0, dashIdx));
+    result.push(word.substr(dashIdx + 1));
+    return flatten(result.map(_maybeSplitLongWord));
+  } else {
+    var partitions = Math.ceil(word.length / 8);
+    var partitionLength = Math.ceil(word.length / partitions);
+    while (partitions--) {
+      result.push(word.substr(0, partitionLength));
+      word = word.substr(partitionLength);
+    }
+    return result;
+  }
+}
 
 var wraps = {
   double_quote: {left: "“", right: "”"},
@@ -580,9 +568,10 @@ function tokenMatchStream (text) {
   });
 }
 
-function pseudoMatch (str, index) {
+function pseudoMatch (str, index, brokenDueToLength) {
   var result = [str];
   result.index = index;
+  result.brokenDueToLength = brokenDueToLength;
   return result;
 }
 
@@ -609,17 +598,7 @@ function tokenStream (tokenMatches, partitions) {
     if (tkn.match(/\n+/)) {
       return LINEFEED;
 
-    } else if (wordShouldBeSplitUp(tkn)) {
-      var parts = splitLongWord(tkn);
-      var index = match.index;
-      for (var i = 0, len = parts.length; i < len; i++) {
-        var part = parts[i];
-        parts[i] = pseudoMatch(part, index);
-        index += part.length;
-      }
-      tokenMatches = tokenMatches.pushBack(parts);
-      return this.next();
-    }
+    } 
 
     var tknStart = match.index;
     var tknEnd = tknStart + tkn.length;
@@ -677,6 +656,19 @@ function tokenStream (tokenMatches, partitions) {
 
       tokenMatches = tokenMatches.pushBack(broken);
       return this.next();
+
+    } else if (wordShouldBeSplitUp(tkn)) {
+      var parts = splitLongWord(tkn);
+      var index = match.index;
+      var len = parts.length = 1;
+      for (var i = 0; i < len; i++) {
+        var part = parts[i];
+        parts[i] = pseudoMatch(part, index, true);
+        index += part.length;
+      }
+      parts[len] = pseudoMatch(parts[len], index, false)
+      tokenMatches = tokenMatches.pushBack(parts);
+      return this.next();
     }
 
     var root = pStack[0];
@@ -694,6 +686,8 @@ function tokenStream (tokenMatches, partitions) {
         });
       }
     }
+
+    if (match.brokenDueToLength) tkn = tkn + "-";
 
     var result = new Token(tkn, root.node, tknStart - root.start, tknEnd);
 

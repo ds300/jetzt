@@ -48,7 +48,9 @@
    * Executor takes some instructions and a reader and updates the reader
    * based on the start/stop/naviation methods.
    */
-  function Executor (instructions, reader) {
+  function Executor (instructions, view) {
+    var reader = view.reader;
+    
     /*** STATE ***/
     var running = false // whether or not the reader is running
       , index = 0       // the index of the current instruction

@@ -14,10 +14,6 @@
     , span = H.span
     , view = {};
 
-  jetzt.view = view;
-
-
-
   // calculate the focal character index
   function calculatePivot (word) {
     var l = word.length;
@@ -34,7 +30,7 @@
     }
   }
 
-  view.Reader = function () {
+  function Reader () {
     // elements
     var backdrop = div("sr-blackout")
       , wpm = div("sr-wpm")
@@ -142,7 +138,7 @@
       // really, we should be setting font-family of 
       //  ".sr-reader .sr-word-box .sr-word > span"
       word.style.fontFamily = font;
-    }
+    };
 
     this.setTheme = function (dark) {
       if (dark)
@@ -182,5 +178,10 @@
       }
     };
   }
+
+  jetzt.View = function () {
+    this.reader = new Reader();
+    // more stuff soon
+  };
 
 })(this);

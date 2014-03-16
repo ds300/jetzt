@@ -44,12 +44,15 @@
       , pivotChar = span("sr-pivot")
       , word = div("sr-word", [leftWord, pivotChar, rightWord])
       , progressBar = div("sr-progress")
+      , message = div("sr-message")
       , reticle = div("sr-reticle")
       , hiddenInput = H.elem("input", "sr-input")
 
       , box = div("sr-reader", [
           leftWrap,
-          div("sr-word-box", [reticle, progressBar, word, wpm, hiddenInput]),
+          div("sr-word-box", [
+            reticle, progressBar, message, word, wpm, hiddenInput
+          ]),
           rightWrap
         ])
 
@@ -82,6 +85,12 @@
       this.setScale(config("scale"));
       this.setWPM(config("target_wpm"));
       this.setFont(config(["view","font_family"]));
+
+      if (config("show_message")) {
+        this.showMessage();
+      } else {
+        this.hideMessage();
+      }
 
       // initialise custom theme
       this.setTheme(config("dark"));
@@ -154,6 +163,20 @@
     this.setProgress = function (percent) {
       progressBar.style.borderLeftWidth = Math.ceil(percent * 4) + "px";
     };
+
+    this.setMessage = function (msg) {
+     message.innerHTML = msg;
+    };
+
+    this.showMessage = function () {
+      message.style.display = "block";
+    };
+
+    this.hideMessage = function () {
+      message.style.display = "none";
+    };
+
+    this.started = false;
 
     this.setWord = function (token) {
       var pivot = calculatePivot(token.replace(/[?.,!:;*-]+$/, ""));

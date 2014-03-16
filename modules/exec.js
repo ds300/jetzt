@@ -68,6 +68,25 @@
       reader.setWord(instr.token);
       reader.setWrap(instr.leftWrap, instr.rightWrap);
       reader.setProgress(100 * (index / instructions.length));
+
+      if (index === 1) {
+        startedReading();
+      } else if (index === instructions.length) {
+        finishedReading();
+      }
+    }
+
+    
+    function startedReading () {
+      var timestamp = Math.round(new Date().getTime() / 1000);
+      reader.started = timestamp;
+    }
+    
+    function finishedReading () {
+      var words = instructions.length;
+      var timestamp = Math.round(new Date().getTime() / 1000);
+      var elapsed = timestamp - reader.started;
+      reader.setMessage(words + " words in " + elapsed + "s");
     }
 
     function handleInstruction (instr) {

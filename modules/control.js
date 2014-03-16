@@ -71,6 +71,10 @@
           killEvent(ev);
           config.toggleTheme();
           break;
+        case 191: // / and ?
+          killEvent(ev);
+          config("show_message", !config("show_message"));
+          break;
       }
 
     });

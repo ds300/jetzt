@@ -104,8 +104,8 @@
 		</div>
 	
 		<section>
-			<button id="save" ng-click="save()">Save</button>
-    		<button id="cancel" ng-click="load()">Cancel</button>
+			<button id="save" ng-click="save()" ng-disabled="isClean()">Save</button>
+      <button id="cancel" ng-click="load()" ng-disabled="isClean()">Cancel</button>
 		</section>
 		
 		</div>

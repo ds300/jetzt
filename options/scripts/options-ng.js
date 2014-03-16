@@ -3,13 +3,15 @@ var optsApp = angular.module('optsApp',[]);
 optsApp.controller('OptionsController',['$scope','$window',function($scope,$window) {
 	var configBackend = $window.jetzt.config.getBackend();
 
-	$scope.options = $window.jetzt.DEFAULT_OPTIONS;
+	var options = $window.jetzt.DEFAULT_OPTIONS;
+
+
 
 	var loadOptions = function() {
 		configBackend.get(function(opts) {
 			$scope.$$phase || $scope.$apply(function() {
 					options = jetzt.helpers.recursiveExtend({}, options, opts);
-					$scope.options = options;
+					$scope.options = angular.copy(options);
 			});			
 		});
 	};
@@ -21,8 +23,15 @@ optsApp.controller('OptionsController',['$scope','$window',function($scope,$wind
 			});
 		});
 	};
+
+	$scope.isClean = function () {
+		return angular.equals(options, $scope.options)
+	};
 	
-	$scope.save = function() { configBackend.set($scope.options) };
+	$scope.save = function() {
+		configBackend.set($scope.options);
+		options = angular.copy($scope.options);
+	};
 
 	$scope.load = loadOptions;
 

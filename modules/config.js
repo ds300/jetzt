@@ -37,12 +37,19 @@
   var options = H.recursiveExtend({}, jetzt.DEFAULT_OPTIONS);
 
   // This is where we store the backend getters/setters. It is initialised
-  // with a noop placeholder for the bookmarklet and demo page.
+  // with a localStorage placeholder for the bookmarklet and demo page.
   var configBackend = {
     get: function (cb) {
-      cb(options);
+      var options = localStorage.getItem(KEY);
+      if(options === null) {
+        cb({});
+      } else {
+        cb(JSON.parse(options));
+      }
     },
-    set: function (opts) {}
+    set: function (options) {
+      localStorage.setItem(KEY,JSON.stringify(options));
+    }
   };
 
   var listeners = [];

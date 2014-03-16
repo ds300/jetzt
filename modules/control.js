@@ -91,6 +91,11 @@ function handleKeydown (ev) {
       killEvent();
       toggleTheme();
       break;
+    case 57: // 9 key, for 'what-was-that?'
+      adjustWPM(-100);
+      if (ev.altKey) prevParagraph();
+      else prevSentence();
+      break;
   }
 }
 

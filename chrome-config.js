@@ -12,5 +12,6 @@
     }
   };
 
-  window.jetzt.setConfigBackend(configStorage);
+  window.jetzt.config.setBackend(configStorage);
+
 })(window);

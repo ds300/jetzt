@@ -77,6 +77,7 @@
     };
 
     this.applyConfig = function () {
+      console.log("yesss");
       // initialise custom size/wpm
       this.setScale(config("scale"));
       this.setWPM(config("target_wpm"));
@@ -180,7 +181,14 @@
         wrapper.style.paddingLeft = 50 + (rw - lw) + "px";
       }
     };
+
+    this.clear = function () {
+      this.setWrap("", "");
+      this.setWord("   ");
+    };
   }
+
+
 
   // we only need one instance of Reader now.
   var readerSingleton;
@@ -211,7 +219,7 @@
     document.body.appendChild(overlay);
     elem.___jetztOverlay = overlay;
 
-    overlaidElems.push(overlay);
+    overlaidElems.push(elem);
 
     return rect.top < window.innerHeight;
   };

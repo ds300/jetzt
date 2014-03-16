@@ -291,14 +291,14 @@
      * Read the given string, or array of strings.
      */
     string: function (str) {
-      parseStuff(parseText, str);
+      return parseStuff(parseText, str);
     },
 
     /**
      * Read the given DOM element, or array of DOM elements.
      */
     dom: function (dom) {
-      parseStuff(parseDom, dom);
+      return parseStuff(parseDom, dom);
     }
   };
 

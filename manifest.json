@@ -19,6 +19,7 @@
               , "modules/select.js"
               , "modules/control.js"
               , "modules/init.js"
+              , "chrome-config.js"
            ],
       "all_frames": true
     }

@@ -16,6 +16,7 @@
   jetzt.init = function (instructions) {
     if (executor) throw new Error("jetzt already initialised");
 
+    reader.clear();
     executor = jetzt.exec(instructions);
     jetzt.control.keyboard(executor);
 

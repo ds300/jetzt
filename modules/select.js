@@ -8,7 +8,6 @@
 (function (window) {
 
   var jetzt  = window.jetzt
-    , view   = jetzt.view
     , H      = jetzt.helpers
     , config = jetzt.config;
 
@@ -32,14 +31,14 @@
       overlays = [];
 
       for (var i=0, len=selection.length; i < len; i++) {
-        if (!view.addOverlay(selection[i])) {
+        if (!jetzt.view.addOverlay(selection[i])) {
           break;
         }
       }
     };
 
     var setSelection = function (sel) {
-      view.removeAllOverlays();
+      jetzt.view.removeAllOverlays();
       selection = sel;
       showSelection();
     };
@@ -103,7 +102,7 @@
     };
 
     var stop = function () {
-      view.removeAllOverlays();
+      jetzt.view.removeAllOverlays();
       off("mouseover", mouseoverHandler);
       off("mousemove", moveHandler);
       off("keydown", keydownHandler);

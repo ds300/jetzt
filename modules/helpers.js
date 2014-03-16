@@ -110,7 +110,7 @@
           if (result.hasOwnProperty(prop)) {
             var resultVal = result[prop];
             var uberVal = uber[prop];
-            if (realTypeOf(resultVal) === 'Object'
+            if (H.realTypeOf(resultVal) === 'Object'
                  && H.realTypeOf(uberVal) === 'Object') {
               result[prop] = H.recursiveExtend({}, resultVal, uberVal);
             } else {

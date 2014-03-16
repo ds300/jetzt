@@ -8,7 +8,6 @@
 (function (window) {
 
   var jetzt = window.jetzt
-    , view = jetzt.view
     , config = jetzt.config
     , control = {};
 
@@ -23,7 +22,7 @@
    * hooks an executor up to keyboard controls.
    */
   control.keyboard = function (executor) {
-    view.reader.onKeyDown(function (ev) {
+    jetzt.view.reader.onKeyDown(function (ev) {
       if(ev.ctrlKey || ev.metaKey) {
         return;
       }
@@ -78,9 +77,7 @@
   };
 
   window.addEventListener("keydown", function (ev) {
-    console.log("bruv")
     if (!jetzt.isOpen() && ev.altKey && ev.keyCode === 83) {
-      console.log("scene");
       ev.preventDefault();
       jetzt.select();
     }

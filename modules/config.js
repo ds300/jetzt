@@ -74,7 +74,7 @@
       return map[key];
     } else {
       var submap = map[key];
-      if (realTypeOf(submap) !== 'Object') {
+      if (H.realTypeOf(submap) !== 'Object') {
         console.warn("config lookup: no key '"+key+"'");
         return;
       } else {
@@ -92,7 +92,7 @@
       map[key] = val;
     } else {
       var submap = map[key];
-      if (realTypeOf(submap) !== 'Object') {
+      if (H.realTypeOf(submap) !== 'Object') {
         submap = {};
         map[key] = submap;
       }
@@ -148,13 +148,17 @@
   jetzt.config.setBackend = function (backend) {
     configBackend = backend;
     backend.get(function (opts) {
-      if (realTypeOf(opts) === 'Object') {
+      if (H.realTypeOf(opts) === 'Object') {
         options = H.recursiveExtend({}, options, opts);
         announce();
       } else {
         throw new Error("bad config backend");
       }
     });
+  };
+
+  jetzt.config.getBackend = function () {
+    return configBackend;
   };
 
   // convenince functions for dealing with delay modifiers
@@ -184,7 +188,7 @@
    */
   jetzt.config.adjustScale = function (diff) {
     var current = this("scale");
-    var adjusted = clamp(0.1, current + diff, 10);
+    var adjusted = H.clamp(0.1, current + diff, 10);
 
     this("scale", adjusted);
   };
@@ -195,7 +199,7 @@
    */
   jetzt.config.adjustWPM = function (diff) {
     var current = this("target_wpm");
-    var adjusted = clamp(100, current + diff, 1500);
+    var adjusted = H.clamp(100, current + diff, 1500);
 
     this("target_wpm", adjusted);
   };

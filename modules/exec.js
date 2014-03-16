@@ -8,7 +8,6 @@
 (function (window) {
 
   var jetzt  = window.jetzt
-    , view   = jetzt.view
     , config = jetzt.config;
 
   function calculateDelay(instr) {
@@ -37,6 +36,7 @@
       }
       return interval * mul;
     }
+    return interval;
   }
 
   var startModifiers = {
@@ -50,7 +50,7 @@
    * based on the start/stop/naviation methods.
    */
   function Executor (instructions) {
-    var reader = view.reader;
+    var reader = jetzt.view.reader;
 
     /*** STATE ***/
     var running = false // whether or not the reader is running

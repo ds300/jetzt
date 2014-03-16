@@ -609,7 +609,7 @@ function tokenStream (tokenMatches, partitions) {
     if (tkn.match(/\n+/)) {
       return LINEFEED;
 
-    } else if wordShouldBeSplitUp(tkn) {
+    } else if (wordShouldBeSplitUp(tkn)) {
       var parts = splitLongWord(tkn);
       var index = match.index;
       for (var i = 0, len = parts.length; i < len; i++) {

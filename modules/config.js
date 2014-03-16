@@ -8,7 +8,7 @@
 (function (window) {
 
   var jetzt = window.jetzt;
-  var H = jetzt.Helpers;
+  var H = jetzt.helpers;
 
   // Don't commit changes to these without prior approval please
   jetzt.DEFAULT_OPTIONS = {
@@ -45,22 +45,13 @@
     set: function (opts) {}
   };
 
-  /**
-   * jetzt.setConfigBackend
-   * Set the config 'backend' store. Should be an object with methods
-   * void get(cb(opts))
-   * void set(opts)
-   */
-  jetzt.setConfigBackend = function (backend) {
-    configBackend = backend;
-    backend.get(function (opts) {
-      if (realTypeOf(opts) === 'Object') {
-        options = H.recursiveExtend({}, options, opts);
-      } else {
-        throw new Error("bad config backend");
-      }
-    });
-  };
+  var listeners = [];
+
+  function announce () {
+    listeners.forEach(function (cb) { cb(); });
+  }
+
+  
 
   // recursive lookup. Like clojure's get-in;
   function lookup (map, keyPath) {
@@ -135,7 +126,26 @@
     } else {
       put(options, keyPath, val);
       configBackend.set(options);
+      announce();
     }
+  };
+
+  /**
+   * config.setBackend
+   * Set the config 'backend' store. Should be an object with methods
+   * void get(cb(opts))
+   * void set(opts)
+   */
+  jetzt.config.setBackend = function (backend) {
+    configBackend = backend;
+    backend.get(function (opts) {
+      if (realTypeOf(opts) === 'Object') {
+        options = H.recursiveExtend({}, options, opts);
+        announce();
+      } else {
+        throw new Error("bad config backend");
+      }
+    });
   };
 
   // convenince functions for dealing with delay modifiers
@@ -149,6 +159,15 @@
     } else {
       return b;
     }
+  };
+
+  jetzt.config.onChange = function (cb) {
+    listeners.push(cb);
+    return function () { H.removeFromArray(listeners, cb); };
+  };
+
+  jetzt.config.refresh = function () {
+    this.setConfigBackend(configBackend);
   };
 
 

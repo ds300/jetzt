@@ -8,7 +8,7 @@
 (function (window) {
 
   var jetzt = window.jetzt;
-  var H = jetzt.Helpers;
+  var H = jetzt.helpers;
   var config = jetzt.config;
 
 
@@ -270,35 +270,37 @@
     return $.getInstructions();
   }
 
-  function readStuff (parse, content) {
+  function parseStuff (parser, content) {
     var instr = new Instructionator();
     if (H.realTypeOf(content) === "Array") {
       content.forEach(function (item) {
         instr.modNext("start_paragraph");
-        parse(item, instr);
+        parser(item, instr);
         instr.clearWrap();
         instr.modPrev("end_paragraph");
       });
     } else {
-      parse(content, instr);
+      parser(content, instr);
     }
 
-    jetzt.read(instr.getInstructions());
+    return instr.getInstructions();
   }
 
-  /**
-   * Read the given string, or array of strings.
-   */
-  jetzt.readString = function (str) {
-    readStuff(parseText, str);
+  jetzt.parse = {
+    /**
+     * Read the given string, or array of strings.
+     */
+    string: function (str) {
+      parseStuff(parseText, str);
+    },
+
+    /**
+     * Read the given DOM element, or array of DOM elements.
+     */
+    dom: function (dom) {
+      parseStuff(parseDom, dom);
+    }
   };
 
-  /**
-   * Read the given DOM element, or array of DOM elements.
-   */
-  jetzt.readDOM = function (dom) {
-    readStuff(parseDom, dom);
-  };
-  
 })(this);
 

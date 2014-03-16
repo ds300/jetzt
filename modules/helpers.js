@@ -10,7 +10,7 @@
   var jetzt = window.jetzt;
   var H = {};
 
-  jetzt.Helpers = H;
+  jetzt.helpers = H;
 
   H.removeFromArray = function (arr, item) {
     var pos = arr.indexOf(item);

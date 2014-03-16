@@ -12,11 +12,11 @@
     , Reader = jetzt.Reader;
 
   /*** STATE ***/
-  var running = false, // whether or not the reader is running
-      instructions,    // the list of instructions
-      index,           // the index of the current instruction
-      runLoop,         // the run loop timeout
-      reader;          // the reader, man.
+  var running = false // whether or not the reader is running
+    , instructions    // the list of instructions
+    , index           // the index of the current instruction
+    , runLoop         // the run loop timeout
+    , reader;          // the reader, man.
 
   function calculateDelay(instr) {
     var interval = 60 * 1000 / config("target_wpm");

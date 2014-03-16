@@ -51,13 +51,13 @@ Check out the [ToDo](https://github.com/ds300/jetzt/wiki/ToDo) section of the wi
 
 ### Feature Requests/Contributions
 
-Feel free to open an issue for anything you would like to see in jetzt.
+Feel free to open an issue for anything you would like to see in jetzt, but have a quick look through the open issues first to make sure it is not a duplicate request.
 
-I also welcome pull requests of all shapes and sizes. The version of jetzt in the `master` branch is currently dying, so unless you find a bug in `master` please work from and submit pull requests to `dev` (which is under the Apache 2.0 license). Also you should read the issues to find out what is currently being worked on before implementing new features, as someone may already be working on your idea.
+I also welcome pull requests of all shapes and sizes. Please submit to the dev branch, or to master if it is only a small bugfix. If it is your first time contributing to jetzt, please add your name to the list below.
+
 
 ### Contributors
 
-- [David Sheldrick](https://github.com/ds300)
 - [Gustav Ahlberg](https://github.com/Gyran)
 - [Peter Uithoven](https://github.com/peteruithoven)
 - [h0ru5](https://github.com/h0ru5)
@@ -69,26 +69,19 @@ I also welcome pull requests of all shapes and sizes. The version of jetzt in th
 
 ### License
 
-The MIT License (MIT)
+     Copyright 2014 David Sheldrick and contributors
 
-Copyright (c) David Sheldrick 2014
+     Licensed under the Apache License, Version 2.0 (the "License");
+     you may not use this file except in compliance with the License.
+     You may obtain a copy of the License at
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+         http://www.apache.org/licenses/LICENSE-2.0
 
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE.
+     Unless required by applicable law or agreed to in writing, software
+     distributed under the License is distributed on an "AS IS" BASIS,
+     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     See the License for the specific language governing permissions and
+     limitations under the License.
+   
 
 ### | (• ◡•)| (❍ᴥ❍ʋ)

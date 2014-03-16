@@ -1,0 +1,20 @@
+{
+  "name": "jetzt",
+  "version": "1.0.1",
+  "description": "chrome eytension and bookmarklet for speed reading",
+  "contributors": [
+    "David Sheldrick",
+    "Gustav Ahlberg",
+    "Peter Uithoven",
+    "Johannes Hund",
+    "fusillicode",
+    "Brian Hanson",
+    "ianzapolsky",
+    "Martin Butt"
+  ],
+  "devDependencies": {
+    "grunt": "~0.4.4",
+    "grunt-contrib-uglify": "~0.3.0",
+    "grunt-contrib-concat": "~0.3.0"
+  }
+}

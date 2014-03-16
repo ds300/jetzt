@@ -9,13 +9,16 @@
     {
       "matches": ["http://*/*", "https://*/*", "file:///*"],
       "css": ["jetzt.css"],
-      "js": ["jetzt.js", "chrome-config.js"]
+      "js": ["modules/helpers.js","modules/config.js","modules/control.js","modules/parsing.js","modules/running.js","modules/selectmode.js","modules/state.js","modules/view.js",
+             "jetzt.js", "chrome-config.js"],
+      "all_frames": true
     }
   ],
   "permissions": [
     "storage",
     "activeTab",
-    "contextMenus"
+    "contextMenus",
+	"fontSettings"
   ],
   "icons": { "16": "img/icon16.png",
              "48": "img/icon48.png",
@@ -30,5 +33,6 @@
     "background": {
 	    "scripts": ["background.js"],
 	    "persistent": false
-	}
+	},
+	 "options_page" : "options/options.html"
 }

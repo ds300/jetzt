@@ -5,7 +5,34 @@
    the file LICENSE-2.0 or at http://www.apache.org/licenses/LICENSE-2.0
 */
 
-/*** INSTRUCTION TYPES ***/
+// WARNING: The code in this file is rather complex, I'm ashamed to say.
+//          I honestly tried very, very hard to do this in a cleaner
+//          fashion. Please forgive me. 
+
+/*
+
+INSTRUCTION TYPES
+
+Instructions have a .exec method which gets passed the reader (the reader
+is the thing that displays all the stuff on screen), the interval derived
+from target_wpm, and a continutation function.
+
+They have three possible return types:
+  - a number representing the amount of time to wait until executing the next
+    instruction
+  - undefined, in which case the next instruction is executed immediately
+  - false, in which case control of execution rests in the hands of the .exec
+    method, which should call the continuation function in order to resume
+    execution of instructions.
+
+The continuation function takes an optional marker parameter, which causes the
+instruction executor to skip over instructions until it gets to the marker.
+
+Markers are numbers which lie in the instruction stream. Positive numbers are
+used for demarcation of unique blocks and so forth, negative nubmers are used
+for demaracation of ordinary things like sentences and paragraphs. 
+
+*/
 
 var SHORT_PAUSE = {
   exec: function (reader, interval) {
@@ -30,11 +57,10 @@ var CLEAR_WORD = {
   }
 };
 
-// numbers are treated as markers for navigation
-var START_BLOCK = 1;
-var END_BLOCK = -1;
-var START_PARAGRAPH = 2;
-var START_SENTENCE = 3;
+// The only two built-in markers at this point.
+var START_PARAGRAPH = -1;
+var START_SENTENCE = -2;
+
 
 function SetWrap (left, right) {
   this.left = left;
@@ -66,6 +92,10 @@ function Block (elem) {
 
 Block.prototype.exec = function (reader, interval, cont) {
   reader.hide();
+  var top = this.elem.getBoundingClientRect().top 
+             + (document.documentElement.scrollTop || document.body.scrollTop);
+  document.body.scrollTop = top;
+  document.documentElement.scrollTop = top;
   // some function to focus on the element
   // some function to allow user to read or skip block
   // some timeout to continue after block if user does nothing
@@ -86,6 +116,7 @@ function Instructionator () {
     , space = 0
     , wraps = [];
 
+  // gets the next available instruction
   this.next = function () {
     if (buffer.length === 0) {
       return null;
@@ -94,6 +125,10 @@ function Instructionator () {
     }
   };
 
+  // we need to be able to modify the previous instruction before setting
+  // it free, so if the buffer only has one item in it, we need to feed
+  // the instructionator more informations about what kinds of instructions
+  // to produce.
   this.needsMore = function () {
     return buffer.length <= 1;
   };
@@ -337,14 +372,6 @@ function calculatePivot (word) {
   }
 }
 
-function makeWord (tkn, progress, multipliers) {
-  var sections = tkn.sections || [];
-  var pivot = calculatePivot(tkn.token.replace(/^['‘]+|([?!.;,*'’\-…:]+$)/));
-  insertPivot(pivot, sections);
-  var html = renderWord(tkn.token, sections);
-  var multiplier = Math.max.apply(multipliers.map(function () {}));
-}
-
 function numLeadingWhitespaceChars(str) {
   var match = str.match(/^\s+/);
   if (match) return match[0].length;
@@ -391,13 +418,26 @@ var STYLE_TYPES = {
   , "CODE": true
 };
 
+var WRAPPED_TYPES = {
+  "H1": true
+  , "H2": true
+  , "H3": true
+  , "H4": true
+  , "H5": true
+  , "H6": true
+  , "BLOCKQUOTE": true
+  , "LI": true
+};
+
 var BREAK_TYPES = {
   "LI": true
   , "DT": true
   , "DD": true
   , "IMG": true
   , "DIV": true
+  , "PRE": true
   , "TABLE": true
+  , "BLOCKQUOTE": true
   , "FORM": true
   , "PRE": true
   , "H1": true

@@ -5,121 +5,86 @@
    the file LICENSE-2.0 or at http://www.apache.org/licenses/LICENSE-2.0
 */
 
-/**
- * Adjust the size of the reader
- */
-function adjustScale (diff) {
-  var current = config("scale");
-  var adjusted = clamp(0.1, current + diff, 10);
+(function (window) {
 
-  config("scale", adjusted);
+  var jetzt = window.jetzt
+    , config = jetzt.config
+    , control = {};
 
-  reader && reader.setScale(adjusted);
-};
+  jetzt.control = control;
 
-
-/**
- * Adjust the speed of the reader (words per minute)
- */
-function adjustWPM (diff) {
-  var current = config("target_wpm");
-  var adjusted = clamp(100, current + diff, 1500);
-
-  config("target_wpm", adjusted);
-
-  reader && reader.setWPM(adjusted);
-};
-
-/**
- * Toggle the theme of the reader
- */
-function toggleTheme () {
-  var current = config("dark");
-  config("dark", !current);
-  reader && reader.setTheme(config("dark"));
-};
-
-function handleKeydown (ev) {
-  if(ev.ctrlKey || ev.metaKey) {
-  	return;
-  } 
-  var killEvent = function () {
+  function killEvent (ev) {
     ev.preventDefault();
     ev.stopImmediatePropagation();
-  };
-  // handle custom keybindings eventually
-  switch (ev.keyCode) {
-    case 27: //esc
-      killEvent();
-      close();
-      break;
-    case 38: //up
-      killEvent();
-      adjustWPM(10);
-      break;
-    case 40: //down
-      killEvent();
-      adjustWPM(-10);
-      break;
-    case 37: //left
-      killEvent();
-      if (ev.altKey) prevParagraph();
-      else prevSentence();
-      break;
-    case 39: //right
-      killEvent();
-      if (ev.altKey) nextParagraph();
-      else nextSentence();
-      break;
-    case 32: //space
-      killEvent();
-      toggleRunning();
-      break;
-    case 187: // =/+ (MSIE, Safari, Chrome)
-    case 107: // =/+ (Firefox, numpad)
-    case 61: // =/+ (Firefox, Opera)
-      killEvent();
-      adjustScale(0.1);
-      break;
-    case 109: // -/_ (numpad, Opera, Firefox)
-    case 189: // -/_ (MSIE, Safari, Chrome)
-    case 173: // -/_ (Firefox)
-      killEvent();
-      adjustScale(-0.1);
-      break;
-    case 48: //0 key, for changing the theme
-      killEvent();
-      toggleTheme();
-      break;
   }
-}
 
-// wrap a function to make sure it only gets called it jetzt isn't open
-function assertClosed(fn) {
-  return function () {
-    if (instructions) throw new Error("jetzt already open");
-    else fn.apply(this, arguments);
+  /**
+   * hooks an executor up to keyboard controls.
+   */
+  control.keyboard = function (executor) {
+    jetzt.view.reader.onKeyDown(function (ev) {
+      if(ev.ctrlKey || ev.metaKey) {
+        return;
+      }
+
+      // handle custom keybindings eventually
+      switch (ev.keyCode) {
+        case 27: //esc
+          killEvent(ev);
+          jetzt.quit();
+          break;
+        case 38: //up
+          killEvent(ev);
+          config.adjustWPM(10);
+          break;
+        case 40: //down
+          killEvent(ev);
+          config.adjustWPM(-10);
+          break;
+        case 37: //left
+          killEvent(ev);
+          if (ev.altKey) executor.prevParagraph();
+          else executor.prevSentence();
+          break;
+        case 39: //right
+          killEvent(ev);
+          if (ev.altKey) executor.nextParagraph();
+          else executor.nextSentence();
+          break;
+        case 32: //space
+          killEvent(ev);
+          executor.toggleRunning();
+          break;
+        case 187: // =/+ (MSIE, Safari, Chrome)
+        case 107: // =/+ (Firefox, numpad)
+        case 61: // =/+ (Firefox, Opera)
+          killEvent(ev);
+          config.adjustScale(0.1);
+          break;
+        case 109: // -/_ (numpad, Opera, Firefox)
+        case 189: // -/_ (MSIE, Safari, Chrome)
+        case 173: // -/_ (Firefox)
+          killEvent(ev);
+          config.adjustScale(-0.1);
+          break;
+        case 48: //0 key, for changing the theme
+          killEvent(ev);
+          config.toggleTheme();
+          break;
+        case 191: // / and ?
+          killEvent(ev);
+          config("show_message", !config("show_message"));
+          break;
+      }
+
+    });
   };
-}
 
-// wrap a function to make sure it only gets called it jetzt is open
-function assertOpen(fn) {
-  return function () {
-    if (!instructions) throw new Error("jetzt not currently open");
-    else fn.apply(this, arguments);
-  };
-}
+  window.addEventListener("keydown", function (ev) {
+    if (!jetzt.isOpen() && ev.altKey && ev.keyCode === 83) {
+      ev.preventDefault();
+      jetzt.select();
+    }
+  });
 
-/**
- * Dismiss the jetzt reader
- */
-function close () {
-  if (instructions) {
-    if (running) jetzt.toggleRunning();
-    reader.hide();
-    reader = null;
-    instructions = null;
-  } else {
-    throw new Error("jetzt not yet initialized");
-  }
-};
+})(this);

@@ -2,6 +2,12 @@
 
 *jetzt* is a speed-reader extension for [chrome](http://google.com/chrome) inspired by [Spritz](http://www.spritzinc.com/).
 
+### Screenshot
+
+Here's what jetzt looks like in your browser:
+
+![](screenshot.png)
+
 ### Installation
 
 This is very much beta software so a proper chrome extension package is not currently provided. Instead: clone this repository, then, in chrome, navigate to chrome://extensions , enable developer mode, click "Load unpacked extension..." and select the directory you cloned.
@@ -26,6 +32,8 @@ Control is currently keyboard-only.
 
 - Switch between light/dark themes with `0`
 
+- Toggle summary stats with `/` or `?` at the end of a run
+
 ### Online Demo
 
 [Here](http://ds300.github.com/jetzt/)
@@ -35,7 +43,7 @@ Control is currently keyboard-only.
 You can also use it as a bookmarklet by:
 - Copying the content of bookmarklet.js
 - Manually adding a new bookmark
-- Pasting the content into the location field. 
+- Pasting the content into the location field.
 
 ### ToDo
 
@@ -46,6 +54,7 @@ Check out the [ToDo](https://github.com/ds300/jetzt/wiki/ToDo) section of the wi
 Feel free to open an issue for anything you would like to see in jetzt, but have a quick look through the open issues first to make sure it is not a duplicate request.
 
 I also welcome pull requests of all shapes and sizes. Please submit to the dev branch, or to master if it is only a small bugfix. If it is your first time contributing to jetzt, please add your name to the list below.
+
 
 ### Contributors
 

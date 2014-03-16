@@ -9,8 +9,18 @@
     {
       "matches": ["http://*/*", "https://*/*", "file:///*"],
       "css": ["jetzt.css"],
-      "js": ["modules/helpers.js","modules/config.js","modules/control.js","modules/parsing.js","modules/running.js","modules/selectmode.js","modules/state.js","modules/view.js",
-             "jetzt.js", "chrome-config.js"],
+      "js": [
+                "modules/preamble.js"
+              , "modules/helpers.js"
+              , "modules/config.js"
+              , "modules/parse.js"
+              , "modules/exec.js"
+              , "modules/view.js"
+              , "modules/select.js"
+              , "modules/control.js"
+              , "modules/init.js"
+              , "chrome-config.js"
+           ],
       "all_frames": true
     }
   ],

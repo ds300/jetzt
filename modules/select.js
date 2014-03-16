@@ -28,7 +28,7 @@ function selectMode () {
         overlay.style.left = (getScrollLeft() + rect.left) + "px";
         overlay.style.width = rect.width + "px";
         overlay.style.height = rect.height + "px";
-	  overlay.style.backgroundColor = options.view.selection_color;
+    	  overlay.style.backgroundColor = options.view.selection_color;
         document.body.appendChild(overlay);
         overlays.push(overlay);
       }

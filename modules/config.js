@@ -207,7 +207,7 @@
   /**
    * Toggle the theme of the reader
    */
-  function toggleTheme () {
+  jetzt.config.toggleTheme = function () {
     this("dark", !this("dark"));
   };
 

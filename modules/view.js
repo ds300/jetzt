@@ -160,18 +160,3 @@ function Reader () {
   };
 }
 
-  /**
- * Read the given instructions.
- */
-function read (instrs) {
-  instructions = instrs;
-
-  reader = new Reader();
-  reader.onBackdropClick(close);
-  reader.onKeyDown(handleKeydown)
-  reader.show();
-
-  index = 0;
-
-  setTimeout(toggleRunning, 500);
-}

@@ -15,22 +15,13 @@
 
   window.jetzt = {
     selectMode: selectMode
-    , read: assertClosed(read)
     , readString: assertClosed(readString)
     , readDOM: assertClosed(readDOM)
-    , close: assertOpen(close)
-    , toggleRunning: assertOpen(toggleRunning)
-    , adjustWPM: adjustWPM
-    , adjustScale: adjustScale
     , DEFAULT_OPTIONS: DEFAULT_OPTIONS
     , config: config
     , setConfigBackend: setConfigBackend
     , Instructionator: Instructionator
-    , nextParagraph: assertOpen(nextParagraph)
-    , nextSentence: assertOpen(nextSentence)
-    , prevParagraph: assertOpen(prevParagraph)
-    , prevSentence: assertOpen(prevSentence)
-    , select: assertClosed(select)
+
   };
 
 

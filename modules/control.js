@@ -78,20 +78,7 @@
     };
 
     reader.onKeyDown(onkeydown);
-  }
-
-  function open (instrs) {
-    instructions = instrs;
-
-    reader = new Reader();
-    reader.onBackdropClick(close);
-    reader.onKeyDown(handleKeydown)
-    reader.show();
-
-    index = 0;
-
-    setTimeout(toggleRunning, 500);
-  }
+  };
 
 })(this);
 

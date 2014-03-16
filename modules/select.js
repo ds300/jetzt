@@ -7,9 +7,9 @@
 
 (function (window) {
 
-  var jetzt = window.jetzt
-    , view = jetzt.view
-    , H = jetzt.helpers
+  var jetzt  = window.jetzt
+    , view   = jetzt.view
+    , H      = jetzt.helpers
     , config = jetzt.config;
 
   function on (event, cb) {
@@ -25,7 +25,6 @@
    */
   function selectMode () {
     var selection = [];
-    var overlays = [];
     var previousElement = null;
 
     var showSelection = function () {
@@ -110,13 +109,13 @@
       off("keydown", keydownHandler);
       off("keyup", keyupHandler);
       off("click", clickHandler);
-      previousElement && removeClass(previousElement, "sr-pointer");
+      previousElement && H.removeClass(previousElement, "sr-pointer");
     };
 
     var mouseoverHandler = function (ev) {
-      previousElement && removeClass(previousElement, "sr-pointer");
+      previousElement && H.removeClass(previousElement, "sr-pointer");
 
-      addClass(ev.target, "sr-pointer");
+      H.addClass(ev.target, "sr-pointer");
 
       previousElement = ev.target;
 
@@ -129,7 +128,7 @@
 
     var clickHandler = function (ev) {
       stop();
-      readDOM(selection);
+      jetzt.init(jetzt.parse.dom(selection));
     };
 
     var moveHandler = function (ev) {
@@ -158,6 +157,16 @@
     off("keyup", keyupHandler);
   }
 
-})();
+  jetzt.select = function () {
+    var text = window.getSelection().toString();
+    if (text.trim().length > 0) {
+      jetzt.init(jetzt.parse.string(selection));
+      window.getSelection().removeAllRanges();
+    } else {
+      selectMode();
+    }
+  };
+
+})(this);
 
 

@@ -8,37 +8,10 @@
 (function (window) {
   "use strict";
 
-  if (typeof window.jetzt !== 'undefined') {
-    console.warn("jetzt unable to initialize, window.jetzt already set");
-    return;
-  }
-
-  window.jetzt = {
-    selectMode: selectMode
-    , readString: assertClosed(readString)
-    , readDOM: assertClosed(readDOM)
-    , DEFAULT_OPTIONS: DEFAULT_OPTIONS
-    , config: config
-    , setConfigBackend: setConfigBackend
-    , Instructionator: Instructionator
-
-  };
-
-
-  function select() {
-    var text = window.getSelection().toString();
-    if (text.trim().length > 0) {
-      readString(text);
-      window.getSelection().removeAllRanges();
-    } else {
-      selectMode();
-    }
-  }
-
   window.addEventListener("keydown", function (ev) {
     if (!instructions && ev.altKey && ev.keyCode === 83) {
       ev.preventDefault();
-      select();
+      window.jetzt.select();
     }
   });
 

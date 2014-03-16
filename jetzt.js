@@ -932,6 +932,22 @@
     reader && reader.setTheme(config("dark"));
   };
 
+  /**
+   * Toggle present status
+   * During reading: show number of seconds left to completion
+   * After reading: show number of words and seconds elapsed
+   */
+  function toggleStatus () {
+    if (running) {
+      var words = instructions.length;
+      var timestamp = Math.round(new Date().getTime() / 1000);
+      var elapsed = timestamp - reader.started;
+      var remaining = (elapsed * (words - index)) / index;
+      reader.setMessage(Math.round(remaining) + "s left”);
+    }
+    reader && reader.toggleMessage();
+  }
+
   function handleKeydown (ev) {
     if(ev.ctrlKey || ev.metaKey) {
     	return;
@@ -986,7 +1002,7 @@
         break;
       case 191: // / and ?
         killEvent();
-        reader && reader.toggleMessage();
+        toggleStatus();
         break;
     }
   }

@@ -170,6 +170,33 @@
     this.setConfigBackend(configBackend);
   };
 
+  /**
+   * Adjust the size of the reader
+   */
+  jetzt.config.adjustScale = function (diff) {
+    var current = this("scale");
+    var adjusted = clamp(0.1, current + diff, 10);
+
+    this("scale", adjusted);
+  };
+
+
+  /**
+   * Adjust the speed of the reader (words per minute)
+   */
+  jetzt.config.adjustWPM = function (diff) {
+    var current = this("target_wpm");
+    var adjusted = clamp(100, current + diff, 1500);
+
+    this("target_wpm", adjusted);
+  };
+
+  /**
+   * Toggle the theme of the reader
+   */
+  function toggleTheme () {
+    this("dark", !this("dark"));
+  };
 
 })(this);
 

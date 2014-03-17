@@ -79,9 +79,9 @@
 			</label>
 			
 			<p>Duration modifiers</p>
-			<label ng-repeat-start="(name,value) in options.modifiers" for="{{name}}">
+			<label ng-repeat-start="name in listModifierNames()" for="{{name}}">
 				{{name}}:<br/>
-				<input type="text" ng-model="value" id="{{name}}">				
+				<input type="text" ng-model="options.modifiers[name]" id="{{name}}">
 			</label><br ng-repeat-end/>	
 		</section>
 		<section>

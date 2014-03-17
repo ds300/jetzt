@@ -24,6 +24,14 @@ optsApp.controller('OptionsController',['$scope','$window',function($scope,$wind
 		});
 	};
 
+	$scope.listModifierNames = function () {
+		var result = [];
+		angular.forEach(options.modifiers, function (_, k) {
+			result.push(k);
+		});
+		return result;
+	};
+
 	$scope.isClean = function () {
 		return angular.equals(options, $scope.options)
 	};

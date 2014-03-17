@@ -174,12 +174,9 @@
   color: white;
 }
 
+.sr-reader.sr-dark .sr-word-box .sr-word .sr-pivot,
 .sr-reader .sr-word-box .sr-word .sr-pivot {
   color: red;
-}
-
-.sr-reader.sr-dark .sr-word-box .sr-word .sr-pivot {
-  color: #00ff00;
 }
 
 .sr-input {

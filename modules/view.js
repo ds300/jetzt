@@ -78,6 +78,7 @@ function Reader () {
     this.setWPM(config("target_wpm"));
     this.setFont(config(["view","font_family"]));
     this.setProgressBarColor(config(["view", "progress_bar_color"]));
+    this.setSelectionColor(config(["view", "selection_color"]));
 
     // initialise custom theme
     this.setTheme(config("dark"));
@@ -135,6 +136,11 @@ function Reader () {
       removeClass(progressBar, "progress-dark");
       addClass(backdrop, "whiteout");
     }
+
+  };
+
+  this.setSelectionColor = function (color) {
+    pivotChar.style.color = color;
   };
 
   this.setProgress = function (percent) {

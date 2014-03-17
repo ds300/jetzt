@@ -1,7 +1,7 @@
 /*
    Licensed under the Apache License v2.0.
-            
-   A copy of which can be found at the root of this distrubution in 
+
+   A copy of which can be found at the root of this distrubution in
    the file LICENSE-2.0 or at http://www.apache.org/licenses/LICENSE-2.0
 */
 
@@ -60,12 +60,14 @@
 
       , unlisten;
 
+
     hiddenInput.onkeyup = hiddenInput.onkeypress = function (ev) {
       if(!ev.ctrlKey && !ev.metaKey) {
         ev.stopImmediatePropagation();
         return false;
       }
     };
+
 
     var grabFocus = function () {
       hiddenInput.focus();
@@ -80,11 +82,12 @@
     };
 
     this.applyConfig = function () {
-      console.log("yesss");
       // initialise custom size/wpm
       this.setScale(config("scale"));
       this.setWPM(config("target_wpm"));
       this.setFont(config(["view","font_family"]));
+      this.setProgressBarColor(config(["view", "progress_bar_color"]));
+      this.setSelectionColor(config(["view", "selection_color"]));
 
       if (config("show_message")) {
         this.showMessage();
@@ -154,10 +157,21 @@
     };
 
     this.setTheme = function (dark) {
-      if (dark)
+      if (dark) {
         H.addClass(box, "sr-dark");
-      else
+        H.addClass(backdrop, "sr-dark");
+      } else {
         H.removeClass(box, "sr-dark");
+        H.removeClass(backdrop, "sr-dark");
+      }
+    };
+
+    this.setSelectionColor = function (color) {
+      pivotChar.style.color = color;
+    };
+
+    this.setProgressBarColor = function (color) {
+      progressBar.style.borderColor = color;
     };
 
     this.setProgress = function (percent) {
@@ -210,8 +224,6 @@
       this.setWord("   ");
     };
   }
-
-
 
   // we only need one instance of Reader now.
   var readerSingleton;

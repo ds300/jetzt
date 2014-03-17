@@ -1,7 +1,7 @@
 /*
    Licensed under the Apache License v2.0.
-            
-   A copy of which can be found at the root of this distrubution in 
+
+   A copy of which can be found at the root of this distrubution in
    the file LICENSE-2.0 or at http://www.apache.org/licenses/LICENSE-2.0
 */
 
@@ -29,6 +29,7 @@
       }
     , view : {
           selection_color : "red"
+        , progress_bar_color: "#777"
         , font_family: "Menlo, Consolas, Monaco, monospace"
       }
     // keybindings and so forth soon
@@ -213,5 +214,6 @@
   };
 
 })(this);
+
 
 

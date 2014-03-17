@@ -61,7 +61,7 @@ I also welcome pull requests of all shapes and sizes. Please submit to the dev b
 - [Gustav Ahlberg](https://github.com/Gyran)
 - [Peter Uithoven](https://github.com/peteruithoven)
 - [h0ru5](https://github.com/h0ru5)
-- [Noah Slater](http://github.com/nslater
+- [Noah Slater](http://github.com/nslater)
 - [fusillicode](https://github.com/fusillicode)
 - [Brian Hanson](https://github.com/brianjhanson)
 - [ianzapolsky](https://github.com/ianzapolsky)

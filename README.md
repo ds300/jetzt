@@ -51,7 +51,7 @@ Check out the [ToDo](https://github.com/ds300/jetzt/wiki/ToDo) section of the wi
 
 ### Feature Requests/Contributions
 
-Feel free to open an issue for anything you would like to see in jetzt, but have a quick look through the open issues first to make sure it is not a duplicate request.
+Feel free to open an issue for anything you would like to see in jetzt, but have a quick look through the closed issues first to make sure it is not a duplicate request.
 
 I also welcome pull requests of all shapes and sizes. Please submit to the dev branch, or to master if it is only a small bugfix. If it is your first time contributing to jetzt, please add your name to the list below.
 
@@ -61,6 +61,7 @@ I also welcome pull requests of all shapes and sizes. Please submit to the dev b
 - [Gustav Ahlberg](https://github.com/Gyran)
 - [Peter Uithoven](https://github.com/peteruithoven)
 - [h0ru5](https://github.com/h0ru5)
+- [Noah Slater](http://github.com/nslater
 - [fusillicode](https://github.com/fusillicode)
 - [Brian Hanson](https://github.com/brianjhanson)
 - [ianzapolsky](https://github.com/ianzapolsky)

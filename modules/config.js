@@ -1,7 +1,7 @@
 /*
    Licensed under the Apache License v2.0.
-            
-   A copy of which can be found at the root of this distrubution in 
+
+   A copy of which can be found at the root of this distrubution in
    the file LICENSE-2.0 or at http://www.apache.org/licenses/LICENSE-2.0
 */
 
@@ -20,8 +20,9 @@ var DEFAULT_OPTIONS = {
       short_space: 1.5,
       long_space: 2.2
     },
-  view : {
-  	selection_color : "red",
+  view: {
+  	selection_color: "red",
+    progress_bar_color: "green",
   	font_family: "Georgia"
   }
     // keybindings and so forth soon
@@ -98,7 +99,7 @@ function put (map, keyPath, val) {
  *
  * e.g.
  *      jetzt.config("cheese", "Edam")
- * 
+ *
  * sets the "cheese" option to the string "Edam"
  *
  *      jetzt.config("cheese")
@@ -115,7 +116,7 @@ function put (map, keyPath, val) {
  *      => "Stilton"
  *
  *      jetzt.config("cheese")
- * 
+ *
  *      => {color: "blue", name: "Stilton"}
  */
 function config (keyPath, val) {

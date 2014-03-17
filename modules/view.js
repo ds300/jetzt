@@ -1,7 +1,7 @@
 /*
    Licensed under the Apache License v2.0.
-            
-   A copy of which can be found at the root of this distrubution in 
+
+   A copy of which can be found at the root of this distrubution in
    the file LICENSE-2.0 or at http://www.apache.org/licenses/LICENSE-2.0
 */
 
@@ -77,6 +77,7 @@ function Reader () {
     this.setScale(config("scale"));
     this.setWPM(config("target_wpm"));
     this.setFont(config(["view","font_family"]));
+    this.setProgressBarColor(config(["view", "progress_bar_color"]));
 
     // initialise custom theme
     this.setTheme(config("dark"));
@@ -114,9 +115,13 @@ function Reader () {
   this.setWPM = function (target_wpm) {
     wpm.innerHTML = target_wpm + "";
   };
-  
+
+  this.setProgressBarColor = function (color) {
+    progressBar.style.borderColor = color;
+  };
+
   this.setFont = function (font) {
-  	// really, we should be setting font-family of 
+  	// really, we should be setting font-family of
   	//  ".sr-reader .sr-word-box .sr-word > span"
   	word.style.fontFamily = font;
   }

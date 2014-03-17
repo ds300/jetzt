@@ -37,12 +37,14 @@
 			</p>
 			<p>
 				<label for="dark">
-					<input type="checkbox" id="dark"  ng-model="options.dark" /> Use dark theme<br/>
+					<input type="checkbox" id="dark"  ng-model="options.dark" /> Use Dark Theme<br/>
 				</label>
 			</p>
 
 			<p>Color for Selection:</p>
 			<input type="color" id="selection_color" ng-model="options.view.selection_color" />
+			<p>Color for Progress Bar:</p>
+			<input type="color" id="progress_color" ng-model="options.view.progress_bar_color" />
 			<p>Font:</p>
 			<p>
 				<select id="fav_font"  ng-options="fnt.displayName as fnt.displayName for fnt in installedFonts" ng-model="options.view.font_family"></select>
@@ -100,7 +102,7 @@
 				<div class="sr-wrap sr-left"></div>
 				<div class="sr-word-box">
 					<div class="sr-reticle"></div>
-					<div class="sr-progress" style="border-left-width: 96px;"></div>
+					<div class="sr-progress" style="border-left-width: 96px;" ng-style="{'border-color': options.view.progress_bar_color}"></div>
 					<div class="sr-message"></div>
 					<div class="sr-word" style="left: 47.5px;" ng-style="{'font-family' : options.view.font_family}">
 						<span class="">Sa</span>

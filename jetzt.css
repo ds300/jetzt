@@ -114,7 +114,7 @@
   width: 400px;
   height: 3px;
   background-color: black;
-  border-left: 0px solid green;
+  border-left: 0px solid;
   -moz-box-sizing: border-box;
   box-sizing: border-box;
   -webkit-transition: border 0.34s ease;

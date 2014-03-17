@@ -1,7 +1,7 @@
 /*
    Licensed under the Apache License v2.0.
-            
-   A copy of which can be found at the root of this distrubution in 
+
+   A copy of which can be found at the root of this distrubution in
    the file LICENSE-2.0 or at http://www.apache.org/licenses/LICENSE-2.0
 */
 
@@ -28,7 +28,7 @@ function selectMode () {
         overlay.style.left = (getScrollLeft() + rect.left) + "px";
         overlay.style.width = rect.width + "px";
         overlay.style.height = rect.height + "px";
-	  overlay.style.backgroundColor = options.view.selection_color;
+     	  overlay.style.backgroundColor = options.view.selection_color;
         document.body.appendChild(overlay);
         overlays.push(overlay);
       }

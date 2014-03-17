@@ -32,7 +32,7 @@ Control is currently keyboard-only.
 
 - Switch between light/dark themes with `0`
 
-- Toggle summary stats with `/` or `?` at the end of a run
+- Toggle statistics message with `/` or `?`
 
 ### Online Demo
 

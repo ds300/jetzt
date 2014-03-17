@@ -42,12 +42,7 @@
 			</p>
 
 			<p>Color for Selection:</p>
-			<select id="selection_color" ng-model="options.view.selection_color">
-				<option value="red">red</option>
-				<option value="green">green</option>
-				<option value="blue">blue</option>
-				<option value="yellow">yellow</option>
-			</select>
+			<input type="color" id="selection_color" ng-model="options.view.selection_color" />
 			<p>Font:</p>
 			<p>
 				<select id="fav_font"  ng-options="fnt.displayName as fnt.displayName for fnt in installedFonts" ng-model="options.view.font_family"></select>

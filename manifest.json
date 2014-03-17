@@ -1,0 +1,48 @@
+{
+  "manifest_version": 2,
+
+  "name": "jetzt",
+  "description": "Speed Reading",
+  "version": "1.1.0",
+
+  "content_scripts": [
+    {
+      "matches": ["http://*/*", "https://*/*", "file:///*"],
+      "css": ["jetzt.css"],
+      "js": [
+                "modules/preamble.js"
+              , "modules/helpers.js"
+              , "modules/config.js"
+              , "modules/parse.js"
+              , "modules/exec.js"
+              , "modules/view.js"
+              , "modules/select.js"
+              , "modules/control.js"
+              , "modules/init.js"
+              , "chrome-config.js"
+           ],
+      "all_frames": true
+    }
+  ],
+  "permissions": [
+    "storage",
+    "activeTab",
+    "contextMenus",
+	"fontSettings"
+  ],
+  "icons": { "16": "img/icon16.png",
+             "48": "img/icon48.png",
+             "128": "img/icon128.png" },
+   "browser_action" : {
+       "default_icon" :  { 
+            "19": "img/icon19.png",
+            "38": "img/icon38.png"
+       	},
+        "default_title" : "speed-read with jetzt"        
+    },
+    "background": {
+	    "scripts": ["background.js"],
+	    "persistent": false
+	},
+	 "options_page" : "options/options.html"
+}

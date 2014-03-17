@@ -1,6 +1,6 @@
 .*
 !.gitignore
 
-node_modules
-jetzt-solid.js
-
+/node_modules
+/jetzt-solid.js
+/jetzt-solid.min.js

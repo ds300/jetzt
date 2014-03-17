@@ -126,6 +126,10 @@
   transition: border 0.34s ease;
 }
 
+.sr-reader .sr-word-box .sr-progress.progress-dark {
+  background-color: white;
+}
+
 .sr-reader .sr-word-box .sr-reticle {
   position: absolute;
   left: 110px;

@@ -129,8 +129,10 @@ function Reader () {
   this.setTheme = function (dark) {
     if (dark) {
       addClass(box, "sr-dark");
+      addClass(progressBar, "progress-dark")
     } else {
       removeClass(box, "sr-dark");
+      removeClass(progressBar, "progress-dark");
       addClass(backdrop, "whiteout");
     }
   };

@@ -22,7 +22,7 @@ var DEFAULT_OPTIONS = {
     },
   view: {
   	selection_color: "red",
-    progress_bar_color: "green",
+    progress_bar_color: "#777",
   	font_family: "Georgia"
   }
     // keybindings and so forth soon

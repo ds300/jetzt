@@ -73,7 +73,20 @@
         startedReading();
       } else if (index === instructions.length) {
         finishedReading();
+      } else if (index % 5 === 0) {
+        calculateRemaining();
       }
+    }
+
+    /**
+     * Calculate and display the time remaining
+     */
+    function calculateRemaining () {
+      var words = instructions.length;
+      var timestamp = Math.round(new Date().getTime() / 1000);
+      var elapsed = timestamp - reader.started;
+      var remaining = (elapsed * (words - index)) / index;
+      reader.setMessage(Math.round(remaining) + "s left");
     }
 
     

@@ -127,10 +127,12 @@ function Reader () {
   }
 
   this.setTheme = function (dark) {
-    if (dark)
+    if (dark) {
       addClass(box, "sr-dark");
-    else
+    } else {
       removeClass(box, "sr-dark");
+      addClass(backdrop, "whiteout");
+    }
   };
 
   this.setProgress = function (percent) {

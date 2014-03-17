@@ -99,21 +99,33 @@
       this.setTheme(config("dark"));
     };
 
-    this.show = function (cb) {
+    this.appendTo = function (elem) {
       // fade in backdrop
-      document.body.appendChild(backdrop);
+      elem.appendChild(backdrop);
       backdrop.offsetWidth;
       H.addClass(backdrop, "in");
 
       // pull down box;
-      document.body.appendChild(wrapper);
+      elem.appendChild(wrapper);
       wrapper.offsetWidth;
       H.addClass(wrapper, "in");
+    };
+
+    this.watchConfig = function () {
+      var that = this;
+      unlisten = config.onChange(function () { that.applyConfig(); });
+    };
+
+    this.unwatchConfig = function () {
+      unlisten && unlisten();
+    };
+
+    this.show = function (cb) {
+      this.appendTo(document.body);
 
       // apply and listen to config;
       this.applyConfig();
-      var that = this;
-      unlisten = config.onChange(function () { that.applyConfig(); });
+      this.watchConfig();
 
       // need to stop the input focus from scrolling the page up.
       var scrollTop = H.getScrollTop();

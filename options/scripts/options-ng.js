@@ -3,26 +3,25 @@ var optsApp = angular.module('optsApp',[]);
 optsApp.controller('OptionsController',['$scope','$window',function($scope,$window) {
 	var configBackend = $window.jetzt.config.getBackend();
 
-	var options = $window.jetzt.DEFAULT_OPTIONS;
+	var defaults = $window.jetzt.DEFAULT_OPTIONS;
 
 
+	var saved;
 
-	var loadOptions = function() {
-		configBackend.get(function(opts) {
-			$scope.$$phase || $scope.$apply(function() {
-					options = jetzt.helpers.recursiveExtend({}, options, opts);
-					$scope.options = angular.copy(options);
-			});			
-		});
-	};
+	configBackend.get(function(opts) {
+		$scope.$$phase || $scope.$apply(function() {
+			saved = opts;
+			$scope.options = angular.copy(opts);
+		});			
+	});
+
 	
-	var loadFonts = function() {
-		$window.chrome.fontSettings.getFontList(function(fonts){
-			$scope.$$phase || $scope.$apply(function() {
-				$scope.installedFonts = fonts;
-			});
+
+	$window.chrome.fontSettings.getFontList(function(fonts){
+		$scope.$$phase || $scope.$apply(function() {
+			$scope.installedFonts = fonts;
 		});
-	};
+	});
 
 	$scope.listModifierNames = function () {
 		var result = [];
@@ -33,22 +32,52 @@ optsApp.controller('OptionsController',['$scope','$window',function($scope,$wind
 	};
 
 	$scope.isClean = function () {
-		return angular.equals(options, $scope.options)
+		return angular.equals(saved, $scope.options)
 	};
 	
-	$scope.save = function() {
-		configBackend.set($scope.options);
-		options = angular.copy($scope.options);
+	$scope.reset = function (toDefaults) {
+		var opts = toDefaults ? defaults : saved;
 	};
-
-	$scope.load = loadOptions;
 
 	$scope.showLab = function() {
 		// this should be done using ng-show or something
 		document.getElementById('labPopUp').show();	
 	};
-	
-	// I don't think there's any reason to wait here?
-	angular.element(document).ready(loadOptions);
-	angular.element(document).ready(loadFonts);
+
+	$scope.modifierNames = [];
+
+	angular.forEach(defaults.modifiers, function (_, k) {
+		$scope.modifierNames.push(k);
+	});
+
+	$scope.editing = "Appearance";
 }]);
+
+optsApp.controller("ThemeController", function ($scope) {
+	var qualifiedNewThemeName = function (name, n) {
+		var themes = $scope.options.themes;
+		var qualified = name + " " + n;
+		for (var i=0, len=themes.length; i < len; i++) {
+			if (themes[i].name === qualified) {
+				return qualifiedNewThemeName(name, n+1);
+			}
+		}
+		return qualified;
+	};
+
+	$scope.newCustomTheme = function () {
+		var newTheme = angular.copy($scope.options.selected_theme);
+		newTheme.name = qualifiedNewThemeName("Custom Theme", 1);
+		newTheme.custom = true;
+		$scope.options.themes.push(newTheme);
+		$scope.options.selected_theme = newTheme.name;
+	};
+
+	$scope.deleteTheme = function (idx) {
+		var themes = $scope.options.themes;
+		if (themes[idx].custom) {
+			themes.splice(idx, 1);
+		}
+		$scope.options.selected_theme = "Default";
+	};
+});

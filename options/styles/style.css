@@ -1,0 +1,58 @@
+.save-cancel {
+	position: absolute; right: 5px; top: 15px;
+}
+
+.nav-tabs {
+	padding-top: 15px;
+	padding-bottom: 25px;
+	-webkit-margin-before: 0em;
+	-webkit-margin-after: 0em;
+	-webkit-margin-start: 0px;
+	-webkit-margin-end: 0px;
+	-webkit-padding-start: 0px;
+}
+
+.nav-tabs li {
+	display: inline-block;
+}
+
+.nav-tabs li a {
+	font-size: 16px;
+	padding: 5px 15px;
+	color: #666;
+	text-decoration: none;
+	border-bottom: 2px solid transparent;
+}
+
+
+
+.nav-tabs li a:hover {
+	color: #222;
+	text-decoration: underline;
+}
+
+.nav-tabs li.active a {
+	color: #222;
+	border-bottom-color: #999;
+	text-decoration: none;
+}
+
+.ng-hide {
+	display: none;
+}
+
+#reader-demo {
+	width: 500px;
+	height: 300px;
+	overflow: hidden;
+	position: absolute;
+	right: 0px;
+}
+
+#reader-demo .sr-backdrop {
+	position: absolute;
+}
+
+#reader-demo .sr-wrapper {
+	position: absolute;
+}

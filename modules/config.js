@@ -27,11 +27,62 @@
         , short_space: 1.5
         , long_space: 2.2
       }
-    , view : {
-          selection_color : "red"
-        , progress_bar_color: "#777"
-        , font_family: "Menlo, Consolas, Monaco, monospace"
+    , font_family: "Menlo, Monaco, Consolas, monospace"
+    , selected_theme: "Default"
+    , themes: [
+      {
+          "name" : "Default"
+        , "light" : {
+              "backdrop_color" : "black"
+            , "backdrop_opacity" : "0.18"
+            , "background_color" : "white"
+            , "foreground_color" : "black"
+            , "wrap_background_color" : "#EEE"
+            , "wrap_foreground_color" : "#666"
+            , "pivot_color" : "#E01000"
+            , "progress_bar_foreground_color" : "green"
+            , "progress_bar_background_color" : "black"
+            , "message_color" : "#666"
+        , "dark" : {
+              "backdrop_color" : "black"
+            , "backdrop_opacity" : "0.5"
+            , "background_color" : "#333"
+            , "foreground_color" : "#EEE"
+            , "wrap_background_color" : "#444"
+            , "wrap_foreground_color" : "#999"
+            , "pivot_color" : "#E01000"
+            , "progress_bar_foreground_color" : "green"
+            , "progress_bar_background_color" : "black"
+            , "message_color" : "#999"
+        }
+      },
+      {
+          "name" : "Go Away"
+        , "light" : {
+              "backdrop_color" : "black"
+            , "backdrop_opacity" : "0.18"
+            , "background_color" : "white"
+            , "foreground_color" : "black"
+            , "wrap_background_color" : "#EEE"
+            , "wrap_foreground_color" : "#666"
+            , "pivot_color" : "#E01000"
+            , "progress_bar_foreground_color" : "green"
+            , "progress_bar_background_color" : "black"
+            , "message_color" : "#666"
+        , "dark" : {
+              "backdrop_color" : "black"
+            , "backdrop_opacity" : "0.5"
+            , "background_color" : "#333"
+            , "foreground_color" : "#EEE"
+            , "wrap_background_color" : "#444"
+            , "wrap_foreground_color" : "#999"
+            , "pivot_color" : "#E01000"
+            , "progress_bar_foreground_color" : "green"
+            , "progress_bar_background_color" : "black"
+            , "message_color" : "#999"
+        }
       }
+    ]
     // keybindings and so forth soon
   };
 

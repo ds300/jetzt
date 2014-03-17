@@ -5,8 +5,9 @@
 		<link rel="stylesheet" type="text/css" href="styles/options.css" />
 		<link rel="stylesheet" type="text/css" href="styles/options-widgets.css" />
 		<link rel="stylesheet" type="text/css" href="../jetzt.css" />
+		<link rel="stylesheet" type="text/css" href="styles/style.css" />
 	</head>
-	<body ng-app="optsApp" ng-csp>
+	<body ng-app="optsApp" ng-csp ng-controller="OptionsController">
 		<nav class="sideBar">
 			<h1>Chrome</h1>
 			<ul>
@@ -22,29 +23,34 @@
 			</ul>
 		</nav>
 		<header>
+			<div class="save-cancel">
+				<button id="save" ng-click="save()" ng-disabled="isClean()">Save</button>
+				<button id="cancel" ng-click="load()" ng-disabled="isClean()">Cancel</button>
+			</div>
 			<h1>jetzt speed reader</h1>
 		</header>
 
-		<div ng-controller="OptionsController">
+		<div>
 
-		<section>
-			<h3>View</h3>
-			<p>Options to configure the visual appearance of the speed-reader</p>
-			<p>
-				<label for="scale">
-					Scale:	<input type="text" placeholder="1.0" ng-model="options.scale" size="3" />
-				</label>
-			</p>
-			<p>
-				<label for="dark">
-					<input type="checkbox" id="dark"  ng-model="options.dark" /> Use Dark Theme<br/>
-				</label>
-			</p>
+		<ul class="nav-tabs">
+			<li ng-class="{active: editing == 'Appearance'}">
+				<a href="" ng-click="editing = 'Appearance'">Appearance</a>
+			</li>
+			<li ng-class="{active: editing == 'Reading'}">
+				<a href="" ng-click="editing = 'Reading'">Reading</a>
+			</li>
+			<li ng-class="{active: editing == 'Keyboard Controls'}">
+				<a href="" ng-click="editing = 'Keyboard Controls'">Keyboard Controls</a>
+			</li>
+			<li ng-class="{active: editing == 'Experimental Features'}">
+				<a href="" ng-click="editing = 'Experimental Features'">Experimental Features</a>
+			</li>
+		</ul>
 
-			<p>Color for Selection:</p>
-			<input type="color" id="selection_color" ng-model="options.view.selection_color" />
-			<p>Color for Progress Bar:</p>
-			<input type="color" id="progress_color" ng-model="options.view.progress_bar_color" />
+		<section ng-show="editing == 'Appearance'" ng-controller="ThemeController">
+			<div id="reader-demo-light"></div>
+			<div id="reader-demo-dark"></div>
+
 			<p>Font:</p>
 			<p>
 				<select id="fav_font"  ng-options="fnt.displayName as fnt.displayName for fnt in installedFonts" ng-model="options.view.font_family"></select>
@@ -54,14 +60,10 @@
 
 			<br />
 		</section>
-		<section>
-			<h3>Control</h3>
-			<p>Options to configure keybindings:</p>
-			<p>TBD</p>
+		<section ng-show="editing == 'Keyboard Controls'">
+			<p>Coming soon...</p>
 		</section>
-		<section>
-			<h3>Reading</h3>
-			<p>General options to tweak the speed-reader</p>
+		<section ng-show="editing == 'Reading'">
 			<label for="wpm">
 				Target WPM:<br/>
 				<input type="number" placeholder="400" id="wpm" ng-model="options.target_wpm">
@@ -75,9 +77,8 @@
 			</label><br ng-repeat-end/>	
 
 		</section>
-		<section>
-			<h3>Lab options</h3>
-			<p>Advanced and experimental settings</p>
+		<section ng-show="editing == 'Experimental Features'">
+			<p>Coming soon...</p>
 			<button ng-click="showLab()">I know what I am doing!</button>
 		</section>
 
@@ -94,38 +95,18 @@
 			</div>
 		</div>
 
-		<section>
-			<button id="save" ng-click="save()" ng-disabled="isClean()">Save</button>
-      <button id="cancel" ng-click="load()" ng-disabled="isClean()">Cancel</button>
-		</section>
-
-		<aside id="reader-demo">
-			<div class="sr-reader in {{options.dark ? 'sr-dark' : ''}}" style="-webkit-transform: translate(-50%, -50%) scale(1);">
-				<div class="sr-wrap sr-left"></div>
-				<div class="sr-word-box">
-					<div class="sr-reticle"></div>
-					<div class="sr-progress" style="border-left-width: 96px;" ng-style="{'border-color': options.view.progress_bar_color}"></div>
-					<div class="sr-message"></div>
-					<div class="sr-word" style="left: 47.5px;" ng-style="{'font-family' : options.view.font_family}">
-						<span class="">Sa</span>
-						<span class="sr-pivot" ng-style="{color: options.view.selection_color}">m</span>
-						<span class="">ple</span>
-					</div>
-					<div class="sr-wpm">{{options.target_wpm}}</div>
-					<input class="sr-input">
-				</div>
-				<div class="sr-wrap sr-right"></div>
-			</div>
-		</aside>
+		
 
 
-		<aside id="spacing-demo">
+
+
+	<!-- 	<aside id="spacing-demo">
 			<p>...occaecat cupidatat non proident<span class="end_clause">, </span>sunt in culpa qui officia deserunt mollit anim id est laborum<span class="end_sentence">. </span></p>
 			<span class="end_paragraph">&nbsp;</span>
 			<p><span class="start_paragraph">&nbsp;</span><span class="start_sentence">&nbsp;</span>Lorem ipsum dolor sit amet<span class="end_clause">, </span>consectetur adipisicing elit <span class="long_space">&mdash;</span> sed do eiusmod tempor incididunt ut labore et dolore magna aliqua<span class="end_sentence">. </span><span class="start_sentence">&nbsp;</span>Ut enim ad minim veniam<span class="end_clause">, </span>quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat<span class="end_sentence">. </span><span class="start_sentence">&nbsp;</span>Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur<span class="long_space">: </span>Excepteur sint occaecat cupidatat non proident<span class="end_clause">, </span>sunt in culpa<span class="short_space">; </span>qui officia deserunt mollit anim id est laborum<span class="end_sentence">. </span></p>
 			<p><span class="start_sentence">&nbsp;</span>Lorem ipsum dolor sit amet...</p>
 		</aside>
-
+ -->
 
 		</div>
 
@@ -137,6 +118,7 @@
 
 		<script src="../modules/helpers.js"></script>
 		<script src="../modules/config.js"></script>
+		<script src="../modules/view.js"></script>
 		<script src="../chrome-config.js"></script>
 
 		<script src="scripts/angular.min.js"></script>

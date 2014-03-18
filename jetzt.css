@@ -27,6 +27,7 @@
   -moz-box-shadow: 2px 2px 19px 0px rgba(50, 50, 50, 0.75);
   box-shadow: 2px 2px 19px 0px rgba(50, 50, 50, 0.75);
   border-radius: 10px;
+  line-height: normal;
 }
 
 .sr-reader-wrapper.in {

@@ -33,7 +33,7 @@
   top: 50%;
 }
 
-.sr-blackout {
+.sr-backdrop {
   z-index: 999998;
   position: fixed;
   width: 100%;

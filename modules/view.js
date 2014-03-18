@@ -35,7 +35,7 @@
 
   function Reader () {
     // elements
-    var backdrop = div("sr-blackout")
+    var backdrop = div("sr-backdrop")
       , wpm = div("sr-wpm")
       , leftWrap = div("sr-wrap sr-left")
       , rightWrap = div("sr-wrap sr-right")
@@ -104,8 +104,6 @@
     this.appendTo = function (elem) {
       // fade in backdrop
       elem.appendChild(backdrop);
-      backdrop.offsetWidth;
-      H.addClass(backdrop, "in");
 
       // pull down box;
       elem.appendChild(wrapper);
@@ -145,7 +143,7 @@
       unlisten();
       hiddenInput.onblur = null;
       hiddenInput.blur();
-      H.removeClass(backdrop, "in");
+      backdrop.style.opacity = 0;
       H.removeClass(wrapper, "in");
       window.setTimeout(function () {
         backdrop.remove();
@@ -182,6 +180,7 @@
       } else {
         style = theme.light;
       }
+      backdrop.offsetWidth;
       backdrop.style.backgroundColor = style.backdrop_color;
       backdrop.style.opacity = style.backdrop_opacity;
       wordBox.style.backgroundColor = style.background_color;

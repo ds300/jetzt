@@ -69,7 +69,7 @@
           break;
         case 48: //0 key, for changing the theme
           killEvent(ev);
-          config.toggleTheme();
+          config.toggleDark();
           break;
         case 191: // / and ?
           killEvent(ev);

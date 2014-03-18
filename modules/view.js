@@ -43,16 +43,17 @@
       , rightWord = span()
       , pivotChar = span("sr-pivot")
       , word = div("sr-word", [leftWord, pivotChar, rightWord])
+      
       , progressBar = div("sr-progress")
       , message = div("sr-message")
       , reticle = div("sr-reticle")
       , hiddenInput = H.elem("input", "sr-input")
-
+      , wordBox = div("sr-word-box", [
+          reticle, progressBar, message, word, wpm, hiddenInput
+        ])
       , box = div("sr-reader", [
           leftWrap,
-          div("sr-word-box", [
-            reticle, progressBar, message, word, wpm, hiddenInput
-          ]),
+          wordBox,
           rightWrap
         ])
 
@@ -81,13 +82,17 @@
       hiddenInput.onkeydown = cb;
     };
 
+    this.dark = false;
+
     this.applyConfig = function () {
       // initialise custom size/wpm
+      this.dark = config("dark");
+      var theme = config.getSelectedTheme();
+      this.applyTheme(theme);
+
       this.setScale(config("scale"));
       this.setWPM(config("target_wpm"));
-      this.setFont(config(["view","font_family"]));
-      this.setProgressBarColor(config(["view", "progress_bar_color"]));
-      this.setSelectionColor(config(["view", "selection_color"]));
+      this.setFont(config("font_family"));
 
       if (config("show_message")) {
         this.showMessage();
@@ -168,23 +173,29 @@
       word.style.fontFamily = font;
     };
 
-    this.setTheme = function (dark) {
-      if (dark) {
-        H.addClass(box, "sr-dark");
-        H.addClass(backdrop, "sr-dark");
+    this.applyTheme = function (theme) {
+      var style;
+      if (this.dark) {
+        style = theme.dark;
       } else {
-        H.removeClass(box, "sr-dark");
-        H.removeClass(backdrop, "sr-dark");
+        style = theme.light;
       }
+      backdrop.style.backgroundColor = style.backdrop_color;
+      backdrop.style.opacity = style.backdrop_opacity;
+      wordBox.style.backgroundColor = style.background_color;
+      leftWord.style.color = style.foreground_color;
+      rightWord.style.color = style.foreground_color;
+      leftWrap.style.backgroundColor = style.wrap_background_color;
+      rightWrap.style.backgroundColor = style.wrap_background_color;
+      leftWrap.style.color = style.wrap_foreground_color;
+      rightWrap.style.color = style.wrap_foreground_color;
+      reticle.style.borderColor = style.reticle_color;
+      pivotChar.style.color = style.pivot_color;
+      progressBar.style.borderColor = style.progress_bar_foreground_color;
+      progressBar.style.backgroundColor = style.progress_bar_background_color;
+      message.style.color = style.message_color;
     };
 
-    this.setSelectionColor = function (color) {
-      pivotChar.style.color = color;
-    };
-
-    this.setProgressBarColor = function (color) {
-      progressBar.style.borderColor = color;
-    };
 
     this.setProgress = function (percent) {
       progressBar.style.borderLeftWidth = Math.ceil(percent * 4) + "px";
@@ -236,6 +247,8 @@
       this.setWord("   ");
     };
   }
+
+  view.Reader = Reader;
 
   // we only need one instance of Reader now.
   var readerSingleton;

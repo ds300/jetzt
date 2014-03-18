@@ -25,7 +25,7 @@ optsApp.controller('OptionsController',['$scope','$window',function($scope,$wind
 
 	$scope.listModifierNames = function () {
 		var result = [];
-		angular.forEach(options.modifiers, function (_, k) {
+		angular.forEach(defaults.modifiers, function (_, k) {
 			result.push(k);
 		});
 		return result;
@@ -50,27 +50,66 @@ optsApp.controller('OptionsController',['$scope','$window',function($scope,$wind
 		$scope.modifierNames.push(k);
 	});
 
+	$scope.$watch("options", function (val) {
+		if (val) {
+			console.log("a change was made")
+			configBackend.set(val);
+			$window.jetzt.config.refresh();
+		}
+	}, true);
+
 	$scope.editing = "Appearance";
 }]);
 
-optsApp.controller("ThemeController", function ($scope) {
-	var qualifiedNewThemeName = function (name, n) {
-		var themes = $scope.options.themes;
-		var qualified = name + " " + n;
-		for (var i=0, len=themes.length; i < len; i++) {
-			if (themes[i].name === qualified) {
-				return qualifiedNewThemeName(name, n+1);
+optsApp.controller("ThemeCtrl", function ($scope, $window) {
+
+	var lightReader = new jetzt.view.Reader();
+	var darkReader = new jetzt.view.Reader();
+
+	darkReader.dark = true;
+
+	var setupReader = function (r, elemid) {
+		r.appendTo(document.getElementById(elemid));
+		r.setScale(0.65);
+		r.setWord("jetzt");
+		r.setProgress(34);
+		r.setMessage("43s left");
+		r.showMessage();
+		r.setWPM(400);
+		r.setWrap("“", "”");
+		$scope.$watch("options.selected_theme", function (val) {
+			console.log(val);
+			if (typeof val === 'number') {
+				var theme = $scope.options.themes[val];
+				r.applyTheme(theme);
 			}
-		}
-		return qualified;
+		});
+		$scope.$watch("theme", function (theme) {
+			if (theme) {
+				r.applyTheme(theme);
+			}
+		}, true);
+		$scope.$watch("options.font_family", function (val) {
+			if (typeof val === 'string') {
+				r.setFont(val);
+				r.setWord("jetzt");
+			}
+		});
 	};
 
+	setupReader(lightReader, "reader-demo-light");
+	setupReader(darkReader, "reader-demo-dark");
+
+	
+
 	$scope.newCustomTheme = function () {
-		var newTheme = angular.copy($scope.options.selected_theme);
-		newTheme.name = qualifiedNewThemeName("Custom Theme", 1);
+		var newTheme = angular.copy($scope.options.themes[$scope.options.selected_theme]);
+		newTheme.name = "Custom Theme";
+		console.log($scope.options.themes);
 		newTheme.custom = true;
 		$scope.options.themes.push(newTheme);
-		$scope.options.selected_theme = newTheme.name;
+		$scope.options.selected_theme = $scope.options.themes.length-1;
+		$scope.editTheme($scope.options.themes.length-1);
 	};
 
 	$scope.deleteTheme = function (idx) {
@@ -78,6 +117,57 @@ optsApp.controller("ThemeController", function ($scope) {
 		if (themes[idx].custom) {
 			themes.splice(idx, 1);
 		}
-		$scope.options.selected_theme = "Default";
+		if (idx === $scope.options.selected_theme) {
+			$scope.options.selected_theme = 0;
+		}
 	};
+
+	$scope.editTheme = function (idx) {
+		$scope.options.selected_theme = idx;
+		var theme = $scope.options.themes[idx];
+		$scope.theme = theme;
+		$scope.editingStyle = "light";
+	};
+
+	$scope.finishEditing = function () {
+		$scope.theme = null;
+	};
+
+	$scope.listProperties = function () {
+		if (!$scope.options) {
+			return [];
+		} else {
+			var example = $scope.options.themes[0].light
+			var props = [];
+			for (var prop in example) {
+				if (prop != "backdrop_opacity" && example.hasOwnProperty(prop)) {
+					props.push(prop);
+				}
+			}
+			return props;
+		}
+	};
+
+	$scope.removeCruft = function (s) {
+		return s.replace(/_/g, " ").replace("color", "");
+	};
+
+
+	$scope.$watch("pasted", function (val) {
+		if (val) {
+			$scope.pasted = null;
+			try {
+				var theme = JSON.parse(val);
+
+				theme = jetzt.helpers.recursiveExtend({}, $scope.options.themes[0], theme);
+				theme.custom = true;
+
+				// TODO: validate the theme properly
+				$scope.options.themes.push(theme);
+				$scope.options.selected_theme = $scope.options.themes.length - 1;
+			} catch (e) {
+				$scope.error = "Invalid theme";
+			}
+		}
+	})
 });

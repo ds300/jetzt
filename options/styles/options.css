@@ -198,12 +198,6 @@ section h3 {
 }
 
 
-/* DEMOS */
-#reader-demo {
-	position: absolute;
-	top: 27%;
-	left: 65em;
-}
 
 #spacing-demo {
 	box-shadow: 0 0 10px grey;

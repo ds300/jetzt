@@ -28,60 +28,39 @@
         , long_space: 2.2
       }
     , font_family: "Menlo, Monaco, Consolas, monospace"
-    , selected_theme: "Default"
+    , selected_theme: 0
     , themes: [
       {
-          "name" : "Default"
-        , "light" : {
-              "backdrop_color" : "black"
-            , "backdrop_opacity" : "0.18"
-            , "background_color" : "white"
-            , "foreground_color" : "black"
-            , "wrap_background_color" : "#EEE"
-            , "wrap_foreground_color" : "#666"
-            , "pivot_color" : "#E01000"
-            , "progress_bar_foreground_color" : "green"
-            , "progress_bar_background_color" : "black"
-            , "message_color" : "#666"
-        , "dark" : {
-              "backdrop_color" : "black"
-            , "backdrop_opacity" : "0.5"
-            , "background_color" : "#333"
-            , "foreground_color" : "#EEE"
-            , "wrap_background_color" : "#444"
-            , "wrap_foreground_color" : "#999"
-            , "pivot_color" : "#E01000"
-            , "progress_bar_foreground_color" : "green"
-            , "progress_bar_background_color" : "black"
-            , "message_color" : "#999"
-        }
-      },
-      {
-          "name" : "Go Away"
-        , "light" : {
-              "backdrop_color" : "black"
-            , "backdrop_opacity" : "0.18"
-            , "background_color" : "white"
-            , "foreground_color" : "black"
-            , "wrap_background_color" : "#EEE"
-            , "wrap_foreground_color" : "#666"
-            , "pivot_color" : "#E01000"
-            , "progress_bar_foreground_color" : "green"
-            , "progress_bar_background_color" : "black"
-            , "message_color" : "#666"
-        , "dark" : {
-              "backdrop_color" : "black"
-            , "backdrop_opacity" : "0.5"
-            , "background_color" : "#333"
-            , "foreground_color" : "#EEE"
-            , "wrap_background_color" : "#444"
-            , "wrap_foreground_color" : "#999"
-            , "pivot_color" : "#E01000"
-            , "progress_bar_foreground_color" : "green"
-            , "progress_bar_background_color" : "black"
-            , "message_color" : "#999"
-        }
-      }
+        "name": "Default"
+        , "dark": {
+              "backdrop_color": "#000000"
+            , "backdrop_opacity": "0.5"
+            , "background_color": "#303030"
+            , "foreground_color": "#E0E0E0"
+            , "message_color": "#909090"
+            , "pivot_color": "#E01000"
+            , "progress_bar_background_color": "#000000"
+            , "progress_bar_foreground_color": "#b1dcdb"
+            , "reticle_color": "#656565"
+            , "wrap_background_color": "#404040"
+            , "wrap_foreground_color": "#a1a1a1"
+          }
+        , "light": {
+             "backdrop_color": "black"
+            , "backdrop_opacity": "0.07"
+            , "background_color": "#fbfbfb"
+            , "foreground_color": "#353535"
+            , "message_color": "#929292"
+            , "pivot_color": "#E01000"
+            , "progress_bar_background_color": "black"
+            , "progress_bar_foreground_color": "#00be0b"
+            , "reticle_color": "#efefef"
+            , "wrap_background_color": "#f1f1f1"
+            , "wrap_foreground_color": "#666"
+          }
+       }
+
+       // put more themes here
     ]
     // keybindings and so forth soon
   };
@@ -233,7 +212,7 @@
   };
 
   jetzt.config.refresh = function () {
-    this.setConfigBackend(configBackend);
+    this.setBackend(configBackend);
   };
 
   /**
@@ -258,10 +237,20 @@
   };
 
   /**
-   * Toggle the theme of the reader
+   * Toggle the dark of the reader
    */
-  jetzt.config.toggleTheme = function () {
-    this("dark", !this("dark"));
+  jetzt.config.toggleDark = function () {
+    this("dark", !options.dark);
+  };
+
+  jetzt.config.getSelectedTheme = function () {
+    return options.themes[options.selected_theme];
+  };
+
+  jetzt.config.nextTheme = function () {
+    var current = options.selected_theme;
+    var numThemes = options.themes.length;
+    this("selected_theme", (current + 1) % numThemes);
   };
 
 })(this);

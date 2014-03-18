@@ -7,67 +7,91 @@
 
 (function (window) {
 
-  var jetzt = window.jetzt;
-  var H = jetzt.helpers;
+  var jetzt = window.jetzt
+    , H = jetzt.helpers
+    , config = {};
+
+  jetzt.config = config;
+
+  // if you add any properties to themes, make sure to bump this
+  var CONFIG_VERSION = 0;
+
+  var DEFAULT_THEMES = [
+    {
+      "name": "Default"
+    , "dark": {
+        "backdrop_opacity": "0.5"
+      , "colors": {
+          "backdrop": "#000000"
+        , "background": "#303030"
+        , "foreground": "#E0E0E0"
+        , "message": "#909090"
+        , "pivot": "#E01000"
+        , "progress_bar_background": "#000000"
+        , "progress_bar_foreground": "#b1dcdb"
+        , "reticle": "#656565"
+        , "wrap_background": "#404040"
+        , "wrap_foreground": "#a1a1a1"
+        }
+      }
+    , "light": {
+        "backdrop_opacity": "0.07"
+      , "colors": {
+          "backdrop": "black"
+        , "background": "#fbfbfb"
+        , "foreground": "#353535"
+        , "message": "#929292"
+        , "pivot": "#E01000"
+        , "progress_bar_background": "black"
+        , "progress_bar_foreground": "#00be0b"
+        , "reticle": "#efefef"
+        , "wrap_background": "#f1f1f1"
+        , "wrap_foreground": "#666"
+        }
+      }
+    }
+    // put more themes here
+  ];
+
+  function updateCustomThemes (customThemes) {
+    var example = DEFAULT_THEMES[0];
+    return customThemes.map(function (customTheme) {
+      return H.recursiveExtend({}, example, theme);
+    });
+  }
+
+  // this gets set as the concatenation of DEFAULT_THEMES and
+  // options.custom_themes every time config is loaded from the backend.
+  var themes = DEFAULT_THEMES.slice(0);
 
   // Don't commit changes to these without prior approval please
-  jetzt.DEFAULT_OPTIONS = {
-      target_wpm: 400
-    , scale: 1
-    , dark: false
-    , show_message: false
-    , selection_color: "#FF0000"
-    , modifiers: {
-          normal: 1
-        , start_clause: 1
-        , end_clause: 1.8
-        , start_sentence: 1.3
-        , end_sentence: 2.2
-        , start_paragraph: 2.0
-        , end_paragraph: 2.8
-        , short_space: 1.5
-        , long_space: 2.2
-      }
-    , font_family: "Menlo, Monaco, Consolas, monospace"
-    , selected_theme: 0
-    , themes: [
-      {
-        "name": "Default"
-        , "dark": {
-              "backdrop_color": "#000000"
-            , "backdrop_opacity": "0.5"
-            , "background_color": "#303030"
-            , "foreground_color": "#E0E0E0"
-            , "message_color": "#909090"
-            , "pivot_color": "#E01000"
-            , "progress_bar_background_color": "#000000"
-            , "progress_bar_foreground_color": "#b1dcdb"
-            , "reticle_color": "#656565"
-            , "wrap_background_color": "#404040"
-            , "wrap_foreground_color": "#a1a1a1"
-          }
-        , "light": {
-             "backdrop_color": "black"
-            , "backdrop_opacity": "0.07"
-            , "background_color": "#fbfbfb"
-            , "foreground_color": "#353535"
-            , "message_color": "#929292"
-            , "pivot_color": "#E01000"
-            , "progress_bar_background_color": "black"
-            , "progress_bar_foreground_color": "#00be0b"
-            , "reticle_color": "#efefef"
-            , "wrap_background_color": "#f1f1f1"
-            , "wrap_foreground_color": "#666"
-          }
-       }
-
-       // put more themes here
-    ]
-    // keybindings and so forth soon
+  var DEFAULT_OPTIONS = {
+    // if we change config structure in future versions, having this means
+    // we can update user's persisted configs to match.
+    config_version: CONFIG_VERSION
+  , target_wpm: 400
+  , scale: 1
+  , dark: false
+  , show_message: false
+  , selection_color: "#FF0000"
+  , modifiers: {
+      normal: 1
+    , start_clause: 1
+    , end_clause: 1.8
+    , start_sentence: 1.3
+    , end_sentence: 2.2
+    , start_paragraph: 2.0
+    , end_paragraph: 2.8
+    , short_space: 1.5
+    , long_space: 2.2
+    }
+  , font_family: "Menlo, Monaco, Consolas, monospace"
+  , selected_theme: 0 // index into `themes` array, not custom_themes
+  , custom_themes: []
   };
 
   // This is where we store the options for the current instance of jetzt.
-  var options = H.recursiveExtend({}, jetzt.DEFAULT_OPTIONS);
+  var options = JSON.parse(JSON.stringify(DEFAULT_OPTIONS));
 
   // This is where we store the backend getters/setters. It is initialised
   // with a localStorage placeholder for the bookmarklet and demo page.
@@ -75,15 +99,15 @@
 
   var configBackend = {
     get: function (cb) {
-      var options = localStorage.getItem(KEY);
-      if(options === null) {
-        cb({});
+      var json = localStorage.getItem(KEY);
+      if(json === null) {
+        cb("{}");
       } else {
-        cb(JSON.parse(options));
+        cb(json);
       }
     },
-    set: function (options) {
-      localStorage.setItem(KEY, JSON.stringify(options));
+    set: function (json) {
+      localStorage.setItem(KEY, json);
     }
   };
 
@@ -93,84 +117,42 @@
     listeners.forEach(function (cb) { cb(); });
   }
 
-  
-
-  // recursive lookup. Like clojure's get-in;
-  function lookup (map, keyPath) {
-    if (keyPath.length === 0) throw new Error("No keys specified.");
-
-    var key = keyPath[0];
-    if (keyPath.length === 1) {
-      if (!map.hasOwnProperty(key)) {
-        console.warn("config lookup: no key '"+key+"'");
-      }
-      return map[key];
-    } else {
-      var submap = map[key];
-      if (H.realTypeOf(submap) !== 'Object') {
-        console.warn("config lookup: no key '"+key+"'");
-        return;
-      } else {
-        return lookup(submap, keyPath.slice(1));
-      }
-    }
-  }
-
-  // recursive put. Like clojure's assoc-in
-  function put (map, keyPath, val) {
-    if (keyPath.length === 0) throw new Error("No keys specified.");
-
-    var key = keyPath[0];
-    if (keyPath.length === 1) {
-      map[key] = val;
-    } else {
-      var submap = map[key];
-      if (H.realTypeOf(submap) !== 'Object') {
-        submap = {};
-        map[key] = submap;
-      }
-      _put(submap, keyPath.slice(1), val);
-    }
-  }
-
-
-  /**
-   * jetzt.config
-   * get and set config variables.
-   *
-   * e.g.
-   *      jetzt.config("cheese", "Edam")
-   * 
-   * sets the "cheese" option to the string "Edam"
-   *
-   *      jetzt.config("cheese")
-   *
-   *      => "edam"
-   *
-   * It also has support for key paths
-   *
-   *      jetzt.config(["cheese", "color"], "blue")
-   *      jetzt.config(["cheese", "name"], "Stilton")
-   *
-   *      jetzt.config(["cheese", "name"])
-   *
-   *      => "Stilton"
-   *
-   *      jetzt.config("cheese")
-   * 
-   *      => {color: "blue", name: "Stilton"}
-   */
-  jetzt.config = function (keyPath, val) {
-    if (typeof keyPath === 'string') keyPath = [keyPath];
-
-    if (arguments.length === 1) {
-      return lookup(options, keyPath);
-    } else {
-      put(options, keyPath, val);
-      configBackend.set(options);
+  // all setter methods cause config to be persisted and onChange event to be
+  // fired.
+  function wrapSetter (fn) {
+    return function () {
+      fn.apply(this, arguments);
+      persist();
       announce();
     }
-  };
+  }
+
+  function persist () {
+    options.custom_themes = themes.slice(DEFAULT_THEMES.length); 
+    configBackend.set(JSON.stringify(options));
+    delete options.custom_themes;
+  }
+
+  function unpersist (json) {
+    try {
+      var opts = JSON.parse(json);
+      if (opts.config_version != CONFIG_VERSION) {
+
+        if (opts.custom_themes && opts.custom_themes.length > 0) {
+          opts.custom_themes = updateCustomThemes(opts.custom_themes);
+        }
+
+        opts.config_version = CONFIG_VERSION;
+      }
+
+      options = H.recursiveExtend({}, DEFAULT_OPTIONS, opts);
+      themes = DEFAULT_THEMES.concat(options.custom_themes);
+
+      announce();
+    } catch {
+      throw new Error("corrupt config json");
+    }
+  }
 
   /**
    * config.setBackend
@@ -178,84 +160,124 @@
    * void get(cb(opts))
    * void set(opts)
    */
-  jetzt.config.setBackend = function (backend) {
+  config.setBackend = function (backend) {
     configBackend = backend;
-    backend.get(function (opts) {
-      if (H.realTypeOf(opts) === 'Object') {
-        options = H.recursiveExtend({}, options, opts);
-        announce();
-      } else {
-        throw new Error("bad config backend");
-      }
-    });
+    backend.get(unpersist);
+    announce();
   };
 
-  jetzt.config.getBackend = function () {
+  config.getBackend = function () {
     return configBackend;
   };
 
-  // convenince functions for dealing with delay modifiers
-  jetzt.config.getModifier = function (mod) {
-    return jetzt.config(["modifiers", mod]) || 1;
+  config.onChange = function (cb) {
+    listeners.push(cb);
+    return function () { H.removeFromArray(listeners, cb); };
   };
 
-  jetzt.config.maxModifier = function (a, b) {
-    if (jetzt.config.getModifier(a) > jetzt.config.getModifier(b)) {
+  config.refresh = function () {
+    this.setBackend(configBackend);
+  };
+
+
+
+
+  /*** MODIFIERS ***/
+
+  config.getModifier = function (mod) {
+    return options.modifiers[mod] || 1;
+  };
+
+  config.setModifier = wrapSetter(function (mod, val) {
+    options.modifiers[mod] = val;
+  });
+
+  config.maxModifier = function (a, b) {
+    if (this.getModifier(a) > this.getModifier(b)) {
       return a;
     } else {
       return b;
     }
   };
 
-  jetzt.config.onChange = function (cb) {
-    listeners.push(cb);
-    return function () { H.removeFromArray(listeners, cb); };
+
+  /*** SCALE ***/
+
+  config.getScale = function () {
+    return options.scale;
   };
 
-  jetzt.config.refresh = function () {
-    this.setBackend(configBackend);
-  };
+  config.setScale = wrapSetter(function (s) {
+    options.scale = H.clamp(0.1, s, 10);
+  });
 
-  /**
-   * Adjust the size of the reader
-   */
-  jetzt.config.adjustScale = function (diff) {
-    var current = this("scale");
-    var adjusted = H.clamp(0.1, current + diff, 10);
-
-    this("scale", adjusted);
+  config.adjustScale = function (diff) {
+    this.setScale(this.getScale() + diff);
   };
 
 
-  /**
-   * Adjust the speed of the reader (words per minute)
-   */
-  jetzt.config.adjustWPM = function (diff) {
-    var current = this("target_wpm");
-    var adjusted = H.clamp(100, current + diff, 1500);
+  /*** WPM ***/
 
-    this("target_wpm", adjusted);
+  config.getWPM = function () {
+    return options.target_wpm;
   };
 
-  /**
-   * Toggle the dark of the reader
-   */
-  jetzt.config.toggleDark = function () {
-    this("dark", !options.dark);
+  config.setWPM = wrapSetter(function (wpm) {
+    options.target_wpm = H.clamp(100, 1500);
+  });
+
+  config.adjustWPM = function (diff) {
+    this.setWPM(this.getWPM() + diff);
   };
 
-  jetzt.config.getSelectedTheme = function () {
-    return options.themes[options.selected_theme];
+
+  /*** DARK ***/
+
+  config.getDark = function (){
+    return options.dark;
   };
 
-  jetzt.config.nextTheme = function () {
-    var current = options.selected_theme;
-    var numThemes = options.themes.length;
-    this("selected_theme", (current + 1) % numThemes);
+  config.setDark = wrapSetter(function (dark) {
+    options.dark = dark;
+  });
+
+  config.toggleDark = function () {
+    this.setDark(!this.getDark())
   };
+
+
+  /*** THEMES ***/
+
+  config.getSelectedTheme = function () {
+    return themes[options.selected_theme];
+  };
+
+  config.listThemes = function () {
+    return themes;
+  };
+
+  config.selectTheme = wrapSetter(function (idx) {
+    options.selected_theme = H.clamp(0, idx, themes.length-1);
+  });
+
+  config.newTheme = wrapSetter(function (select) {
+    var newTheme = JSON.parse(JSON.stringify(this.getSelectedTheme()));
+    newTheme.name = "Custom Theme";
+    options.custom_themes.push(newTheme);
+    themes = DEFAULT_THEMES.concat(options.custom_themes);
+    if (select) {
+      this.selectTheme(99999999999);
+    } 
+  });
+
+  config.nextTheme = wrapSetter(function () {
+    options.selected_theme = (options.selected_theme + 1) % themes.length;
+  });
   
+
+
   // load the options from the default config backend
-  jetzt.config.setBackend(configBackend);
+  config.setBackend(configBackend);
 
 })(this);
 

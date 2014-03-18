@@ -200,14 +200,11 @@ section h3 {
 
 
 #spacing-demo {
+	float: right;
+	width: 500px;
 	box-shadow: 0 0 10px grey;
-	padding: 1em;
-	position: absolute;
-	top: 57%;
-	left: 34em;
-	font-size: 1.3em;
-	width: 30em;
-	font-family: Georgia;
+	padding: 10px;
+	box-sizing: border-box;
 	border-radius: 8px;
 }
 
@@ -225,6 +222,10 @@ section h3 {
 
 .end_clause {
 	background-color: violet;
+}
+
+.start_clause {
+	background-color: #7CC576;
 }
 
 .long_space {

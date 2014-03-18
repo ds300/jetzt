@@ -141,11 +141,17 @@
 
 			<p>Duration modifiers</p>
 
+			<aside id="spacing-demo">
+				<p>...occaecat cupidatat non <span class="end_clause">proident,</span> <span class="start_clause">sunt</span> in culpa qui officia deserunt mollit anim id est <span class="end_paragraph">laborum.</span></p>
+				<p class="long_space">&nbsp;</p>
+				<p><span class="start_paragraph">Lorem</span> ipsum dolor sit <span class="end_clause">amet,</span> consectetur adipisicing elit<span class="short_space">&nbsp;</span>&mdash;<span class="short_space">&nbsp;</span>sed do eiusmod tempor incididunt ut labore et dolore magna <span class="end_sentence">aliqua.</span> <span class="start_sentence">Ut</span> enim ad minim <span class="end_clause">veniam,</span> <span class="start_clause">quis</span> nostrud exercitation ullamco laboris <span class="short_space">&nbsp;</span>(nisi ut aliquip)<span class="short_space">&nbsp;</span> ex ea commodo <span class="end_sentence">consequat.</span> <span class="start_sentence">Duis</span> aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla <span class="end_clause">pariatur:</span> <span class="start_clause">Excepteur</span> sint occaecat cupidatat non <span class="end_clause">proident,</span> <span class="start_clause">sunt</span> in <span class="end_clause">culpa;</span> <span class="start_clause">qui</span> officia deserunt mollit anim id est <span class="end_paragraph">laborum.</span></p>
+				<p class="long_space">&nbsp;</p>
+				<p><span class="start_paragraph">Lorem</span> ipsum dolor sit amet...</p>
+			</aside>
 			<label ng-repeat-start="name in listModifierNames()" for="{{name}}">
 				<span class="{{name}}">{{name}}:</span><br/>
 				<input type="text" ng-model="options.modifiers[name]" id="{{name}}">
 			</label><br ng-repeat-end/>	
-
 		</section>
 		<section ng-show="editing == 'Experimental Features'">
 			<p>Coming soon...</p>
@@ -170,13 +176,8 @@
 
 
 
-	<!-- 	<aside id="spacing-demo">
-			<p>...occaecat cupidatat non proident<span class="end_clause">, </span>sunt in culpa qui officia deserunt mollit anim id est laborum<span class="end_sentence">. </span></p>
-			<span class="end_paragraph">&nbsp;</span>
-			<p><span class="start_paragraph">&nbsp;</span><span class="start_sentence">&nbsp;</span>Lorem ipsum dolor sit amet<span class="end_clause">, </span>consectetur adipisicing elit <span class="long_space">&mdash;</span> sed do eiusmod tempor incididunt ut labore et dolore magna aliqua<span class="end_sentence">. </span><span class="start_sentence">&nbsp;</span>Ut enim ad minim veniam<span class="end_clause">, </span>quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat<span class="end_sentence">. </span><span class="start_sentence">&nbsp;</span>Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur<span class="long_space">: </span>Excepteur sint occaecat cupidatat non proident<span class="end_clause">, </span>sunt in culpa<span class="short_space">; </span>qui officia deserunt mollit anim id est laborum<span class="end_sentence">. </span></p>
-			<p><span class="start_sentence">&nbsp;</span>Lorem ipsum dolor sit amet...</p>
-		</aside>
- -->
+	
+
 
 		</div>
 

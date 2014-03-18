@@ -32,13 +32,18 @@ module.exports = function(grunt) {
       }       
     	, 'jetzt-solid.min.js' : 'jetzt-solid.js'
     }
+    , watch: {
+      files: ["modules/**"]
+      , tasks: ["concat", "uglify"]
+    }
   });
 
   // These plugins provide necessary tasks.
   grunt.loadNpmTasks('grunt-contrib-concat');
   grunt.loadNpmTasks('grunt-contrib-uglify');
+  grunt.loadNpmTasks('grunt-contrib-watch');
   
   // Default task.
-  grunt.registerTask('default', ['concat', 'uglify']);
+  grunt.registerTask('default', ['concat', 'uglify', 'watch']);
 
 };

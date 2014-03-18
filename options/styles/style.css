@@ -159,9 +159,12 @@ input[type="color"] {
 	border: none;
 	width: 14px;
 	height: 18px;
-	margin-left: -16px;
 	cursor: pointer;
 	background: none;
+}
+
+.color-property input[type="color"] {
+	margin-left: -16px;
 }
 
 .edit-delete {

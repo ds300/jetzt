@@ -16,6 +16,7 @@
     , scale: 1
     , dark: false
     , show_message: false
+    , selection_color: "#FF0000"
     , modifiers: {
           normal: 1
         , start_clause: 1

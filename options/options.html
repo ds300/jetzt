@@ -24,10 +24,6 @@
 			</ul>
 		</nav>
 		<header>
-			<div class="save-cancel">
-				<button id="save" ng-click="save()" ng-disabled="isClean()">Save</button>
-				<button id="cancel" ng-click="load()" ng-disabled="isClean()">Cancel</button>
-			</div>
 			<h1>jetzt speed reader</h1>
 		</header>
 
@@ -105,6 +101,7 @@
 				<p>
 					<select id="fav_font"  ng-options="fnt.displayName as fnt.displayName for fnt in installedFonts" ng-model="options.font_family"></select>
 				</p>
+				<p>Selection color: <input type="color" ng-model="options.selection_color" name="{{property}}_{{style}}"></p>
 				<p>Theme:</p>
 				<ul id="themes-list">
 					<li ng-repeat="theme in options.themes track by $index"
@@ -134,6 +131,8 @@
 			<p>Coming soon...</p>
 		</section>
 		<section ng-show="editing == 'Reading'">
+<!-- 				<button id="save" ng-click="reset()" ng-disabled="isClean()">Reset</button>
+				<button id="cancel" ng-click="reset(true)" ng-disabled="isClean()">Reset to Defaults</button> -->
 			<label for="wpm">
 				Target WPM:<br/>
 				<input type="number" placeholder="400" id="wpm" ng-model="options.target_wpm">

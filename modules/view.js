@@ -165,9 +165,14 @@
     };
     
     this.setFont = function (font) {
-      // really, we should be setting font-family of 
-      //  ".sr-reader .sr-word-box .sr-word > span"
-      word.style.fontFamily = font;
+      // thanks for pointing that out
+      leftWord.style.fontFamily = font;
+      pivotChar.style.fontFamily = font;
+      rightWord.style.fontFamily = font;
+      leftWrap.style.fontFamily = font;
+      rightWrap.style.fontFamily = font;
+      wpm.style.fontFamily = font;
+      message.style.fontFamily = font;
     };
 
     this.applyTheme = function (theme) {
@@ -191,6 +196,7 @@
       progressBar.style.borderColor = style.progress_bar_foreground_color;
       progressBar.style.backgroundColor = style.progress_bar_background_color;
       message.style.color = style.message_color;
+      wpm.style.color = style.message_color;
     };
 
 
@@ -272,7 +278,7 @@
     overlay.style.left = (H.getScrollLeft() + rect.left) + "px";
     overlay.style.width = rect.width + "px";
     overlay.style.height = rect.height + "px";
-    overlay.style.backgroundColor = config(["view", "selection_color"]);
+    overlay.style.backgroundColor = config("selection_color");
     document.body.appendChild(overlay);
     elem.___jetztOverlay = overlay;
 

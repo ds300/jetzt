@@ -52,7 +52,6 @@ optsApp.controller('OptionsController',['$scope','$window',function($scope,$wind
 
 	$scope.$watch("options", function (val) {
 		if (val) {
-			console.log("a change was made")
 			configBackend.set(val);
 			$window.jetzt.config.refresh();
 		}
@@ -78,7 +77,6 @@ optsApp.controller("ThemeCtrl", function ($scope, $window) {
 		r.setWPM(400);
 		r.setWrap("“", "”");
 		$scope.$watch("options.selected_theme", function (val) {
-			console.log(val);
 			if (typeof val === 'number') {
 				var theme = $scope.options.themes[val];
 				r.applyTheme(theme);
@@ -105,7 +103,6 @@ optsApp.controller("ThemeCtrl", function ($scope, $window) {
 	$scope.newCustomTheme = function () {
 		var newTheme = angular.copy($scope.options.themes[$scope.options.selected_theme]);
 		newTheme.name = "Custom Theme";
-		console.log($scope.options.themes);
 		newTheme.custom = true;
 		$scope.options.themes.push(newTheme);
 		$scope.options.selected_theme = $scope.options.themes.length-1;

@@ -40,37 +40,21 @@
   height: 100%;
   top: 0px;
   left: 0px;
-  background-color: black;
   opacity: 0;
   -webkit-transition: opacity 0.34s ease;
   -moz-transition: opacity 0.34s ease;
   transition: opacity 0.34s ease;
 }
 
-.sr-blackout.in {
-  opacity: 0.18;
-}
-
-.sr-blackout.in.sr-dark {
-  opacity: 0.5;
-}
 
 .sr-reader > .sr-wrap {
   min-width: 40px;
-  background-color: #EEE;
-  color: #666;
-  font-family: Consolas, monaco, monospace;
   font-size: 50px;
   flex: 1 1 auto;
   padding: 15px 5px;
   line-height: 60px;
   box-sizing: border-box;
   -moz-box-sizing: border-box;
-}
-
-.sr-reader.sr-dark > .sr-wrap {
-  color: white;
-  background-color: #555;
 }
 
 .sr-reader .sr-wrap.sr-left {
@@ -86,20 +70,15 @@
 .sr-reader .sr-word-box {
   flex: 0 0 auto;
   width: 400px;
-  background: white;
   position: relative;
 }
 
-.sr-reader.sr-dark .sr-word-box {
-  background-color: black;
-}
 
 .sr-reader .sr-word-box .sr-progress {
   position: absolute;
   bottom: -10px;
   width: 400px;
   height: 3px;
-  background-color: #444;
   border-left: 0px solid #CCC;
   -moz-box-sizing: border-box;
   box-sizing: border-box;
@@ -115,8 +94,6 @@
   top: 0;
   right: 4px;
   font-size: 20px;
-  font-family: Consolas, monaco, monospace;
-  color: #777;
   text-align: right;
 }
 
@@ -135,16 +112,8 @@
   position: absolute;
   right: 4px;
   bottom: 0px;
-  font-family: Consolas, monaco, monospace;
-  color: black;
   font-size: 20px;
-  color: #777;
   box-sizing: border-box;
-}
-
-.sr-reader.sr-dark .sr-word-box .sr-wpm {
-  color: white;
-  background-color: black;
 }
 
 .sr-reader .sr-word-box .sr-word {
@@ -157,17 +126,8 @@
 
 .sr-reader .sr-word-box .sr-word > span {
   font-size: 50px;
-  color: black;
 }
 
-.sr-reader.sr-dark .sr-word-box .sr-word > span {
-  color: white;
-}
-
-.sr-reader.sr-dark .sr-word-box .sr-word .sr-pivot,
-.sr-reader .sr-word-box .sr-word .sr-pivot {
-  color: red;
-}
 
 .sr-input {
   position: absolute;
@@ -180,7 +140,6 @@
 }
 
 .sr-overlay {
-  background-color: red;
   opacity: 0.2;
   position: absolute;
   pointer-events: none;

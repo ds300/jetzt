@@ -253,6 +253,9 @@
     var numThemes = options.themes.length;
     this("selected_theme", (current + 1) % numThemes);
   };
+  
+  // load the options from the default config backend
+  jetzt.config.setBackend(configBackend);
 
 })(this);
 

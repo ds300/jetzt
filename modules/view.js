@@ -99,9 +99,6 @@
       } else {
         this.hideMessage();
       }
-
-      // initialise custom theme
-      this.setTheme(config("dark"));
     };
 
     this.appendTo = function (elem) {

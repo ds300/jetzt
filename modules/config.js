@@ -53,16 +53,14 @@
     // put more themes here
   ];
 
+  // this function makes sure that any custom themes existing on the user's
+  // local storage have up-to-date properties.
   function updateCustomThemes (customThemes) {
     var example = DEFAULT_THEMES[0];
     return customThemes.map(function (customTheme) {
       return H.recursiveExtend({}, example, theme);
     });
   }
-
-  // this gets set as the concatenation of DEFAULT_THEMES and
-  // options.custom_themes every time config is loaded from the backend.
-  var themes = DEFAULT_THEMES.slice(0);
 
   // Don't commit changes to these without prior approval please
   var DEFAULT_OPTIONS = {
@@ -90,97 +88,43 @@
   , custom_themes: []
   };
 
+
+
+  /*** STATE ***/
+
   // This is where we store the options for the current instance of jetzt.
   var options = JSON.parse(JSON.stringify(DEFAULT_OPTIONS));
 
-  // This is where we store the backend getters/setters. It is initialised
-  // with a localStorage placeholder for the bookmarklet and demo page.
-  var KEY = "jetzt-options";
+  // this gets set as the concatenation of DEFAULT_THEMES and
+  // options.custom_themes every time config is loaded from the backend.
+  var themes = DEFAULT_THEMES.slice(0);
 
-  var configBackend = {
-    get: function (cb) {
-      var json = localStorage.getItem(KEY);
-      if(json === null) {
-        cb("{}");
-      } else {
-        cb(json);
-      }
-    },
-    set: function (json) {
-      localStorage.setItem(KEY, json);
-    }
-  };
-
+  // list of folks to notify of changes
   var listeners = [];
 
   function announce () {
     listeners.forEach(function (cb) { cb(); });
   }
 
-  // all setter methods cause config to be persisted and onChange event to be
-  // fired.
-  function wrapSetter (fn) {
-    return function () {
-      fn.apply(this, arguments);
-      persist();
-      announce();
-    }
-  }
-
-  function persist () {
-    options.custom_themes = themes.slice(DEFAULT_THEMES.length); 
-    configBackend.set(JSON.stringify(options));
-    delete options.custom_themes;
-  }
-
-  function unpersist (json) {
-    try {
-      var opts = JSON.parse(json);
-      if (opts.config_version != CONFIG_VERSION) {
-
-        if (opts.custom_themes && opts.custom_themes.length > 0) {
-          opts.custom_themes = updateCustomThemes(opts.custom_themes);
-        }
-
-        opts.config_version = CONFIG_VERSION;
-      }
-
-      options = H.recursiveExtend({}, DEFAULT_OPTIONS, opts);
-      themes = DEFAULT_THEMES.concat(options.custom_themes);
-
-      announce();
-    } catch {
-      throw new Error("corrupt config json");
-    }
-  }
-
   /**
-   * config.setBackend
-   * Set the config 'backend' store. Should be an object with methods
-   * void get(cb(opts))
-   * void set(opts)
+   * takes a callback and invokes it each time an option changes
+   * returns a function which, when invoked, unregisters the callback
    */
-  config.setBackend = function (backend) {
-    configBackend = backend;
-    backend.get(unpersist);
-    announce();
-  };
-
-  config.getBackend = function () {
-    return configBackend;
-  };
-
   config.onChange = function (cb) {
     listeners.push(cb);
     return function () { H.removeFromArray(listeners, cb); };
   };
 
-  config.refresh = function () {
-    this.setBackend(configBackend);
-  };
+
 
 
   /*** GETTERS/SETTERS ***/
+
+  // here I use javascript's ability to define transparent getters and
+  // setters for property access and assignment on objects. This seems like
+  // bad style to me, but it makes writing angular forms much easier than
+  // when using opaque getters and setters.
+
   var getset = [
     [
       "scale",
@@ -198,9 +142,19 @@
       function (wpm) { options.target_wpm = H.clamp(100, wpm, 1500); }
     ],
     [
+      "selectionColor",
+      function () { return options.selection_color; },
+      function (color) { options.selection_color = color; }
+    ],
+    [
       "showMessage",
       function () { return options.show_message; },
       function (sm) { options.show_message = !!sm }
+    ],
+    [
+      "font",
+      function () { return options.font_family; },
+      function (font) { options.font_family = font; }
     ],
     [
       "theme",
@@ -217,6 +171,16 @@
     ]
   ];
 
+  // all setter methods cause config to be persisted and onChange event to be
+  // fired.
+  function wrapSetter (fn) {
+    return function () {
+      fn.apply(this, arguments);
+      persist();
+      announce();
+    }
+  }
+
   function makeGettersSetters (obj, list) {
     list.forEach(function (row) {
       var name = row[0]
@@ -229,7 +193,14 @@
 
   makeGettersSetters(config, getset);
 
+  // so now, e.g., if options.tartget_wpm === 1000, I could be all like
+  //
+  //    config.wpm += 1000;
+  //
+  // and now, because we defined the setter, options.target_wpm === 1500
 
+
+  // and the same for modifiers
   var modifier_getsets = [];
 
   function addModGetSet (name) {
@@ -250,14 +221,110 @@
 
   makeGettersSetters(config.modifiers, modifier_getsets);
 
+
+
+  /*** BACKEND ***/
+
+  // the backend is a swappable object with two methods, get and set. 
+  // get takes a cb and should invoke the callback, supplying the persisted
+  // JSON if available, or some falsey value if not. Set takes some json and
+  // presumably puts it somewhere. Or not. whatevs.
+
+  // It is initialised with a localStorage placeholder for the bookmarklet and
+  // demo page.
+  var KEY = "jetzt-options";
+
+  var configBackend = {
+    get: function (cb) {
+      var json = localStorage.getItem(KEY);
+      if(json) {
+        cb("{}");
+      } else {
+        cb(json);
+      }
+    },
+    set: function (json) {
+      localStorage.setItem(KEY, json);
+    }
+  };
+
+  /**
+   * Set the config 'backend' store. Should be an object with methods
+   * void get(cb(opts))
+   * void set(opts)
+   */
+  config.setBackend = function (backend) {
+    configBackend = backend;
+    config.refresh();
+    announce();
+  };
+
+  /**
+   * I'm not sure it's wise to make this available so probably best not to
+   * depend on it.
+   */
+  config.getBackend = function () {
+    return configBackend;
+  };
+
+  /**
+   * Triggers an automatic reload of the persisted options
+   */
+  config.refresh = function () {
+    backend.get(unpersist);
+  };
+
+  /*** (DE)SERIALISATION ***/
+
+  function persist () {
+    options.custom_themes = themes.slice(DEFAULT_THEMES.length); 
+    configBackend.set(JSON.stringify(options));
+    delete options.custom_themes;
+  }
+
+  function unpersist (json) {
+    try {
+      var opts = JSON.parse(json || "{}")
+        , repersist = false;
+      if (opts.config_version != CONFIG_VERSION) {
+
+        if (opts.custom_themes && opts.custom_themes.length > 0) {
+          opts.custom_themes = updateCustomThemes(opts.custom_themes);
+        }
+
+        opts.config_version = CONFIG_VERSION;
+        repersist = true;
+      }
+
+      options = H.recursiveExtend({}, DEFAULT_OPTIONS, opts);
+      themes = DEFAULT_THEMES.concat(options.custom_themes);
+
+      repersist && persist();
+      announce();
+    } catch {
+      throw new Error("corrupt config json");
+    }
+  }
+
+
+  /**
+   * convenience function for finding the highest of two modifiers.
+   */
   config.maxModifier = function (a, b) {
     return this.modifiers[a] > this.modifiers[b] ? a : b;
   };
 
+  /**
+   * Lists all themes, both default and custom.
+   */
   config.listThemes = function () {
     return themes;
   };
 
+  /**
+   * creates a new theme. If a truthy argument is passed, causes
+   * the new theme to be the selected theme.
+   */
   config.newTheme = wrapSetter(function (select) {
     var newTheme = JSON.parse(JSON.stringify(this.theme));
     newTheme.name = "Custom Theme";
@@ -265,6 +332,10 @@
     if (select) this.theme = newTheme;
   });
 
+  /**
+   * Cycles to the next theme in the list, or back to the start of the list
+   * when the end is reached.
+   */
   config.nextTheme = wrapSetter(function () {
     options.selected_theme = (options.selected_theme + 1) % themes.length;
   });
@@ -274,6 +345,3 @@
   config.setBackend(configBackend);
 
 })(this);
-
-
-

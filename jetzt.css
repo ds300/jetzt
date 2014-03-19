@@ -17,6 +17,7 @@
   -webkit-transition: top 0.34s ease;
   -moz-transition: top 0.34s ease;
   transition: top 0.34s ease;
+  width: auto;
 }
 
 .sr-reader {

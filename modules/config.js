@@ -88,7 +88,7 @@
   , custom_themes: []
   };
 
-
+  jetzt.DEFAULT_OPTIONS = JSON.parse(JSON.stringify(DEFAULT_OPTIONS));
 
   /*** STATE ***/
 
@@ -271,7 +271,7 @@
    * Triggers an automatic reload of the persisted options
    */
   config.refresh = function () {
-    backend.get(unpersist);
+    configBackend.get(unpersist);
   };
 
   /*** (DE)SERIALISATION ***/
@@ -301,8 +301,8 @@
 
       repersist && persist();
       announce();
-    } catch {
-      throw new Error("corrupt config json");
+    } catch (e) {
+      throw new Error("corrupt config json", e);
     }
   }
 
@@ -318,6 +318,7 @@
    * Lists all themes, both default and custom.
    */
   config.listThemes = function () {
+    for (var i=DEFAULT_THEMES.length; i<themes.length;i++) themes[i].custom = true;
     return themes;
   };
 
@@ -330,6 +331,16 @@
     newTheme.name = "Custom Theme";
     themes.push(newTheme);
     if (select) this.theme = newTheme;
+  });
+
+  config.removeTheme = wrapSetter(function (theme) {
+    var idx = themes.indexOf(theme);
+    if (idx > -1) {
+      themes.splice(idx, 1);
+      if (options.selected_theme === idx && themes.length === idx) {
+        options.selected_theme--;
+      }
+    }
   });
 
   /**

@@ -86,15 +86,15 @@
 
     this.applyConfig = function () {
       // initialise custom size/wpm
-      this.dark = config("dark");
-      var theme = config.getSelectedTheme();
-      this.applyTheme(theme);
+      this.dark = config.dark;
 
-      this.setScale(config("scale"));
-      this.setWPM(config("target_wpm"));
-      this.setFont(config("font_family"));
+      this.applyTheme(config.theme);
 
-      if (config("show_message")) {
+      this.setScale(config.scale);
+      this.setWPM(config.wpm);
+      this.setFont(config.font);
+
+      if (config.showMessage) {
         this.showMessage();
       } else {
         this.hideMessage();
@@ -180,22 +180,25 @@
       } else {
         style = theme.light;
       }
+      var c = style.colors;
+
       backdrop.offsetWidth;
-      backdrop.style.backgroundColor = style.backdrop_color;
       backdrop.style.opacity = style.backdrop_opacity;
-      wordBox.style.backgroundColor = style.background_color;
-      leftWord.style.color = style.foreground_color;
-      rightWord.style.color = style.foreground_color;
-      leftWrap.style.backgroundColor = style.wrap_background_color;
-      rightWrap.style.backgroundColor = style.wrap_background_color;
-      leftWrap.style.color = style.wrap_foreground_color;
-      rightWrap.style.color = style.wrap_foreground_color;
-      reticle.style.borderColor = style.reticle_color;
-      pivotChar.style.color = style.pivot_color;
-      progressBar.style.borderColor = style.progress_bar_foreground_color;
-      progressBar.style.backgroundColor = style.progress_bar_background_color;
-      message.style.color = style.message_color;
-      wpm.style.color = style.message_color;
+
+      backdrop.style.backgroundColor = c.backdrop;
+      wordBox.style.backgroundColor = c.background;
+      leftWord.style.color = c.foreground;
+      rightWord.style.color = c.foreground;
+      leftWrap.style.backgroundColor = c.wrap_background;
+      rightWrap.style.backgroundColor = c.wrap_background;
+      leftWrap.style.color = c.wrap_foreground;
+      rightWrap.style.color = c.wrap_foreground;
+      reticle.style.borderColor = c.reticle;
+      pivotChar.style.color = c.pivot;
+      progressBar.style.borderColor = c.progress_bar_foreground;
+      progressBar.style.backgroundColor = c.progress_bar_background;
+      message.style.color = c.message;
+      wpm.style.color = c.message;
     };
 
 
@@ -277,7 +280,7 @@
     overlay.style.left = (H.getScrollLeft() + rect.left) + "px";
     overlay.style.width = rect.width + "px";
     overlay.style.height = rect.height + "px";
-    overlay.style.backgroundColor = config("selection_color");
+    overlay.style.backgroundColor = config.selectionColor;
     document.body.appendChild(overlay);
     elem.___jetztOverlay = overlay;
 

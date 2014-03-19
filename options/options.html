@@ -58,10 +58,10 @@
 				</div>
 			</div>
 
-			<div id="theme-editor" ng-show="theme">
-				<button class="closeButton" style="float: right;" ng-click="finishEditing()"></button>
+			<div id="theme-editor" ng-show="editingStyle">
+				<a href="" class="done-btn" ng-click="finishEditing()">✓</a>
 				<label for="name">
-					<input type="text" id="name" ng-model="theme.name">
+					<input type="text" id="name" ng-model="options.theme.name">
 				</label>
 				<br/>
 				<a ng-click="editingStyle = 'light'"
@@ -78,43 +78,43 @@
 				     ng-show="editingStyle == style">
 					<label for="backdrop_opacity_{{style}}">
 						background opacity:<br />
-						<input type="range" ng-model="theme[style].backdrop_opacity" name="backdrop_opacity_{{style}}"
+						<input type="range" ng-model="options.theme[style].backdrop_opacity" name="backdrop_opacity_{{style}}"
 								min="0" max="1" step="0.01">
 					</label>
 					<div class="colors-wrapper">
-						<div class="color-property" ng-repeat="property in listProperties()"
+						<div class="color-property" ng-repeat="property in colorProperties"
 						     ng-class="{right: $odd}">
 							<label for="{{property}}_{{style}}">
-								<input type="color" ng-model="theme[style][property]" name="{{property}}_{{style}}">
-								{{removeCruft(property)}}
+								<input type="color" ng-model="options.theme[style].colors[property]" name="{{property}}_{{style}}">
+								{{noUnderscores(property)}}
 							</label>
 						</div>
 					</div>
 					
 				</div>
 				<p>Copy this to share with your friends:</p>
-				<input type="text" ng-value="theme | json" />
+				<input type="text" ng-value="options.theme | json" />
 			</div>
 
-			<div id="appearance-settings" ng-show="!theme">
+			<div id="appearance-settings" ng-show="!editingStyle">
 				<p>Font:</p>
 				<p>
-					<select id="fav_font"  ng-options="fnt.displayName as fnt.displayName for fnt in installedFonts" ng-model="options.font_family"></select>
+					<select id="fav_font"  ng-options="fnt.displayName as fnt.displayName for fnt in installedFonts" ng-model="options.font"></select>
 				</p>
-				<p>Selection color: <input type="color" ng-model="options.selection_color" name="{{property}}_{{style}}"></p>
+				<p>Selection color: <input type="color" ng-model="options.selectionColor" name="{{property}}_{{style}}"></p>
 				<p>Theme:</p>
 				<ul id="themes-list">
-					<li ng-repeat="theme in options.themes track by $index"
-					    ng-class="{active: options.selected_theme == $index}">
+					<li ng-repeat="theme in options.listThemes() track by $index"
+					    ng-class="{active: options.theme == theme}">
 					    <span class="edit-delete" ng-show="theme.custom">
-					    	<a href="" ng-click="editTheme($index)">edit</a>
-					    	<a href="" ng-click="deleteTheme($index)">&times;</a>
+					    	<a href="" ng-click="editTheme(theme)">edit</a>
+					    	<a href="" ng-click="options.removeTheme(theme)">&times;</a>
 					    </span>
-						<a href="" ng-click="options.selected_theme = $index">{{theme.name}}</a>
+						<a href="" ng-click="options.theme = theme">{{theme.name}}</a>
 					</li>
 				</ul>
 				<br />
-				<button ng-click="newCustomTheme()">Add Custom Theme</button>
+				<button ng-click="options.newTheme(true)">Add Custom Theme</button>
 				<br /><br />
 				<input type="text" placeholder="paste theme..." ng-model="pasted">
 
@@ -135,7 +135,7 @@
 				<button id="cancel" ng-click="reset(true)" ng-disabled="isClean()">Reset to Defaults</button> -->
 			<label for="wpm">
 				Target WPM:<br/>
-				<input type="number" placeholder="400" id="wpm" ng-model="options.target_wpm">
+				<input type="number" placeholder="400" id="wpm" ng-model="options.wpm">
 			</label>
 
 			<p>Duration modifiers</p>

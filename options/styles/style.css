@@ -128,11 +128,27 @@
 	box-sizing: border-box;
 	padding: 5px;
 	background-color: #F3F3F3;
-	border-radius: 4px;
 	position: relative;
 	margin-top: -15px;
 	margin-left: -15px;
 	overflow: auto;
+}
+
+#theme-editor .done-btn {
+	padding: 0px 4px;
+	display: block;
+	box-sizing: border-box;
+	text-decoration: none;
+	position: absolute;
+	top: 0px;
+	right: 0px;
+	font-size: 16px;
+	color: white;
+	background-color: #2878C2;
+}
+
+#theme-editor .done-btn:hover {
+	background-color: #0B2842;
 }
 
 .colors-wrapper {

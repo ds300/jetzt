@@ -8,10 +8,7 @@
 (function (window) {
 
   var jetzt = window.jetzt
-    , H = jetzt.helpers
-    , config = {};
-
-  jetzt.config = config;
+    , H = jetzt.helpers;
 
   // if you add any properties to themes, make sure to bump this
   var CONFIG_VERSION = 0;
@@ -53,19 +50,20 @@
     // put more themes here
   ];
 
+
   // this function makes sure that any custom themes existing on the user's
   // local storage have up-to-date properties.
   function updateCustomThemes (customThemes) {
     var example = DEFAULT_THEMES[0];
     return customThemes.map(function (customTheme) {
-      return H.recursiveExtend({}, example, theme);
+      return H.recursiveExtend(H.clone(example), customTheme);
     });
   }
 
   // Don't commit changes to these without prior approval please
   var DEFAULT_OPTIONS = {
     // if we change config structure in future versions, having this means
-    // we can update user's persisted configs to match.
+    // we can update users' persisted configs to match.
     config_version: CONFIG_VERSION
   , target_wpm: 400
   , scale: 1
@@ -84,20 +82,237 @@
     , long_space: 2.2
     }
   , font_family: "Menlo, Monaco, Consolas, monospace"
-  , selected_theme: 0 // index into `themes` array, not custom_themes
+  , selected_theme: 0
   , custom_themes: []
   };
 
-  jetzt.DEFAULT_OPTIONS = JSON.parse(JSON.stringify(DEFAULT_OPTIONS));
+  /*
+    What follows is rather a lot of cruft implemented for two reasons:
+
+      - To separate the internal representaion of the options (see above) from
+        the api that modifies it.
+
+      - To allow angular forms to be built and maintained really easily.
+
+    For these reasons, the design of jetzt configuration is as follows:
+    
+      - Storage Backend
+        This takes json and puts it somewhere persistent for later use by jetzt.
+
+      - Internal representaion (variable `options`, see near the bottom)
+        This is a dynamic representation of the current configuration. 
+        It is identical in structure to the json consumed and provided by the
+        backend.
+
+      - Config Frontend
+        The api for modifying the internal representaion. It is similar in
+        structure, but makes heavy use of javascript's ability to define
+        transparent getters and setters for property access and assignment on
+        objects. This is done for the sake of data validation and providing a
+        clean, future-proof api for writing angular forms and generally
+        configuring jetzt at runtime. I've got big plans for configuration so
+        hopefully this junk will save a lot of time.
+  */
+
+
+  // helper function for creating getter functions
+  function getter (obj, prop, transform) {
+    if (transform)
+      return function () { return transform(obj[prop]); };
+    else
+      return function () { return obj[prop]; };
+  }
+
+  // and for setters
+  function setter (obj, prop, transform) {
+    if (transform)
+      return function (val) { obj[prop] = transform(val); };
+    else
+      return function (val) { obj[prop] = val; }
+  }
+
+  // helper for making sure assigned numbers are within some range
+  function clamper (obj, prop, min, max) {
+    return setter(obj, prop, function (val) {
+      if (typeof val !== 'number') throw new Error("Expecting number");
+      return; H.clamp(min, val, max);
+    });
+  }
+
+  // and for making sure things are boolean
+  function bool (obj, prop) {
+    return setter(obj, prop, function (val) {
+      return !!val;
+    });
+  }
+
+  // colors need to be in hex form for the color picker to show them.
+  function color (obj, prop) {
+    return setter(obj, prop, function (val) {
+      if (!(typeof val === 'string') || !val.match(/^#[0-9a-fA-F]{6}$/))
+        throw new Error("bad color format");
+      else
+        return val;
+    });
+  }
+
+  // some things shouldn't be changed
+  function immuatble () {
+    return function () {
+      throw new Error("unmodifiable property");
+    }
+  }
+
+  // this takes a flat array of [property name, getter, setter] tuples
+  // it makes the transparent getters/setters for the given object, wrapping
+  // the setters in the provided wrapper.
+  // The wrapper is currently used in two situations. First, to make sure that
+  // the config.DEFAULTS frontend doesn't get changed. And second, to make sure
+  // that any time a variable is changed, the onchange event is triggered.
+  function makeGettersSetters (obj, list, mutatorWrapper) {
+    for (var i=0; i<list.length; i += 3) {
+      // list[i:i+3] is structured [property name, getter, setter]
+      obj.__defineGetter__(list[i], list[i+1]);
+      obj.__defineSetter__(list[i], mutatorWrapper(list[i+2]));
+    }
+  }
+
+  // front end for delay modifiers. has the same structure as in the internal
+  // representation, but with an additional `.list` method which returns the
+  // names of the modifiers.
+  function ModifiersFrontend (modifiers, mutatorWrapper) {
+    var defaults = DEFAULT_OPTIONS.modifiers;
+    var getset = [];
+    H.keys(defaults).forEach(function (key) {
+      getset.push(key, setter(modifiers, key), clamper(modifiers, key, 0, 5));
+    });
+    makeGettersSetters(this, getset, mutatorWrapper);
+    this.list = function () { return H.keys(defaults); }
+  }
+
+  // front end for individual themes. Again, same structure as IR but with
+  // a `.listColors` method.
+  function ThemeFrontend (theme, mutatorWrapper) {
+    this.listColors = function () { return H.keys(theme.colors); };
+
+    var colors = {};
+    makeGettersSetters(
+      colors,
+      H.flatten(H.keys(theme.colors).map(function (name) {
+        return [name, getter(theme.colors, name), color(theme.colors, name)];
+      })),
+      mutatorWrapper
+    );
+
+    makeGettersSetters(
+      this,
+      [
+        "backdrop_opacity"
+      , getter(theme, "backdrop_opacity")
+      , color(theme, "backdrop_opacity")
+
+        "colors", function () { return colors; } , immuatble()
+      ],
+      mutatorWrapper);
+  }
+
+  // front end for themes array. has a `.current` property which returns
+  // the theme currently in use and can be set to any of the objects returned by
+  // the `.list` method to change the theme. In addition, there's a `.next`
+  // method which cycles through the list of themes.
+  function ThemesFrontend (opts, mutatorWrapper) {
+    var themesArray;
+
+    function addRemoveMethod (customThemeFrontend) {
+      customThemeFrontend.remove = mutatorWrapper(function () {
+        var idx = themesArray.indexOf(this);
+        var optsIdx = idx - DEFAULT_THEMES.length;
+        themesArray.splice(idx, 1);
+        opts.custom_themes.splice(optsIdx, 1);
+        if (idx === themesArray.length) {
+          opts.selected_theme--;
+        }
+      });
+      return customThemeFrontend;
+    }
+
+    var themesArray = DEFAULT_THEMES.map(function (defaultTheme) {
+      return new ThemeFrontend(defaultTheme, immuatble);
+    }).concat(opts.custom_themes.map(function (customTheme) {
+      return addRemoveMethod(new ThemeFrontend(customTheme, mutatorWrapper));
+    }));
+
+    this.new = mutatorWrapper(function (select) {
+      var newTheme = JSON.parse(JSON.stringify(DEFAULT_THEMES[0]));
+      opts.custom_themes.push(newTheme);
+      themesArray.push(
+        addRemoveMethod(new ThemeFrontend(newTheme, mutatorWrapper)
+      );
+      if (select) {
+        opts.selected_theme = themesArray.length - 1;
+      }
+    });
+
+    this.list = function () { return themesArray.slice(0); };
+
+    var getset = [
+      "current"
+    , function () { return themesArray[opts.selected_theme]; }
+    , function (theme) {
+        var idx = themes.indexOf(theme);
+        if (idx > -1) {
+          options.selected_theme = idx;
+        } else {
+          themes.newTheme(true);
+          this.theme = H.recursiveExtend(this.theme, theme);
+        }
+      }
+    ];
+  }
+
+  function ConfigFrontend (opts, mutatorWrapper) {
+    var modifiers = new ModifiersFrontend(opts.modifiers, mutatorWrapper);
+    var themes = new ThemesFrontend(opts);
+    var get = function (prop) { return getter(opts, prop); }
+
+    var getset = [
+      "scale", get("scale"), clamper(opts, "scale", 0.1, 10)
+
+    , "dark", get("dark"), bool(opts, "dark")
+
+    , "wpm", get("target_wpm"), clamper(opts, "target_wpm", 100, 1500)
+
+    , "selection_color", get("selection_color"), color(opts, "selection_color")
+
+    , "show_message", get("show_message"), bool(opts, "show_message")
+
+    , "font", get("font_family"), setter(opts, "font_family")
+
+    , "theme"
+    , function () { return themes[opts.selected_theme]; }
+    , function (theme) {
+        var idx = themes.indexOf(theme);
+        if (idx > -1) {
+          options.selected_theme = idx;
+        } else {
+          themes.newTheme(true);
+          this.theme = H.recursiveExtend(this.theme, theme);
+        }
+      }
+
+    , "modifiers", function () { return modifiers; } , immuatble()
+    , "themes", function () { return themes; }, immuatble()
+    ];
+
+    makeGettersSetters(this, getset, mutatorWrapper);
+  }
+
 
   /*** STATE ***/
 
   // This is where we store the options for the current instance of jetzt.
-  var options = JSON.parse(JSON.stringify(DEFAULT_OPTIONS));
-
-  // this gets set as the concatenation of DEFAULT_THEMES and
-  // options.custom_themes every time config is loaded from the backend.
-  var themes = DEFAULT_THEMES.slice(0);
+  // The identity of the object never changes.
+  var options = H.clone(DEFAULT_OPTIONS);
 
   // list of folks to notify of changes
   var listeners = [];
@@ -106,122 +321,24 @@
     listeners.forEach(function (cb) { cb(); });
   }
 
+  jetzt.config = new ConfigFrontend(options, function (fn) {
+    return function () {
+      fn.apply(this, arguments);
+      announce();
+      persist();
+    };
+  });
+
+  jetzt.config.DEFAULTS = new ConfigFrontend(DEFAULT_OPTIONS, immuatble);
+
   /**
    * takes a callback and invokes it each time an option changes
    * returns a function which, when invoked, unregisters the callback
    */
-  config.onChange = function (cb) {
+  jetzt.config.onChange = function (cb) {
     listeners.push(cb);
     return function () { H.removeFromArray(listeners, cb); };
   };
-
-
-
-
-  /*** GETTERS/SETTERS ***/
-
-  // here I use javascript's ability to define transparent getters and
-  // setters for property access and assignment on objects. This seems like
-  // bad style to me, but it makes writing angular forms much easier than
-  // when using opaque getters and setters.
-
-  var getset = [
-    [
-      "scale",
-      function () { return options.scale; },
-      function (s) { options.scale = H.clamp(0.1, s, 10); }
-    ],
-    [
-      "dark",
-      function () { return options.dark; },
-      function (dark) { options.dark = !!dark; }
-    ],
-    [
-      "wpm",
-      function () { return options.target_wpm; },
-      function (wpm) { options.target_wpm = H.clamp(100, wpm, 1500); }
-    ],
-    [
-      "selectionColor",
-      function () { return options.selection_color; },
-      function (color) { options.selection_color = color; }
-    ],
-    [
-      "showMessage",
-      function () { return options.show_message; },
-      function (sm) { options.show_message = !!sm }
-    ],
-    [
-      "font",
-      function () { return options.font_family; },
-      function (font) { options.font_family = font; }
-    ],
-    [
-      "theme",
-      function () { return themes[options.selected_theme]; },
-      function (theme) {
-        var idx = themes.indexOf(theme);
-        if (idx > -1) {
-          options.selected_theme = idx;
-        } else {
-          config.newTheme(true);
-          this.theme = H.recursiveExtend(this.theme, theme);
-        }
-      }
-    ]
-  ];
-
-  // all setter methods cause config to be persisted and onChange event to be
-  // fired.
-  function wrapSetter (fn) {
-    return function () {
-      fn.apply(this, arguments);
-      persist();
-      announce();
-    }
-  }
-
-  function makeGettersSetters (obj, list) {
-    list.forEach(function (row) {
-      var name = row[0]
-        , get = row[1]
-        , set = row[2];
-      obj.__defineGetter__(name, get);
-      obj.__defineSetter__(name, wrapSetter(set));
-    });
-  }
-
-  makeGettersSetters(config, getset);
-
-  // so now, e.g., if options.tartget_wpm === 1000, I could be all like
-  //
-  //    config.wpm += 1000;
-  //
-  // and now, because we defined the setter, options.target_wpm === 1500
-
-
-  // and the same for modifiers
-  var modifier_getsets = [];
-
-  function addModGetSet (name) {
-    modifier_getsets.push([
-      name, 
-      function () { return options.modifiers[name]; },
-      function (n) { options.modifiers[name] = H.clamp(0, n, 5); }
-    ]);
-  }
-  
-  for (var name in options.modifiers) {
-    if (options.modifiers.hasOwnProperty(name)) {
-      addModGetSet(name);
-    }
-  }
-
-  config.modifiers = {};
-
-  makeGettersSetters(config.modifiers, modifier_getsets);
-
-
 
   /*** BACKEND ***/
 
@@ -260,18 +377,13 @@
   };
 
   /**
-   * I'm not sure it's wise to make this available so probably best not to
-   * depend on it.
-   */
-  config.getBackend = function () {
-    return configBackend;
-  };
-
-  /**
    * Triggers an automatic reload of the persisted options
    */
-  config.refresh = function () {
-    configBackend.get(unpersist);
+  config.refresh = function (cb) {
+    configBackend.get(function (json) {
+      unpersist(json);
+      cb && cb();
+    });
   };
 
   /*** (DE)SERIALISATION ***/
@@ -314,45 +426,8 @@
     return this.modifiers[a] > this.modifiers[b] ? a : b;
   };
 
-  /**
-   * Lists all themes, both default and custom.
-   */
-  config.listThemes = function () {
-    for (var i=DEFAULT_THEMES.length; i<themes.length;i++) themes[i].custom = true;
-    return themes;
-  };
 
-  /**
-   * creates a new theme. If a truthy argument is passed, causes
-   * the new theme to be the selected theme.
-   */
-  config.newTheme = wrapSetter(function (select) {
-    var newTheme = JSON.parse(JSON.stringify(this.theme));
-    newTheme.name = "Custom Theme";
-    themes.push(newTheme);
-    if (select) this.theme = newTheme;
-  });
-
-  config.removeTheme = wrapSetter(function (theme) {
-    var idx = themes.indexOf(theme);
-    if (idx > -1) {
-      themes.splice(idx, 1);
-      if (options.selected_theme === idx && themes.length === idx) {
-        options.selected_theme--;
-      }
-    }
-  });
-
-  /**
-   * Cycles to the next theme in the list, or back to the start of the list
-   * when the end is reached.
-   */
-  config.nextTheme = wrapSetter(function () {
-    options.selected_theme = (options.selected_theme + 1) % themes.length;
-  });
-  
-
-  // load the options from the default config backend
-  config.setBackend(configBackend);
+  // load the options from the default config backend to get the ball rolling
+  config.refresh();
 
 })(this);

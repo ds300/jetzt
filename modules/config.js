@@ -180,101 +180,95 @@
   };
 
 
+  /*** GETTERS/SETTERS ***/
+  var getset = [
+    [
+      "scale",
+      function () { return options.scale; },
+      function (s) { options.scale = H.clamp(0.1, s, 10); }
+    ],
+    [
+      "dark",
+      function () { return options.dark; },
+      function (dark) { options.dark = !!dark; }
+    ],
+    [
+      "wpm",
+      function () { return options.target_wpm; },
+      function (wpm) { options.target_wpm = H.clamp(100, wpm, 1500); }
+    ],
+    [
+      "showMessage",
+      function () { return options.show_message; },
+      function (sm) { options.show_message = !!sm }
+    ],
+    [
+      "theme",
+      function () { return themes[options.selected_theme]; },
+      function (theme) {
+        var idx = themes.indexOf(theme);
+        if (idx > -1) {
+          options.selected_theme = idx;
+        } else {
+          config.newTheme(true);
+          this.theme = H.recursiveExtend(this.theme, theme);
+        }
+      }
+    ]
+  ];
+
+  function makeGettersSetters (obj, list) {
+    list.forEach(function (row) {
+      var name = row[0]
+        , get = row[1]
+        , set = row[2];
+      obj.__defineGetter__(name, get);
+      obj.__defineSetter__(name, wrapSetter(set));
+    });
+  }
+
+  makeGettersSetters(config, getset);
 
 
-  /*** MODIFIERS ***/
+  var modifier_getsets = [];
 
-  config.getModifier = function (mod) {
-    return options.modifiers[mod] || 1;
-  };
+  function addModGetSet (name) {
+    modifier_getsets.push([
+      name, 
+      function () { return options.modifiers[name]; },
+      function (n) { options.modifiers[name] = H.clamp(0, n, 5); }
+    ]);
+  }
+  
+  for (var name in options.modifiers) {
+    if (options.modifiers.hasOwnProperty(name)) {
+      addModGetSet(name);
+    }
+  }
 
-  config.setModifier = wrapSetter(function (mod, val) {
-    options.modifiers[mod] = val;
-  });
+  config.modifiers = {};
+
+  makeGettersSetters(config.modifiers, modifier_getsets);
 
   config.maxModifier = function (a, b) {
-    if (this.getModifier(a) > this.getModifier(b)) {
-      return a;
-    } else {
-      return b;
-    }
-  };
-
-
-  /*** SCALE ***/
-
-  config.getScale = function () {
-    return options.scale;
-  };
-
-  config.setScale = wrapSetter(function (s) {
-    options.scale = H.clamp(0.1, s, 10);
-  });
-
-  config.adjustScale = function (diff) {
-    this.setScale(this.getScale() + diff);
-  };
-
-
-  /*** WPM ***/
-
-  config.getWPM = function () {
-    return options.target_wpm;
-  };
-
-  config.setWPM = wrapSetter(function (wpm) {
-    options.target_wpm = H.clamp(100, 1500);
-  });
-
-  config.adjustWPM = function (diff) {
-    this.setWPM(this.getWPM() + diff);
-  };
-
-
-  /*** DARK ***/
-
-  config.getDark = function (){
-    return options.dark;
-  };
-
-  config.setDark = wrapSetter(function (dark) {
-    options.dark = dark;
-  });
-
-  config.toggleDark = function () {
-    this.setDark(!this.getDark())
-  };
-
-
-  /*** THEMES ***/
-
-  config.getSelectedTheme = function () {
-    return themes[options.selected_theme];
+    return this.modifiers[a] > this.modifiers[b] ? a : b;
   };
 
   config.listThemes = function () {
     return themes;
   };
 
-  config.selectTheme = wrapSetter(function (idx) {
-    options.selected_theme = H.clamp(0, idx, themes.length-1);
-  });
-
   config.newTheme = wrapSetter(function (select) {
-    var newTheme = JSON.parse(JSON.stringify(this.getSelectedTheme()));
+    var newTheme = JSON.parse(JSON.stringify(this.theme));
     newTheme.name = "Custom Theme";
-    options.custom_themes.push(newTheme);
-    themes = DEFAULT_THEMES.concat(options.custom_themes);
-    if (select) {
-      this.selectTheme(99999999999);
-    } 
+    themes.push(newTheme);
+    if (select) this.theme = newTheme;
   });
 
   config.nextTheme = wrapSetter(function () {
     options.selected_theme = (options.selected_theme + 1) % themes.length;
   });
   
-
 
   // load the options from the default config backend
   config.setBackend(configBackend);

@@ -65,7 +65,11 @@ p.intro {
 
 <p>Remember to pull every now and then for bugfixes and new features.</p>
 
-<p><strong>Bookmarklet</strong>: Drag and drop this link to your bookmarks bar: <a id="bm-adder">jetzt</a></p>
+<p>
+<strong>Bookmarklet</strong>: Drag and drop this link to your bookmarks bar: <a id="bm-adder">jetzt</a><br/>
+This version uses the latest online files, this means it will stay up to date.
+To use the bookmarklet offline, bookmark the following link: <a id="bm-adder-offline">jetzt</a>.
+</p>
 
 <p>This is what jetzt will look like once activated:</p>
 
@@ -100,4 +104,15 @@ p.intro {
 			$("#bm-adder").attr("href",data);
 		},"text");
 	});
+	$.get("bookmarklet-offline.js", function( bookmarklet ) {
+		var href = bookmarklet;
+		$.get("jetzt-solid.min.js", function( js ) {
+			href = href.replace('"{JS}"',js);
+			$.get("jetzt.css", function( css ) {
+  			var css = css.replace(/[\n"']/g,"");
+  			href = href.replace('{CSS}',css);
+				$("#bm-adder-offline").attr("href",href);
+  		},"text");
+		},"text");
+	},"text");
 </script>

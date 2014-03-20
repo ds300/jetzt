@@ -65,7 +65,7 @@ p.intro {
 
 <p>Remember to pull every now and then for bugfixes and new features.</p>
 
-<p><strong>Bookmarklet</strong>: Drag and drop this link to your bookmarks bar: <a href="javascript:(function(){var addStyle=function(url){var style=document.createElement('link');style.rel='stylesheet';style.type='text/css';style.href=url;document.head.appendChild(style)};var addScript=function(url,cb){var script=document.createElement('script');script.src=url;if(cb){script.onload=cb}document.body.appendChild(script)};if(typeof window.jetzt==='undefined'){var cb=function(){addScript('https://rawgithub.com/ds300/jetzt/master/localstorage-config.js');window.jetzt.select()};addStyle('https://rawgithub.com/ds300/jetzt/master/jetzt.css');addScript('https://raw.github.com/ds300/jetzt/master/jetzt.js',cb)}else{window.jetzt.select()}})();">jetzt</a></p>
+<p><strong>Bookmarklet</strong>: Drag and drop this link to your bookmarks bar: <a id="bm-adder">jetzt</a></p>
 
 <p>This is what jetzt will look like once activated:</p>
 
@@ -91,3 +91,13 @@ p.intro {
 <p>We're looking for contributors! You can <a href="https://github.com/ds300/jetzt">fork this project</a>, contribute pull requests, and look through and fix one of our <a href="https://github.com/ds300/jetzt/issues">issues</a> if you like. Thanks!</p>
 
 <a href="https://github.com/ds300/jetzt"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://github-camo.global.ssl.fastly.net/e7bbb0521b397edbd5fe43e7f760759336b5e05f/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f677265656e5f3030373230302e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_green_007200.png"></a>
+
+
+<script src="http://code.jquery.com/jquery-1.11.0.min.js"></script>
+<script type="text/javascript">
+	$(function() {
+		$.get( "bookmarklet.js", function( data ) {
+			$("#bm-adder").attr("href",data);
+		},"text");
+	});
+</script>

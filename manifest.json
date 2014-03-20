@@ -44,5 +44,5 @@
 	    "scripts": ["background.js"],
 	    "persistent": false
 	},
-	 "options_page" : "options/options.html"
+	 "options_page" : "options/index.html"
 }

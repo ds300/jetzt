@@ -125,6 +125,16 @@
     return result;
   };
 
+  H.keys = function (obj) {
+    var result = [];
+    for (var prop in obj) { if (obj.hasOwnProperty(prop)) result.push(prop); }
+    return result;
+  };
+
+  H.clone = function (obj) {
+    return JSON.parse(JSON.stringify(obj));
+  }
+
 })(this);
 
 

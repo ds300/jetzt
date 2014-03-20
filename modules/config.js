@@ -13,43 +13,41 @@
   // if you add any properties to themes, make sure to bump this
   var CONFIG_VERSION = 0;
 
-  var DEFAULT_THEMES = [
-    {
-      "name": "Default"
-    , "dark": {
-        "backdrop_opacity": "0.5"
-      , "colors": {
-          "backdrop": "#000000"
-        , "background": "#303030"
-        , "foreground": "#E0E0E0"
-        , "message": "#909090"
-        , "pivot": "#E01000"
-        , "progress_bar_background": "#000000"
-        , "progress_bar_foreground": "#b1dcdb"
-        , "reticle": "#656565"
-        , "wrap_background": "#404040"
-        , "wrap_foreground": "#a1a1a1"
+  var DEFAULT_THEMES = {
+    "Classic": {
+      "dark": {
+        "backdrop_opacity": "0.5",
+        "colors": {
+          "backdrop": "#000000",
+          "background": "#303030",
+          "foreground": "#E0E0E0",
+          "message": "#909090",
+          "pivot": "#E01000",
+          "progress_bar_background": "#000000",
+          "progress_bar_foreground": "#b1dcdb",
+          "reticle": "#656565",
+          "wrap_background": "#404040",
+          "wrap_foreground": "#a1a1a1"
         }
-      }
-    , "light": {
-        "backdrop_opacity": "0.07"
-      , "colors": {
-          "backdrop": "black"
-        , "background": "#fbfbfb"
-        , "foreground": "#353535"
-        , "message": "#929292"
-        , "pivot": "#E01000"
-        , "progress_bar_background": "black"
-        , "progress_bar_foreground": "#00be0b"
-        , "reticle": "#efefef"
-        , "wrap_background": "#f1f1f1"
-        , "wrap_foreground": "#666"
+      },
+      "light": {
+        "backdrop_opacity": "0.07",
+        "colors": {
+          "backdrop": "black",
+          "background": "#fbfbfb",
+          "foreground": "#353535",
+          "message": "#929292",
+          "pivot": "#E01000",
+          "progress_bar_background": "black",
+          "progress_bar_foreground": "#00be0b",
+          "reticle": "#efefef",
+          "wrap_background": "#f1f1f1",
+          "wrap_foreground": "#666"
         }
       }
     }
     // put more themes here
-  ];
-
+  };
 
   // this function makes sure that any custom themes existing on the user's
   // local storage have up-to-date properties.
@@ -58,6 +56,18 @@
     return customThemes.map(function (customTheme) {
       return H.recursiveExtend(H.clone(example), customTheme);
     });
+  }
+
+  var DEFAULT_MODIFIERS = {
+    normal: 1,
+    start_clause: 1,
+    end_clause: 1.8,
+    start_sentence: 1.3,
+    end_sentence: 2.2,
+    start_paragraph: 2.0,
+    end_paragraph: 2.8,
+    short_space: 1.5,
+    long_space: 2.2
   }
 
   // Don't commit changes to these without prior approval please
@@ -70,21 +80,13 @@
     dark: false,
     show_message: false,
     selection_color: "#FF0000",
-    modifiers: {
-      normal: 1,
-      start_clause: 1,
-      end_clause: 1.8,
-      start_sentence: 1.3,
-      end_sentence: 2.2,
-      start_paragraph: 2.0,
-      end_paragraph: 2.8,
-      short_space: 1.5,
-      long_space: 2.2
-    },
+    modifiers: DEFAULT_MODIFIERS,
     font_family: "Menlo, Monaco, Consolas, monospace",
-    selected_theme: 0,
-    custom_themes: []
+    selected_theme: "Classic",
+    custom_themes: {}
   };
+
+
 
   /*
     What follows is rather a lot of cruft implemented for two reasons:
@@ -115,26 +117,19 @@
   */
 
 
-  // helper function for creating getter functions
-  function getter (obj, prop) {
-    return function () { return obj[prop]; };
-  }
-
-  // and for setters
-  function setter (obj, prop) {
-    return function (val) { obj[prop] = val; }
-  }
+  // wrapper helpers
 
   // helper for making sure assigned numbers are within some range
-  function clamper (setter, min, max) {
-    return function (val) {
-      if (typeof val !== 'number') throw new Error("Expecting number");
-      setter(H.clamp(min, val, max));
-    }
+  function clamper (min, max) {
+    return function (setter) {
+      return function (val) {
+        setter(H.clamp(min, val, max));
+      }
+    } 
   }
 
   // and for making sure things are boolean
-  function bool (setter) {
+  function bool () {
     return function (val) {
       setter(!!val);
     }
@@ -157,6 +152,10 @@
     }
   }
 
+  function identity (val) {
+    return val;
+  }
+
   // silly javascript not having built-in function composition
   function comp (f1, f2) {
     return function () {
@@ -169,7 +168,22 @@
     return function () { return val; };
   }
 
-  // this takes a flat array of [property name, getter, setter] tuples
+  // create a getter/setter pair on the given object, wrapping the setter
+  // in the given wrapper, if provided.
+  function getset (obj, key, setWrapper, get, set) {
+    get = get || function () { return obj[key]; };
+
+    set = set || function (val) { obj[key] = val; };
+
+    setWrapper = setWrapper || identity;
+
+    obj.__defineGetter__(key, get);
+    obj.__defineSetter__(key, setWrapper(set));
+  }
+
+
+
+  // this takes a flat array of [property name, getter, setter] tuples.
   // it makes the transparent getters/setters for the given object, wrapping
   // the setters in the provided wrapper.
   // The wrapper is currently used in two situations. First, to make sure that
@@ -209,113 +223,118 @@
     makeGettersSetters(this, [
       "backdrop_opacity",
       getter(style, "backdrop_opacity"),
-      color(setter(style, "backdrop_opacity")),
+      clamper(setter(style, "backdrop_opacity"), 0, 1),
 
       "colors", constantly(colors), immuatble()
 
     ], mutatorWrapper);
   }
 
+  // front end for individual themes. Again, same structure as IR
+  function ThemeFrontend (theme, mutatorWrapper) {
+    var light = new StyleFrontend(theme.light, mutatorWrapper);
+    var dark = new StyleFrontend(theme.dark, mutatorWrapper);
+    makeGettersSetters(this, [
   
+      "light", constantly(light), immuatble(),
 
-  // front end for themes array. has a `.current` property which returns
-  // the theme currently in use and can be set to any of the objects returned by
-  // the `.list` method to change the theme. In addition, there's a `.next`
-  // method which cycles through the list of themes. Also a `newTheme` method
-  // for... making... new themes...
+      "dark", constantly(dark), immuatble()
+
+    ], mutatorWrapper);
+  }
+
+
   function ThemesFrontend (opts, mutatorWrapper) {
-    var themesArray;
 
-    // front end for individual themes. Again, same structure as IR but with
-    // a `.remove` method
-    function ThemeFrontend (theme, mutatorWrapper) {
-      var light = new StyleFrontend(theme.light, mutatorWrapper);
-      var dark = new StyleFrontend(theme.dark, mutatorWrapper);
-      makeGettersSetters(this, [
-        "name",
-        getter(theme, "name"),
-        function (name) {
-          if (!(typeof name === 'string')) throw new Error("Expecting string");
-          theme.name = name.trim() || "Custom Theme";
-        },
-    
-        "light", constantly(light), immuatble(),
-
-        "dark", constantly(dark), immuatble()
-
-      ], mutatorWrapper);
+    function findTheme (id) {
+      return DEFAULT_THEMES[id] || opts.custom_themes[id];
     }
 
-    ThemeFrontend.prototype.remove = function () {
-      if (!this.isCustom()) {
-        throw new Error("Can't delete default themes")
-      } else {
-        var idx = themesArray.indexOf(this);
-        var optsIdx = idx - DEFAULT_THEMES.length;
-        themesArray.splice(idx, 1);
-        opts.custom_themes.splice(optsIdx, 1);
-        if (idx === themesArray.length) {
-          opts.selected_theme--;
-        }
-      }
+    this.list = function () {
+      return H.keys(DEFAULT_THEMES).concat(H.keys(opts.custom_themes)).sort();
     };
-
-    ThemeFrontend.prototype.isCustom = function () {
-      return themesArray.indexOf(this) >= DEFAULT_THEMES.length;
-    };
-
-    themesArray = DEFAULT_THEMES.map(function (defaultTheme) {
-      return new ThemeFrontend(defaultTheme, immuatble);
-    }).concat(opts.custom_themes.map(function (customTheme) {
-      return new ThemeFrontend(customTheme, mutatorWrapper);
-    }));
 
     this.next = mutatorWrapper(function () {
-      opts.selected_theme = (opts.selected_theme + 1) % themesArray.length;
+      var keys = this.list();
+      var idx = keys.indexOf(opts.selected_theme);
+      idx = (idx + 1) % keys.length;
+      opts.selected_theme = keys[i];
     });
 
-    this.newTheme = mutatorWrapper(function (select) {
-      var newTheme = JSON.parse(JSON.stringify(DEFAULT_THEMES[0]));
-      opts.custom_themes.push(newTheme);
-      var frontend = addRemoveMethod(
-        new ThemeFrontend(newTheme, mutatorWrapper)
-      );
-      themesArray.push(frontend);
-      if (select) {
-        opts.selected_theme = themesArray.length - 1;
+    this.isCustom = function (id) {
+      return !!opts.custom_themes[id];
+    };
+
+    this.get = function (id) {
+      var wrapper = this.isCustom(id) ? mutatorWrapper : immuatble;
+      var theme = findTheme(id);
+      if (!theme) throw new Error("Not a theme: " + id);
+      return new ThemeFrontend(theme, mutatorWrapper);
+    };
+
+    this.getCurrent = function () {
+      return this.get(this.current);
+    };
+
+    this.canRename = function (from, to) {
+      return this.isCustom(from)
+               && (from === to || (to.trim() !== "" && !findTheme(to)));
+    };
+
+    this.rename = mutatorWrapper(function (from, to) {
+      if (this.canRename(from, to)) {
+        opts.custom_themes[to] = opts.custom_themes[from];
+        delete opts.custom_themes[from];
+        if (opts.selected_theme === from) {
+          opts.selected_theme = to;
+        }
+        return true;
+      } else {
+        return false;
       }
-      return frontend;
     });
 
-    this.list = function () { return themesArray.slice(0); };
+    this.newTheme = mutatorWrapper(function (theme) {
+      var newTheme, name;
+      if (theme) {
+        newTheme = H.recursiveExtend(H.clone(DEFAULT_THEMES["Classic"]), theme);
+        name = "" + (theme.name || "Custom Theme");
+      } else {
+        newTheme = H.clone(findTheme(opts.selected_theme));
+        name = "Custom Theme";
+      }
+      // make sure there isn't already a theme with this name
+      var qualified = name;
+      var i = 1;
+      while (findTheme(qualified)) {
+        qualified = name + " " + i;
+        i++;
+      }
+      opts.custom_themes[name] = newTheme;
+    });
 
     var getset = [
       "current",
-      function () { return themesArray[opts.selected_theme]; },
-      function (theme) {
-        var idx = themes.indexOf(theme);
-        if (idx > -1) {
-          options.selected_theme = idx;
-        } else {
-          this.newTheme(true);
-          H.recursiveExtend(this.theme, theme);
+      getter(opts, "selected_theme"),
+      function (id) {
+        if (DEFAULT_THEMES[id] || opts.custom_themes[id]) {
+          opts.selected_theme = id;
         }
       }
     ];
+    
     makeGettersSetters(this, getset, mutatorWrapper);
   }
 
   // front end for entire jetzt config.
   function ConfigFrontend (opts, mutatorWrapper) {
-    var modifiers = new UniformFrontend(opts.modifiers, function (setter) {
-      return mutatorWrapper(clamper(setter, 0, 5));
-    });
+    var modifiers = new UniformFrontend(opts.modifiers, mutatorWrapper);
     var themes = new ThemesFrontend(opts, mutatorWrapper);
     var get = function (prop) { return getter(opts, prop); }
     var set = function (prop) { return setter(opts, prop); }
 
     var getset = [
-      "scale", get("scale"), clamper(set("scale"), 0.1, 10)
+      "scale", get("scale"), clamper(set("scale"), 0.1, 10),
 
       "dark", get("dark"), bool(set("scale")),
 
@@ -351,9 +370,10 @@
 
   jetzt.config = new ConfigFrontend(options, function (fn) {
     return function () {
-      fn.apply(this, arguments);
+      var result = fn.apply(this, arguments);
       announce();
       persist();
+      return result;
     };
   });
 
@@ -417,9 +437,8 @@
   /*** (DE)SERIALISATION ***/
 
   function persist () {
-    options.custom_themes = themes.slice(DEFAULT_THEMES.length); 
+    console.log("persisting", options.modifiers.end_clause);
     configBackend.set(JSON.stringify(options));
-    delete options.custom_themes;
   }
 
   function unpersist (json) {
@@ -428,16 +447,21 @@
         , repersist = false;
       if (opts.config_version != CONFIG_VERSION) {
 
-        if (opts.custom_themes && opts.custom_themes.length > 0) {
-          opts.custom_themes = updateCustomThemes(opts.custom_themes);
+        if (opts.custom_themes) {
+          H.keys(opts.custom_themes).forEach(function (id) {
+            var customTheme = opts.custom_themes[id];
+            opts.custom_themes[id] =
+                    H.recursiveExtend(DEFAULT_THEMES['Classic'], customTheme);
+          });
         }
 
         opts.config_version = CONFIG_VERSION;
         repersist = true;
       }
 
-      options = H.recursiveExtend({}, DEFAULT_OPTIONS, opts);
-      themes = DEFAULT_THEMES.concat(options.custom_themes);
+      H.recursiveExtend(options, opts);
+
+      window.jazz = options;
 
       repersist && persist();
       announce();

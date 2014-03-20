@@ -88,13 +88,13 @@
       // initialise custom size/wpm
       this.dark = config.dark;
 
-      this.applyTheme(config.theme);
+      this.applyTheme(config.themes.current);
 
       this.setScale(config.scale);
       this.setWPM(config.wpm);
       this.setFont(config.font);
 
-      if (config.showMessage) {
+      if (config.show_message) {
         this.showMessage();
       } else {
         this.hideMessage();
@@ -280,7 +280,7 @@
     overlay.style.left = (H.getScrollLeft() + rect.left) + "px";
     overlay.style.width = rect.width + "px";
     overlay.style.height = rect.height + "px";
-    overlay.style.backgroundColor = config.selectionColor;
+    overlay.style.backgroundColor = config.selection_color;
     document.body.appendChild(overlay);
     elem.___jetztOverlay = overlay;
 

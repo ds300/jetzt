@@ -37,9 +37,7 @@
 	text-decoration: none;
 }
 
-.ng-hide {
-	display: none;
-}
+
 
 #reader-demo {
 	width: 400px;
@@ -134,7 +132,7 @@
 	overflow: auto;
 }
 
-#theme-editor .done-btn {
+.done-btn {
 	padding: 0px 4px;
 	display: block;
 	box-sizing: border-box;
@@ -223,4 +221,8 @@ a.edit-light-dark-tab:hover {
 a.edit-light-dark-tab.active {
 	color: black;
 	border-bottom: 2px solid #444;
+}
+
+*.ng-hide {
+	display: none;
 }

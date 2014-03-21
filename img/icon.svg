@@ -1,19 +1,85 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!-- Generator: Adobe Illustrator 16.0.4, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
-<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
-<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="247px"
-	 height="247px" viewBox="0 0 247 247" enable-background="new 0 0 247 247" xml:space="preserve">
-<g id="Layer_1">
-	<path fill="#C22126" d="M127.896,172.899c-8.375,0-22.688-2.062-32.25-11.625s-13.75-19.75-13.75-38.312s4.625-25.188,7.125-29.688
-		s12.875-19,34.5-19c21.625,0,32.5,12.5,37.875,23.375s3.75,26.875,3.75,26.875l-60.75,9c-0.25,4.5,1.875,8.625,3.5,10.625
-		s4.625,6.25,11.25,8.75c6.625,2.5,13.903,2.812,19.625,1.875c6.875-1.125,17.5-6.25,17.5-6.25l6.375,17.375
-		C150.396,170.899,136.271,172.899,127.896,172.899z M142.021,112.774c0-3.375,0-10.375-4.125-15.125s-11.25-5.875-14.26-5.875
-		c-3.01,0-8.115,0-14.615,6s-6.125,20.75-6.125,20.75L142.021,112.774z"/>
-</g>
-<g id="Layer_2">
-	<circle fill="none" stroke="#000000" stroke-width="19" stroke-miterlimit="10" cx="125.084" cy="122.945" r="101.743"/>
-	<line fill="none" stroke="#000000" stroke-width="19" stroke-miterlimit="10" x1="125.085" y1="60.379" x2="125.085" y2="21.202"/>
-	
-		<line fill="none" stroke="#000000" stroke-width="19" stroke-miterlimit="10" x1="125.085" y1="224.688" x2="125.085" y2="185.896"/>
-</g>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   version="1.1"
+   width="52"
+   height="52"
+   id="svg2">
+  <defs
+     id="defs4" />
+  <metadata
+     id="metadata7">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     transform="translate(-184.60001,-486.96219)"
+     id="layer1">
+    <rect
+       width="52"
+       height="52"
+       x="184.60001"
+       y="486.96219"
+       id="rect3835"
+       style="fill:#ffffff;fill-opacity:1;stroke:none" />
+    <text
+       x="188"
+       y="524.36218"
+       id="text2985"
+       xml:space="preserve"
+       style="font-size:40px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Monospace;-inkscape-font-specification:Monospace"><tspan
+         x="188"
+         y="524.36218"
+         id="tspan2987">j</tspan></text>
+    <text
+       x="206"
+       y="524.36218"
+       id="text2989"
+       xml:space="preserve"
+       style="font-size:40px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#fd0a00;fill-opacity:1;stroke:none;font-family:Monospace;-inkscape-font-specification:Monospace"><tspan
+         x="206"
+         y="524.36218"
+         id="tspan2991">e</tspan></text>
+    <rect
+       width="4.8000002"
+       height="7.8000002"
+       x="216"
+       y="488.56219"
+       id="rect3761"
+       style="fill:#b3b3b3;fill-opacity:1;stroke:none" />
+    <rect
+       width="63.599998"
+       height="3.8"
+       x="178.8"
+       y="484.96216"
+       id="rect3763"
+       style="fill:#b3b3b3;fill-opacity:1;stroke:none" />
+    <rect
+       width="4.8000002"
+       height="7.8000002"
+       x="216"
+       y="528.96222"
+       id="rect3831"
+       style="fill:#b3b3b3;fill-opacity:1;stroke:none" />
+    <rect
+       width="63.599998"
+       height="3.8"
+       x="180"
+       y="536.56213"
+       id="rect3833"
+       style="fill:#b3b3b3;fill-opacity:1;stroke:none" />
+  </g>
 </svg>

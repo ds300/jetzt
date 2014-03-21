@@ -1,6 +1,6 @@
 var optsApp = angular.module('optsApp',['ngRoute']);
 
-optsApp.value('config', window.jetzt.config);
+optsApp.value('jetzt', window.jetzt);
 
 optsApp.value('loremIpsum',
 	"Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy"
@@ -27,48 +27,66 @@ optsApp.controller("MenuCtrl", function ($scope, $route) {
 	});
 });
 
-optsApp.controller("ReadingCtrl", function ($scope, $window, config) {
+optsApp.factory("Persist", function ($window) {
+	var persisters = [];
+	$window.onbeforeunload = function () {
+		persisters.forEach(function (f) { f(); });
+	};
 
-	$scope.modifiers = angular.copy(config.modifiers);
+	return function ($scope, persister) {
+		$scope.$on("$destroy", function () {
+			persister();
+			persisters.splice(persisters.indexOf(persister), 1);
+		});
+		persisters.push(persister);
+	};
+});
 
-	var defaults = config.DEFAULTS.modifiers;
+optsApp.controller("ReadingCtrl", function ($scope, $window, jetzt, Persist) {
+
+	var defaults = jetzt.config.DEFAULTS.modifiers;
 
 	var saved;
 
-	config.refresh(function () {
-		saved = angular.copy(config.modifiers);
+	// make sure we get the versions from storage
+	jetzt.config.refresh(function () {
+		$scope.modifiers = angular.copy(jetzt.config("modifiers"));
+		saved = angular.copy(jetzt.config("modifiers"));
+		$scope.$$phase || $scope.$apply();
 	});
 
 	$scope.resetDefaultModifiers = function () {
-		angular.extend(config.modifiers, defaults);
+		jetzt.config("modifiers", defaults);
+		$scope.modifiers = angular.copy(defaults);
 	};
 
 	$scope.resetSessionModifiers = function () {
-		saved && angular.extend(config.modifiers, saved);
+		if (saved) {
+			jetzt.config("modifiers", saved);
+			$scope.modifiers = angular.copy(saved);
+		}
 	};
 
 	$scope.isDefaultClean = function () {
-		return angular.equals(defaults, config.modifiers)
+		return angular.equals(defaults, $scope.modifiers); 
 	};
 
 	$scope.isSessionClean = function () {
-		return angular.equals(saved, config.modifiers);
+		return angular.equals(saved, $scope.modifiers);
 	};
 
-	var persist = function () {
-		angular.extend(config.modifiers, $scope.modifiers);
-		$window.onbeforeunload = null;
-	};
+	$scope.modifiersList = jetzt.helpers.keys(defaults);
 
-	$scope.$on("$destroy", persist);
 
-	$window.onbeforeunload = persist;
+	Persist($scope, function () {
+		jetzt.config("modifiers", $scope.modifiers);
+	});
 });
 
-optsApp.controller("AppearanceCtrl", function ($scope, config) {
+optsApp.controller("AppearanceCtrl", function ($scope, jetzt, Persist) {
 
-	$scope.config = config;
-	$scope.themes = config.themes;
+	$scope.themes = jetzt.themes;
+	$scope.config = jetzt.config;
 
 	window.chrome.fontSettings.getFontList(function (fonts){
 		$scope.$$phase || $scope.$apply(function () {
@@ -76,32 +94,34 @@ optsApp.controller("AppearanceCtrl", function ($scope, config) {
 		});
 	});
 
-	var editingId;
+	jetzt.config.refresh(function () {
+		$scope.font = jetzt.config("font_family");
+		$scope.selectionColor = jetzt.config("selection_color");
+		$scope.$$phase || $scope.$apply();
+	});
 
-	$scope.editTheme = function (id) {
-		config.themes.current = id;
-		$scope.theme = config.themes.get(id);
-		$scope.themeName = id;
-		editingId = id;
+	$scope.editTheme = function (idx) {
+		jetzt.themes.select(idx);
+		$scope.theme = jetzt.config.getSelectedTheme();
 		$scope.editingStyle = "light";
 	};
 
 	$scope.finishEditing = function () {
-		if (!config.themes.rename(editingId, $scope.themeName)) return;
-		$scope.editingStyle = null;
-		editingId = null;
-		$scope.themeName = null;
+		jetzt.config.save();
 		$scope.theme = null;
+		$scope.editingStyle = null;
 	};
 
-	$scope.canRename = function () {
-		return editingId
-		    && config.themes.canRename(editingId, $scope.themeName);
+	$scope.newTheme = function () {
+		jetzt.themes.newTheme();
+		$scope.editTheme(jetzt.themes.list().length - 1);
 	};
 
 	$scope.noUnderscores = function (s) {
 		return s.replace(/_/g, " ");
 	};
+
+	$scope.colorsList = jetzt.helpers.keys(jetzt.config.getSelectedTheme().light.colors);
 
 	$scope.$watch("pasted", function (val) {
 		if (val) {
@@ -110,12 +130,17 @@ optsApp.controller("AppearanceCtrl", function ($scope, config) {
 				var theme = JSON.parse(val);
 
 				// TODO: validate the theme properly
-				config.themes.newTheme(theme);
+				jetzt.themes.newTheme(theme);
 
 			} catch (e) {
 				$scope.error = "Invalid theme";
 			}
 		}
+	});
+
+	Persist($scope, function () {
+		jetzt.config("font_family", $scope.font);
+		jetzt.config("selection_color", $scope.selectionColor);
 	});
 });
 
@@ -123,7 +148,7 @@ optsApp.controller("KeyboardCtrl", function ($scope) {
 	//blah
 });
 
-optsApp.directive("readerDemo", function (loremIpsum, config, $window) {
+optsApp.directive("readerDemo", function (loremIpsum, jetzt, $window) {
 	return {
 		scope: false,
 		restrict: "A",
@@ -146,17 +171,13 @@ optsApp.directive("readerDemo", function (loremIpsum, config, $window) {
 
 			r.dark = lightdark === "dark";
 
-			$scope.$watch("themes.current", function (id) {
-				if (id) {
-					r.applyTheme(config.themes.get(id));
+			$scope.$watch(jetzt.config.getSelectedTheme, function (theme) {
+				if (theme) {
+					r.applyTheme(theme);
 				}
 			}, true);
 
-			$scope.$watch("theme", function (theme) {
-				if (theme) { r.applyTheme(theme); }
-			}, true)
-
-			$scope.$watch("config.font", function (val) {
+			$scope.$watch("font", function (val) {
 				r.setFont(val);
 				r.setWord("jetzt");
 			});

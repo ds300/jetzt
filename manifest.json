@@ -13,6 +13,7 @@
                 "modules/preamble.js"
               , "modules/helpers.js"
               , "modules/config.js"
+              , "modules/themes.js"
               , "modules/parse.js"
               , "modules/exec.js"
               , "modules/view.js"

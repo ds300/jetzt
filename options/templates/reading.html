@@ -8,7 +8,7 @@
 		<p class="long_space">&nbsp;</p>
 		<p><span class="start_paragraph">Lorem</span> ipsum dolor sit amet...</p>
 	</aside>
-	<label ng-repeat-start="name in modifiers.list()" for="{{name}}">
+	<label ng-repeat-start="name in modifiersList" for="{{name}}">
 		<span class="{{name}}">{{name}}:</span><br/>
 		<input type="number" ng-model="modifiers[name]" ng-trim="false" id="{{name}}">
 	</label><br ng-repeat-end/>

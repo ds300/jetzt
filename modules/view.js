@@ -86,15 +86,15 @@
 
     this.applyConfig = function () {
       // initialise custom size/wpm
-      this.dark = config.dark;
+      this.dark = config("dark");
 
-      this.applyTheme(config.themes.current);
+      this.applyTheme(config.getSelectedTheme());
 
-      this.setScale(config.scale);
-      this.setWPM(config.wpm);
-      this.setFont(config.font);
+      this.setScale(config("scale"));
+      this.setWPM(config("target_wpm"));
+      this.setFont(config("font_family"));
 
-      if (config.show_message) {
+      if (config("show_message")) {
         this.showMessage();
       } else {
         this.hideMessage();
@@ -280,7 +280,7 @@
     overlay.style.left = (H.getScrollLeft() + rect.left) + "px";
     overlay.style.width = rect.width + "px";
     overlay.style.height = rect.height + "px";
-    overlay.style.backgroundColor = config.selection_color;
+    overlay.style.backgroundColor = config("selection_color");
     document.body.appendChild(overlay);
     elem.___jetztOverlay = overlay;
 

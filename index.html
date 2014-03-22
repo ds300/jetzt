@@ -1,0 +1,103 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>jetzt - a Speed Reader Extension for Chrome</title>
+<link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Ubuntu:300,500">
+<link rel="icon" href="favicon.ico">
+<style>
+html {
+  background-color: #eee;
+}
+
+body {
+  background-color: #fff;
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 48px;
+  font: 18px/24px Ubuntu, sans-serif;
+  font-weight: 300;
+  -webkit-box-shadow: 0px 0px 48px 0px rgba(192, 192, 192, 0.5);
+  -moz-box-shadow: 0px 0px 48px 0px rgba(192, 192, 192, 0.5);
+  box-shadow: 0px 0px 48px 0px rgba(192, 192, 192, 0.5);
+}
+
+h1, h2, h3 {
+  color: #555;
+  font-family: Ubuntu, sans-serif;
+  font-weight: 500;
+}
+
+h1 {
+  font-size: 8em;
+  line-height: 1em;
+  margin: 0;
+  padding: 0;
+  margin-left: -12px;
+}
+
+h2 {
+  font-size: 2em;
+  margin-top: 36px;
+}
+
+p.intro {
+  max-width: 50%;
+  float: right;
+  color: #777;
+  font-size: 24px;
+  line-height: 36px;
+}
+</style>
+
+<p class="intro">A free and open source speed-reader extension for <a href="http://google.com/chrome">Chrome</a>, and bookmarklet for other browsers.</p>
+
+<h1><img src="img/logo.svg" alt="jetzt" width="320"></h1>
+
+<h2 id="install">Install</h2>
+
+<p><strong>Chrome Extension</strong>: This is beta software, so a proper chrome extension package is not yet provided. Meanwhile, please follow these steps:
+
+<ul>
+<li>Clone <a href="https://github.com/ds300/jetzt">this repository</a>
+<li>In Chrome, navigate to <a href="chrome://extensions">chrome://extensions</a>
+<li>Enable developer mode, click &quot;Load unpacked extension...&quot;
+<li>Select the directory you cloned
+</ul>
+
+<p>Remember to pull every now and then for bugfixes and new features.</p>
+
+<p><strong>Bookmarklet</strong>: Drag and drop this link to your bookmarks bar: <a id="bm-adder">jetzt</a></p>
+
+<p>This is what jetzt will look like once activated:</p>
+
+<p><img src="img/animation.gif" alt=""></p>
+
+<h2 id="use">Use</h2>
+
+<p>Control is currently keyboard-only.</p>
+
+<ul>
+<li><p>Initiate jetzt by pressing <code>alt</code>-<code>s</code> and clicking on the block of text you wish to read. Alternatively, select some text before pressing <code>alt</code>-<code>s</code>.</p></li>
+<li><p>Change size with <code>+</code>/<code>-</code>.</p></li>
+<li><p>Go faster/slower with up/down arrow keys.</p></li>
+<li><p>Go back/forward a sentence with left/right arrow keys (hold <code>alt</code> to navigate by paragraphs).</p></li>
+<li><p>Pause with space.</p></li>
+<li><p>Close with escape.</p></li>
+<li><p>Switch between light/dark themes with <code>0</code></p></li>
+<li><p>Toggle summary stats with <code>/</code> or <code>?</code> at the end of a run</p></li>
+</ul>
+
+<h2>Contribute</h2>
+
+<p>We're looking for contributors! You can <a href="https://github.com/ds300/jetzt">fork this project</a>, contribute pull requests, and look through and fix one of our <a href="https://github.com/ds300/jetzt/issues">issues</a> if you like. Thanks!</p>
+
+<a href="https://github.com/ds300/jetzt"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://github-camo.global.ssl.fastly.net/e7bbb0521b397edbd5fe43e7f760759336b5e05f/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f677265656e5f3030373230302e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_green_007200.png"></a>
+
+
+<script src="https://code.jquery.com/jquery-1.11.0.min.js"></script>
+<script type="text/javascript">
+	$(function() {
+		$.get( "bookmarklet.js", function( data ) {
+			$("#bm-adder").attr("href",data);
+		},"text");
+	});
+</script>

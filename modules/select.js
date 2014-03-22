@@ -8,8 +8,7 @@
 (function (window) {
 
   var jetzt  = window.jetzt
-    , H      = jetzt.helpers
-    , config = jetzt.config;
+    , H      = jetzt.helpers;
 
   function on (event, cb) {
     window.addEventListener(event, cb);

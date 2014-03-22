@@ -1,0 +1,78 @@
+<section>
+	
+	<div id="reader-demo">
+		<h2>preview</h2>
+		<div reader-demo="light">
+			<span class="demo-label">light</span>
+			
+		</div>
+		<div reader-demo="dark">
+			<span class="demo-label">dark</span>
+		</div>
+	</div>
+
+	<div id="theme-editor" ng-show="editingStyle">
+		<a href="" class="done-btn" ng-click="finishEditing()">✓</a>
+		<label for="name">
+			<form ng-submit="finishEditing()">
+				<input type="text" id="name" ng-model="theme.name">
+			</form>
+		</label>
+		<br/>
+		<a ng-click="editingStyle = 'light'"
+			class="edit-light-dark-tab"
+			ng-class="{active: editingStyle == 'light'}">
+			light
+		</a>
+		<a ng-click="editingStyle = 'dark'"
+			class="edit-light-dark-tab"
+			ng-class="{active: editingStyle == 'dark'}">
+			dark
+		</a>
+		<div ng-repeat="style in ['light','dark']"
+		     ng-show="editingStyle == style">
+			<label for="backdrop_opacity_{{style}}">
+				background opacity:<br />
+				<input type="range" ng-model="theme[style].backdrop_opacity" name="backdrop_opacity_{{style}}"
+						min="0" max="1" step="0.01">
+			</label>
+			<div class="colors-wrapper">
+				<div class="color-property" ng-repeat="property in colorsList"
+				     ng-class="{right: $odd}">
+					<label for="{{property}}_{{style}}">
+						<input type="color" ng-model="theme[style].colors[property]" name="{{property}}_{{style}}">
+						{{noUnderscores(property)}}
+					</label>
+				</div>
+			</div>
+			
+		</div>
+		<p>Copy this to share with your friends:</p>
+		<input type="text" ng-value="theme | json" />
+	</div>
+
+	<div id="appearance-settings" ng-show="!editingStyle">
+		<p>Font:</p>
+		<p>
+			<select id="fav_font"  ng-options="fnt.displayName as fnt.displayName for fnt in installedFonts" ng-model="font"></select>
+		</p>
+		<p>Selection color: <input type="color" ng-model="selectionColor" name="{{property}}_{{style}}"></p>
+		<p>Theme:</p>
+		<ul id="themes-list">
+			<li ng-repeat="theme in themes.list() track by $index"
+			    ng-class="{active: config('selected_theme') == $index}">
+			    <span class="edit-delete" ng-show="theme.custom">
+			    	<a href="" ng-click="editTheme($index)">edit</a>
+			    	<a href="" ng-click="themes.remove($index)">&times;</a>
+			    </span>
+				<a href="" ng-click="themes.select($index)">{{theme.name}}</a>
+			</li>
+		</ul>
+		<br />
+		<button ng-click="newTheme()">Add Custom Theme</button>
+		<br /><br />
+		<input type="text" placeholder="paste theme..." ng-model="pasted">
+
+	</div>
+	
+</section>

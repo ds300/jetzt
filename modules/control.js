@@ -8,6 +8,7 @@
 (function (window) {
 
   var jetzt = window.jetzt
+    , H = jetzt.helpers
     , config = jetzt.config
     , control = {};
 
@@ -35,7 +36,7 @@
           break;
         case 38: //up
           killEvent(ev);
-          config.adjustWPM(10);
+          config.adjustWPM(+10);
           break;
         case 40: //down
           killEvent(ev);
@@ -69,7 +70,7 @@
           break;
         case 48: //0 key, for changing the theme
           killEvent(ev);
-          config.toggleTheme();
+          config("dark", !config("dark"));
           break;
         case 191: // / and ?
           killEvent(ev);

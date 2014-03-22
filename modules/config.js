@@ -1,67 +1,96 @@
 /*
    Licensed under the Apache License v2.0.
-            
-   A copy of which can be found at the root of this distrubution in 
+
+   A copy of which can be found at the root of this distrubution in
    the file LICENSE-2.0 or at http://www.apache.org/licenses/LICENSE-2.0
 */
 
 (function (window) {
 
-  var jetzt = window.jetzt;
-  var H = jetzt.helpers;
+  var jetzt = window.jetzt
+    , H = jetzt.helpers;
+
+  // if you add any properties to themes, make sure to bump this
+  var CONFIG_VERSION = 0;
+
+  var DEFAULT_THEMES = [
+    {
+      "name": "Classic",
+      "dark": {
+        "backdrop_opacity": "0.86",
+        "colors": {
+          "backdrop": "#000000",
+          "background": "#303030",
+          "foreground": "#E0E0E0",
+          "message": "#909090",
+          "pivot": "#73b5ee",
+          "progress_bar_background": "#000000",
+          "progress_bar_foreground": "#3a5566",
+          "reticle": "#656565",
+          "wrap_background": "#404040",
+          "wrap_foreground": "#a1a1a1"
+        }
+      },
+      "light": {
+        "backdrop_opacity": "0.07",
+        "colors": {
+          "backdrop": "black",
+          "background": "#fbfbfb",
+          "foreground": "#333333",
+          "message": "#929292",
+          "pivot": "#E01000",
+          "progress_bar_background": "black",
+          "progress_bar_foreground": "#00c00a",
+          "reticle": "#efefef",
+          "wrap_background": "#f1f1f1",
+          "wrap_foreground": "#666"
+        }
+      }
+    }
+    // put more themes here
+  ];
+
+  var DEFAULT_MODIFIERS = {
+    normal: 1,
+    start_clause: 1,
+    end_clause: 1.8,
+    start_sentence: 1.3,
+    end_sentence: 2.2,
+    start_paragraph: 2.0,
+    end_paragraph: 2.8,
+    short_space: 1.5,
+    long_space: 2.2
+  }
 
   // Don't commit changes to these without prior approval please
-  jetzt.DEFAULT_OPTIONS = {
-      target_wpm: 400
-    , scale: 1
-    , dark: false
-    , show_message: false
-    , modifiers: {
-          normal: 1
-        , start_clause: 1
-        , end_clause: 1.8
-        , start_sentence: 1.3
-        , end_sentence: 2.2
-        , start_paragraph: 2.0
-        , end_paragraph: 2.8
-        , short_space: 1.5
-        , long_space: 2.2
-      }
-    , view : {
-          selection_color : "red"
-        , font_family: "Menlo, Consolas, Monaco, monospace"
-      }
-    // keybindings and so forth soon
+  var DEFAULT_OPTIONS = {
+    // if we change config structure in future versions, having this means
+    // we can update users' persisted configs to match.
+    config_version: CONFIG_VERSION,
+    target_wpm: 400,
+    scale: 1,
+    dark: false,
+    selected_theme: 0,
+    show_message: false,
+    selection_color: "#FF0000",
+    modifiers: DEFAULT_MODIFIERS,
+    font_family: "Menlo, Monaco, Consolas, monospace",
+    custom_themes: []
   };
+
+
+  /*** STATE ***/
 
   // This is where we store the options for the current instance of jetzt.
-  var options = H.recursiveExtend({}, jetzt.DEFAULT_OPTIONS);
+  // The identity of the object never changes.
+  var options = H.clone(DEFAULT_OPTIONS);
 
-  // This is where we store the backend getters/setters. It is initialised
-  // with a localStorage placeholder for the bookmarklet and demo page.
-  var KEY = "jetzt-options";
-
-  var configBackend = {
-    get: function (cb) {
-      var options = localStorage.getItem(KEY);
-      if(options === null) {
-        cb({});
-      } else {
-        cb(JSON.parse(options));
-      }
-    },
-    set: function (options) {
-      localStorage.setItem(KEY, JSON.stringify(options));
-    }
-  };
-
+  // list of folks to notify of changes
   var listeners = [];
 
   function announce () {
     listeners.forEach(function (cb) { cb(); });
   }
-
-  
 
   // recursive lookup. Like clojure's get-in;
   function lookup (map, keyPath) {
@@ -101,6 +130,68 @@
     }
   }
 
+  /*** BACKEND ***/
+
+  // the backend is a swappable object with two methods, get and set. 
+  // get takes a cb and should invoke the callback, supplying the persisted
+  // JSON if available, or some falsey value if not. Set takes some json and
+  // presumably puts it somewhere. Or not. whatevs.
+
+  // It is initialised with a localStorage placeholder for the bookmarklet and
+  // demo page.
+  var KEY = "jetzt_options";
+
+  var configBackend = {
+    get: function (cb) {
+      var json = localStorage.getItem(KEY);
+      if(json) {
+        cb("{}");
+      } else {
+        cb(json);
+      }
+    },
+    set: function (json) {
+      localStorage.setItem(KEY, json);
+    }
+  };
+
+  /*** (DE)SERIALISATION ***/
+
+  function persist () {
+    configBackend.set(JSON.stringify(options));
+  }
+
+  function unpersist (json) {
+    try {
+      var opts = JSON.parse(json || "{}")
+        , repersist = false;
+
+      if (opts.config_version != CONFIG_VERSION) {
+
+        // update custom themes
+        if (opts.custom_themes) {
+          H.keys(opts.custom_themes).forEach(function (id) {
+            var customTheme = opts.custom_themes[id];
+            opts.custom_themes[id] =
+                    H.recursiveExtend(DEFAULT_THEMES.Classic, customTheme);
+          });
+        }
+
+        opts.config_version = CONFIG_VERSION;
+        repersist = true;
+      }
+
+      H.recursiveExtend(options, opts);
+
+      window.jazz = options;
+
+      repersist && persist();
+      announce();
+    } catch (e) {
+      throw new Error("corrupt config json", e);
+    }
+  }
+
 
   /**
    * jetzt.config
@@ -128,90 +219,83 @@
    * 
    *      => {color: "blue", name: "Stilton"}
    */
-  jetzt.config = function (keyPath, val) {
+  var config = function (keyPath, val) {
     if (typeof keyPath === 'string') keyPath = [keyPath];
 
     if (arguments.length === 1) {
       return lookup(options, keyPath);
     } else {
       put(options, keyPath, val);
-      configBackend.set(options);
+      persist();
       announce();
     }
   };
 
+  jetzt.config = config;
+
+  config.DEFAULTS = H.clone(DEFAULT_OPTIONS);
+  config.DEFAULT_THEMES = H.clone(DEFAULT_THEMES);
+
   /**
-   * config.setBackend
-   * Set the config 'backend' store. Should be an object with methods
-   * void get(cb(opts))
-   * void set(opts)
+   * takes a callback and invokes it each time an option changes
+   * returns a function which, when invoked, unregisters the callback
    */
-  jetzt.config.setBackend = function (backend) {
-    configBackend = backend;
-    backend.get(function (opts) {
-      if (H.realTypeOf(opts) === 'Object') {
-        options = H.recursiveExtend({}, options, opts);
-        announce();
-      } else {
-        throw new Error("bad config backend");
-      }
-    });
-  };
-
-  jetzt.config.getBackend = function () {
-    return configBackend;
-  };
-
-  // convenince functions for dealing with delay modifiers
-  jetzt.config.getModifier = function (mod) {
-    return jetzt.config(["modifiers", mod]) || 1;
-  };
-
-  jetzt.config.maxModifier = function (a, b) {
-    if (jetzt.config.getModifier(a) > jetzt.config.getModifier(b)) {
-      return a;
-    } else {
-      return b;
-    }
-  };
-
-  jetzt.config.onChange = function (cb) {
+  config.onChange = function (cb) {
     listeners.push(cb);
     return function () { H.removeFromArray(listeners, cb); };
   };
 
-  jetzt.config.refresh = function () {
-    this.setConfigBackend(configBackend);
+  /**
+   * Set the config 'backend' store. Should be an object with methods
+   * void get(cb(opts))
+   * void set(opts)
+   */
+  config.setBackend = function (backend) {
+    configBackend = backend;
+    this.refresh();
+    announce();
   };
 
   /**
-   * Adjust the size of the reader
+   * Triggers an automatic reload of the persisted options
    */
-  jetzt.config.adjustScale = function (diff) {
-    var current = this("scale");
-    var adjusted = H.clamp(0.1, current + diff, 10);
+  config.refresh = function (cb) {
+    configBackend.get(function (json) {
+      unpersist(json);
+      cb && cb();
+    });
+  };
 
-    this("scale", adjusted);
+  config.getSelectedTheme = function () {
+    return DEFAULT_THEMES[options.selected_theme] || DEFAULT_THEMES[0];
+  };
+
+  /**
+   * convenience function for finding the highest of two modifiers.
+   */
+  config.maxModifier = function (a, b) {
+    return this(["modifiers", a]) > this(["modifiers", b]) ? a : b;
+  };
+
+  config.adjustWPM = function (diff) {
+    options.target_wpm = H.clamp(100, options.target_wpm + diff, 1500);
+    announce();
+    persist();
+  };
+
+  config.adjustScale = function (diff) {
+    options.scale = H.clamp(0, options.scale + diff, 1);
   };
 
 
   /**
-   * Adjust the speed of the reader (words per minute)
+   * might be neccessary to trigger a save manually
    */
-  jetzt.config.adjustWPM = function (diff) {
-    var current = this("target_wpm");
-    var adjusted = H.clamp(100, current + diff, 1500);
-
-    this("target_wpm", adjusted);
+  config.save = function () {
+    persist();
   };
 
-  /**
-   * Toggle the theme of the reader
-   */
-  jetzt.config.toggleTheme = function () {
-    this("dark", !this("dark"));
-  };
+  // load the options from the default config backend to get the ball rolling
+  config.refresh();
 
 })(this);
-
-

@@ -167,7 +167,7 @@ optsApp.directive("readerDemo", function (loremIpsum, jetzt, $window) {
 			r.setMessage("43s left");
 			r.showMessage();
 			r.setWPM(400);
-			r.setWrap("“", "”");
+			r.setWrap("&ldquo;", "&rdquo;");
 
 			r.dark = lightdark === "dark";
 

@@ -33,9 +33,12 @@ module.exports = function(grunt) {
     	, 'jetzt-solid.min.js' : 'jetzt-solid.js'
     }
     , watch: {
-      files: ["modules/**"]
+      files: ["modules/**", "src/**"]
       , tasks: ["concat", "uglify"]
     }
+
+
+
   });
 
   // These plugins provide necessary tasks.

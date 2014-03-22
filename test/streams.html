@@ -1,0 +1,36 @@
+<!DOCTYPE>
+<html>
+<head>
+	<script src="../build/preamble.js"></script>
+  <script src="../build/streams.js"></script>
+  <script>
+
+  var range = function (n) {
+    var i = 0;
+    return new jetzt.streams.Stream(function () {
+      if (i < n) {
+        return i++;
+      } else {
+        return this.die();
+      }
+    });
+  };
+
+  var ten = jetzt.streams.concat(range(59), range(5)).pushBack([-2,-1]);
+
+  ten = jetzt.streams.filter(function (n) {return n % 2 === 0}, ten);
+
+  ten = jetzt.streams.buffer(ten, 20, 5, 1000);
+
+  ten = jetzt.streams.map(function (n) { return n * 2; }, ten);
+
+  var i;
+
+  while ((i = ten.next()) != null) {
+    console.log(i);
+  }
+
+  </script>
+</head>
+<body></body>
+</html>

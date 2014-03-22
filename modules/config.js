@@ -139,7 +139,7 @@
 
   // It is initialised with a localStorage placeholder for the bookmarklet and
   // demo page.
-  var KEY = "jetzt-options";
+  var KEY = "jetzt_options";
 
   var configBackend = {
     get: function (cb) {
@@ -219,7 +219,7 @@
    * 
    *      => {color: "blue", name: "Stilton"}
    */
-  jetzt.config = function (keyPath, val) {
+  var config = function (keyPath, val) {
     if (typeof keyPath === 'string') keyPath = [keyPath];
 
     if (arguments.length === 1) {
@@ -231,14 +231,16 @@
     }
   };
 
-  jetzt.config.DEFAULTS = H.clone(DEFAULT_OPTIONS);
-  jetzt.config.DEFAULT_THEMES = H.clone(DEFAULT_THEMES);
+  jetzt.config = config;
+
+  config.DEFAULTS = H.clone(DEFAULT_OPTIONS);
+  config.DEFAULT_THEMES = H.clone(DEFAULT_THEMES);
 
   /**
    * takes a callback and invokes it each time an option changes
    * returns a function which, when invoked, unregisters the callback
    */
-  jetzt.config.onChange = function (cb) {
+  config.onChange = function (cb) {
     listeners.push(cb);
     return function () { H.removeFromArray(listeners, cb); };
   };
@@ -248,7 +250,7 @@
    * void get(cb(opts))
    * void set(opts)
    */
-  jetzt.config.setBackend = function (backend) {
+  config.setBackend = function (backend) {
     configBackend = backend;
     this.refresh();
     announce();
@@ -257,33 +259,43 @@
   /**
    * Triggers an automatic reload of the persisted options
    */
-  jetzt.config.refresh = function (cb) {
+  config.refresh = function (cb) {
     configBackend.get(function (json) {
       unpersist(json);
       cb && cb();
     });
   };
 
-  jetzt.config.getSelectedTheme = function () {
+  config.getSelectedTheme = function () {
     return DEFAULT_THEMES[options.selected_theme] || DEFAULT_THEMES[0];
   };
 
   /**
    * convenience function for finding the highest of two modifiers.
    */
-  jetzt.config.maxModifier = function (a, b) {
+  config.maxModifier = function (a, b) {
     return this(["modifiers", a]) > this(["modifiers", b]) ? a : b;
+  };
+
+  config.adjustWPM = function (diff) {
+    options.target_wpm = H.clamp(100, options.target_wpm + diff, 1500);
+    announce();
+    persist();
+  };
+
+  config.adjustScale = function (diff) {
+    options.scale = H.clamp(0, options.scale + diff, 1);
   };
 
 
   /**
    * might be neccessary to trigger a save manually
    */
-  jetzt.config.save = function () {
+  config.save = function () {
     persist();
   };
 
   // load the options from the default config backend to get the ball rolling
-  jetzt.config.refresh();
+  config.refresh();
 
 })(this);

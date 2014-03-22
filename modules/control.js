@@ -8,6 +8,7 @@
 (function (window) {
 
   var jetzt = window.jetzt
+    , H = jetzt.helpers
     , config = jetzt.config
     , control = {};
 
@@ -35,11 +36,11 @@
           break;
         case 38: //up
           killEvent(ev);
-          config.wpm += 10;
+          config.adjustWPM(+10);
           break;
         case 40: //down
           killEvent(ev);
-          config.wpm -= 10;
+          config.adjustWPM(-10);
           break;
         case 37: //left
           killEvent(ev);
@@ -59,21 +60,21 @@
         case 107: // =/+ (Firefox, numpad)
         case 61: // =/+ (Firefox, Opera)
           killEvent(ev);
-          config.scale += 0.1;
+          config.adjustScale(0.1);
           break;
         case 109: // -/_ (numpad, Opera, Firefox)
         case 189: // -/_ (MSIE, Safari, Chrome)
         case 173: // -/_ (Firefox)
           killEvent(ev);
-          config.scale -= 0.1;
+          config.adjustScale(-0.1);
           break;
         case 48: //0 key, for changing the theme
           killEvent(ev);
-          config.dark = !config.dark;
+          config("dark", !config("dark"));
           break;
         case 191: // / and ?
           killEvent(ev);
-          config.show_message = !config.show_message;
+          config("show_message", !config("show_message"));
           break;
       }
 

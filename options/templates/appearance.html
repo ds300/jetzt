@@ -14,7 +14,9 @@
 	<div id="theme-editor" ng-show="editingStyle">
 		<a href="" class="done-btn" ng-click="finishEditing()">✓</a>
 		<label for="name">
-			<input type="text" id="name" ng-model="theme.name">
+			<form ng-submit="finishEditing()">
+				<input type="text" id="name" ng-model="theme.name">
+			</form>
 		</label>
 		<br/>
 		<a ng-click="editingStyle = 'light'"

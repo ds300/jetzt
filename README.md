@@ -37,6 +37,7 @@ Pull requests are welcome. Please submit to the `dev` branch, or to `master` if 
 - [@j6k4m8](https://github.com/j6k4m8)
 - [Noah Slater](http://github.com/nslater)
 - [Peter Uithoven](https://github.com/peteruithoven)
+- [Pratyush Mittal](https://github.com/pratyushmittal)
 
 ### License
 

@@ -4,6 +4,7 @@
   "name": "jetzt",
   "description": "Speed Reading",
   "version": "1.2.0",
+  "homepage_url": "https://ds300.github.io/jetzt",
 
   "content_scripts": [
     {

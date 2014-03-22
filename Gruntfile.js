@@ -5,7 +5,7 @@ module.exports = function(grunt) {
   grunt.initConfig({
     banner: '/*! jetzt '
       + '<%= grunt.template.today("yyyy-mm-dd") %>\n'
-      + '* https://github.com/ds300/jetzt/\n'
+      + '* https://ds300.github.io/jetzt/\n'
       + '* Copyright (c) <%= grunt.template.today("yyyy") %> '
       + 'David Sheldrick and contributors; Licensed Apache 2.0 */\n'
     // Task configuration.

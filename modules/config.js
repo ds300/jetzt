@@ -17,15 +17,15 @@
     {
       "name": "Classic",
       "dark": {
-        "backdrop_opacity": "0.5",
+        "backdrop_opacity": "0.86",
         "colors": {
           "backdrop": "#000000",
           "background": "#303030",
           "foreground": "#E0E0E0",
           "message": "#909090",
-          "pivot": "#E01000",
+          "pivot": "#73b5ee",
           "progress_bar_background": "#000000",
-          "progress_bar_foreground": "#b1dcdb",
+          "progress_bar_foreground": "#3a5566",
           "reticle": "#656565",
           "wrap_background": "#404040",
           "wrap_foreground": "#a1a1a1"
@@ -36,11 +36,11 @@
         "colors": {
           "backdrop": "black",
           "background": "#fbfbfb",
-          "foreground": "#353535",
+          "foreground": "#333333",
           "message": "#929292",
           "pivot": "#E01000",
           "progress_bar_background": "black",
-          "progress_bar_foreground": "#00be0b",
+          "progress_bar_foreground": "#00c00a",
           "reticle": "#efefef",
           "wrap_background": "#f1f1f1",
           "wrap_foreground": "#666"

@@ -22,13 +22,13 @@ elem2str = (elem) ->
   range2Str range
 
 # get a stream of string matches in a piece of text
-regexSectionStream = (regex, text, group=0) ->
+regexSectionStream = (regex, text) ->
   new S.Stream ->
     match = regex.exec text
     if match
-      string: match[group]
+      string: match[0]
       start: match.index
-      end: match.index + match[group].length
+      end: match.index + match[0].length
 
 filterSectionStream = (sectionStream) ->
   S.map ((section)-> section.type = "filter"; section), sectionStream

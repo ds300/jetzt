@@ -151,6 +151,7 @@ mergeSectionStreams = (a, b) ->
 breakToken = (token, section, filterMode = false) ->
   string = token.string
   result = []
+
   if section.start > token.start
     result.push
         string: string[0...section.start - token.start]
@@ -225,9 +226,12 @@ alignedTokenStream = (tokens, sections) ->
         stack.pop()
 
       # now get rid of any sections from the stream which end before the token
-      # begins (this only happens after filtering)
-      while nextSection.end <= nextToken.start
+      # begins (this only maybe happens after filtering)
+      while nextSection? and nextSection.end <= nextToken.start
         nextSection = sections.next()
+
+      if !nextSection?
+        return @die()
 
       # now pull in sections until they start after the token ends
       while nextSection.start < nextToken.end

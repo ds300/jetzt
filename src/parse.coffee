@@ -111,6 +111,7 @@ LINEFEED =
     sel.removeAllRanges()
     sel
 
+# streams are ordered first by start index (ASC), then by end index (ASC)
 mergeSectionStreams = (a, b) ->
   asec = a.next()
   bsec = b.next()
@@ -139,6 +140,28 @@ mergeSectionStreams = (a, b) ->
     result
 
 
+# break types
+NONE      = -1   # e.g. <>token
+ENCOMPASS = 0    # e.g. <token>
+HEAD      = 1    # e.g. <to>ken
+TAIL      = 2    # e.g. tok<en>
+MIDRIFF   = 3    # e.g. to<k>en
+
+discoverBreakType = (token, section) ->
+  if section.start <= token.start
+    if section.end <= token.start
+      NONE
+    else if section.end < token.end
+      HEAD
+    else
+      ENCOMPASS
+  else
+    if section.start >= token.end
+      NONE
+    else if section.end < token.end
+      MIDRIFF
+    else
+      TAIL
 
 # breaks a token around the bounds of some section. if filterMode is true,
 # does not include the part of the token which was inside the section.
@@ -148,44 +171,62 @@ mergeSectionStreams = (a, b) ->
 #
 #     with filterMode false, we get back the array like ['dopp', 'elg', 'anger']
 #     but with filterMode true, only ['dopp', 'anger']
-breakToken = (token, section, filterMode = false) ->
-  string = token.string
-  result = []
+breakToken = (token, section, filterMode = false, breakType) ->
+  breakType = if breakType? then breakType else discoverBreakType token, section
 
-  if section.start > token.start
-    result.push
-        string: string[0...section.start - token.start]
-        start:  token.start
-        end:    section.start
-    if section.end >= token.end
-      if not filterMode
-        result.push
-          string: string[section.start - token.start..]
-          start: section.start
-          end: token.end
+  if breakType = NONE
+    [token]
+  else if breakType = ENCOMPASS
+    if filterMode
+      []
     else
-      if not filterMode
+      [token]
+  else
+    s = section
+    t = token
+    # start and end indices are relative to original text, not the token, so
+    # we need to offset them by the start index of the token to do all the
+    # string slicing
+    offset = (index) -> index - t.start
+    result = []
+
+    switch breakType
+      when HEAD
+        if not filterMode
+          result.push
+            string : t.string[0...offset(s.end)]
+            start  : t.start
+            end    : s.end
         result.push
-          string: string[section.start - token.start...section.end-token.start]
-          start: section.start
-          end: section.end
-      result.push
-        string: string[section.end - token.start..]
-        start: section.end
-        end: token.end
+          string : t.string[offset(s.end)..]
+          start  : s.end
+          end    : t.end
+      when TAIL
+        result.push
+          string : t.string[0...offset(s.start)]
+          start  : t.start
+          end    : s.start
+        if not filterMode
+          result.push
+            string : t.string[offset(s.start)..]
+            start  : s.start
+            end    : t.end
+      when MIDRIFF
+        result.push
+          string : t.string[0...offset(s.start)]
+          start  : t.start
+          end    : s.start
+        if not filterMode
+          string : t.string[offset(s.start)...offset(s.end)]
+          start  : s.start
+          end    : s.end
+        result.push
+          string : t.string[offset(s.end)..]
+          start  : s.end
+          end    : t.end
 
-  else if section.end < token.end
-    if not filterMode
-      result.push
-        string: string[0...section.end-token.start]
-        start: token.start
-        end: section.end
-    result.push
-      string: string[section.end - token.start..]
-      start: section.end
-      end: token.end
+    result
 
-  result
 
 # take a stream of token sections and node/filter sections, then smoosh them
 # together with a special blend of fresh algorithms and juicy laziness
@@ -241,12 +282,18 @@ alignedTokenStream = (tokens, sections) ->
       # now apply regex filters and node breakers
       for section in stack
         if section.filter
-          if section.start > nextToken.start or section.end < nextToken.end
-            # we gots to break the token up and push the parts back
-            pushbackTokens breakToken nextToken, section, true
-          # if the filter entirely encompasses the token then no breaking needs
-          # to occur and we just drop it
-          return @next()
+          bt = discoverBreakType nextToken, section
+          if bt isnt NONE
+            if bt isnt ENCOMPASS
+              pushbackTokens breakToken nextToken, section, true, bt
+            # if bt *is* encompass, we just drop this token
+            return @next()
+        else if section.node?.nodeName of BREAKER_NODES
+          bt = discoverBreakType nextToken, section
+          if bt > ENCOMPASS
+            pushbackTokens breakToken nextToken, section
+            return @next()
+
 
 
 

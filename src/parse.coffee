@@ -99,7 +99,7 @@ countLeadingWhitespace = (str) ->
 # @styles    is an array of style sections for to compile the string into an
 #            html fragment for display. This will most often be empty.
 class AlignedToken
-  constructor: (@string, @textEnd, @startNode, @offest, @styles) ->
+  constructor: (@string, @textEnd, @startNode, @offset, @styles) ->
 
   select: ->
       # first select the node this token starts on;
@@ -195,9 +195,9 @@ discoverBreakType = (token, section) ->
 breakToken = (token, section, filterMode = false, breakType) ->
   breakType = if breakType? then breakType else discoverBreakType token, section
 
-  if breakType = NONE
+  if breakType is NONE
     [token]
-  else if breakType = ENCOMPASS
+  else if breakType is ENCOMPASS
     if filterMode
       []
     else
@@ -426,30 +426,39 @@ alignedTokenStream = (tokens, sections) ->
       # get the start node of the element
       # (this could be merged into the previous loop for performance, but I
       # want the algorithm to be as clear as possible for the moment)
-      startNode = null
+      startSection = null
       for section in stack
         if section.start <= token.start
           if section.node?
-            startNode = section.node
+            startSection = section
         else break
 
-      if not startNode?
+      if not startSection?
         throw new Error "No start node found. What the jazz?"
 
       new AlignedToken  token.string
                       , token.end
-                      , startNode
-                      , token.start - startNode.start
+                      , startSection.node
+                      , token.start - startSection.start
                       , tokenSections
 
 document.addEventListener "DOMContentLoaded", ->
   console.log "good"
+  text = elem2str window.document.body
   tknregex = /["«»“”\(\)\/–—]|--+|\n+|[^\s"“«»”\(\)\/–—]+/g
-  nodes = nodeSectionStream window.document.body
-  tokens = regexSectionStream tknregex, elem2str window.document.body
+  filterRegex = /ant mor/g
+  filters = filterSectionStream regexSectionStream filterRegex, text
+  nodes = nodeSectionStream window.document.body, text
+  tokens = regexSectionStream tknregex, text
 
-  alignedtokens = alignedTokenStream tokens, nodes
+  alignedtokens = alignedTokenStream tokens, mergeSectionStreams nodes, filters
 
-  while (tkn = alignedtokens.next())
-    console.log tkn
+  tkn = null
 
+  next = ->
+    if (tkn = alignedtokens.next())
+      tkn.select()
+      setTimeout next, 300
+
+
+  next()

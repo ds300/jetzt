@@ -1,6 +1,6 @@
 # Licensed under the Apache License v2.0.
 
-# A copy of which can be found at the root of this distrubution in 
+# A copy of which can be found at the root of this distrubution in
 # the file LICENSE-2.0 or at http://www.apache.org/licenses/LICENSE-2.0
 
 S = window.jetzt.streams
@@ -23,12 +23,27 @@ elem2str = (elem) ->
 
 # get a stream of string matches in a piece of text
 regexSectionStream = (regex, text, group=0) ->
-  new S.Stream -> 
-    match = regex.match text
+  new S.Stream ->
+    match = regex.exec text
     if match
       string: match[group]
       start: match.index
       end: match.index + match[group].length
+
+filterSectionStream = (sectionStream) ->
+  S.map ((section)-> section.type = "filter"; section), sectionStream
+
+ASIDE_NODES =
+  "ASIDE" : true
+  "IMG"   : true
+
+BREAKER_NODES = {}
+
+breakerNodeTypes = ["LI", "DT", "DD", "IMG", "DIV", "PRE", "TABLE", "BLOCKQUOTE"
+                    , "FORM", "PRE", "H1", "H2", "H3", "H4", "H5", "H6"]
+
+for nodeType in breakerNodeTypes
+  BREAKER_NODES[nodeType] = true
 
 # get a heirarchical stream mapping nodes to start/end positions in the text
 # they contain
@@ -45,20 +60,26 @@ nodeSectionStream = (node, text, index = 0) ->
 
       string = elem2str(node).trim()
 
-      start = text.indexOf string index
+      start = text.indexOf string, index
 
       if node.childNodes?.length
         # push the kids in reverse order !important
         stack.push kid for kid in node.childNodes by -1
       else
         # done with this node, ok to bump index
-        index = start + str.length
-      
+        index = start + string.length
+
+      if node.___jetzt_filter
+        type = "filter"
+      else if node.___jetzt_aside or node.nodeName of ASIDE_NODES
+        type = "aside"
+
       return {
         node: node
+        type: type or "node"
         string: string
         start: start
-        end: start + str.length
+        end: start + string.length
       }
 
 
@@ -240,7 +261,7 @@ splitLongWord = (word) ->
     else
       # try to get individual sections down to 6 characters
       numPartitions = Math.ceil w.length / 7
-      partitionLength = Math.floor w.length / numPartitions 
+      partitionLength = Math.floor w.length / numPartitions
       for i in [0...numPartitions-1]
         result.push w[i*partitionLength...(i+1)*partitionLength]
 
@@ -283,7 +304,7 @@ for type in standardStyleTypes
     startTag: -> "<#{ltype}>"
     endTag: -> "</#{ltype}>"
 
-STYLE_NODES["A"] = 
+STYLE_NODES["A"] =
   startTag: (node) -> "<a href='#{node.href}'>"
   endTag: -> "</a>"
 
@@ -373,7 +394,7 @@ alignedTokenStream = (tokens, sections) ->
 
       # now apply regex filters and node breakers
       for section in stack
-        if section.filter
+        if section.type is "filter"
           bt = discoverBreakType token, section
           if bt isnt NONE
             if bt isnt ENCOMPASS
@@ -394,10 +415,10 @@ alignedTokenStream = (tokens, sections) ->
       # I think we're all good on the splitting/filtering front now, so just
       # specialise the sections for the current token, removing the document
       # offset
-      sections = []
+      tokenSections = []
       for section in stack
         if !section.filter? and section.node?.nodeName of STYLE_NODES
-          sections.push
+          tokenSections.push
             node  : section.node
             start : section.start - token.start
             end   : Math.min section.end - token.start, token.end - token.start
@@ -415,5 +436,20 @@ alignedTokenStream = (tokens, sections) ->
       if not startNode?
         throw new Error "No start node found. What the jazz?"
 
-      new AlignedToken token.string, @textEnd, @startNode, @offest, @styles
+      new AlignedToken  token.string
+                      , token.end
+                      , startNode
+                      , token.start - startNode.start
+                      , tokenSections
+
+document.addEventListener "DOMContentLoaded", ->
+  console.log "good"
+  tknregex = /["«»“”\(\)\/–—]|--+|\n+|[^\s"“«»”\(\)\/–—]+/g
+  nodes = nodeSectionStream window.document.body
+  tokens = regexSectionStream tknregex, elem2str window.document.body
+
+  alignedtokens = alignedTokenStream tokens, nodes
+
+  while (tkn = alignedtokens.next())
+    console.log tkn
 

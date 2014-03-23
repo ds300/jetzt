@@ -70,14 +70,14 @@ countLeadingWhitespace = (str) ->
 
 # @string    is the text of the token
 # @textEnd   is the index of the character immediately following this token
-#            in the original document
+#            in the original document. Used to indicate progress.
 # @startNode is a node, probably a text node, in which the token's first
 #            character can be found.
 # @offset    is the number of characters from the start of the text contained by
 #            @startnode at which this token lies (excluding whitespace)
 # @styles    is an array of style sections for to compile the string into an
 #            html fragment for display. This will most often be empty.
-class Token
+class AlignedToken
   constructor: (@string, @textEnd, @startNode, @offest, @styles) ->
 
   select: () ->
@@ -90,20 +90,125 @@ class Token
       sel.addRange range
 
       # get it's parsed text so we know how many whitespace chars it starts with
-      base = numLeadingWhitespaceChars sel.toString()
+      base = countLeadingWhitespace sel.toString()
 
       # now collapse the selection to the start, move it to the token's offset,
       # and then extend it to the end of the token.
       sel.collapseToStart()
 
-      sel.modify "move", "forward", "character" for i in [0...@offset + base]
+      for i in [0...@offset + base]
+        sel.modify "move", "forward", "character"
 
-      sel.modify "extend", "forward", "character" for i in [0...@string.length]
+      for i in [0...@string.length]
+        sel.modify "extend", "forward", "character"
 
-      return sel;
+      sel
 
+# special token for linefeeds.
+LINEFEED =
+  select: () ->
+    sel = window.getSelection()
+    sel.removeAllRanges()
+    sel
+
+
+# breaks a token around the bounds of some section. if filterMode is true,
+# does not include the part of the token which was inside the section.
+# e.g.
+#     say we have the word 'doppelganger' and a section which spans the
+#     chracters 'elg'
+#
+#     with filterMode false, we get back the array like ['dopp', 'elg', 'anger']
+#     but with filterMode true, only ['dopp', 'anger']
+breakToken = (token, section, filterMode = false) ->
+  string = token.string
+  result = []
+  if section.start > token.start
+    result.push
+        string: string[0...section.start - token.start]
+        start:  token.start
+        end:    section.start
+    if section.end >= token.end
+      if not filterMode
+        result.push
+          string: string[section.start - token.start..]
+          start: section.start
+          end: token.end
+    else
+      if not filterMode
+        result.push
+          string: string[section.start - token.start...section.end-token.start]
+          start: section.start
+          end: section.end
+      result.push
+        string: string[section.end - token.start..]
+        start: section.end
+        end: token.end
+
+  else if section.end < token.end
+    if not filterMode
+      result.push
+        string: string[0...section.end-token.start]
+        start: token.start
+        end: section.end
+    result.push
+      string: string[section.end - token.start..]
+      start: section.end
+      end: token.end
+
+  result
 
 # take a stream of token sections and node/filter sections, then smoosh them
 # together with a special blend of fresh algorithms and juicy laziness
-tokenStream = (tokens, sections) ->
+alignedTokenStream = (tokens, sections) ->
+
+  nextSection = sections.next()
+
+  stack = []
+
+  new S.Stream () ->
+    if !(nextToken = tokens.next())? or !nextSection?
+      @die()
+    else if nextToken.string.match /\n+/
+      LINEFEED
+    else
+
+      # construct the appropriate stack for the token
+
+      # first get rid of any sections which end before the token begins
+      while stack.length and stack[stack.length-1].end <= nextToken.start
+        stack.pop()
+
+      # now get rid of any sections from the stream which end before the token
+      # begins (this only happens after filtering)
+      while nextSection.end <= nextToken.start
+        nextSection = sections.next()
+
+      # now pull in sections until they start after the token ends
+      while nextSection.start < nextToken.end
+        stack.push nextSection
+        nextSection = sections.next()
+
+      # now apply regex filters
+      for section in stack
+        if section.filter
+          if section.start <= nextToken.start and section.end >= nextToken.end
+            # phew, we can just discard this token and carry on
+            return @next()
+          else
+            # we gots to break the token up and push the parts back
+            pbTokens = breakToken nextToken section true
+
+            pbSections = stack
+            pbSections.push nextSection
+            nextSection = pbSections.shift()
+
+            tokens = tokens.pushBack pbTokens
+            sections = sections.pushBack pbSections
+
+            stack = []
+
+            return @next()
+
+
 

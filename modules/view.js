@@ -1,7 +1,7 @@
 /*
    Licensed under the Apache License v2.0.
-            
-   A copy of which can be found at the root of this distrubution in 
+
+   A copy of which can be found at the root of this distrubution in
    the file LICENSE-2.0 or at http://www.apache.org/licenses/LICENSE-2.0
 */
 
@@ -35,7 +35,7 @@
 
   function Reader () {
     // elements
-    var backdrop = div("sr-blackout")
+    var backdrop = div("sr-backdrop")
       , wpm = div("sr-wpm")
       , leftWrap = div("sr-wrap sr-left")
       , rightWrap = div("sr-wrap sr-right")
@@ -43,16 +43,17 @@
       , rightWord = span()
       , pivotChar = span("sr-pivot")
       , word = div("sr-word", [leftWord, pivotChar, rightWord])
+      
       , progressBar = div("sr-progress")
       , message = div("sr-message")
       , reticle = div("sr-reticle")
       , hiddenInput = H.elem("input", "sr-input")
-
+      , wordBox = div("sr-word-box", [
+          reticle, progressBar, message, word, wpm, hiddenInput
+        ])
       , box = div("sr-reader", [
           leftWrap,
-          div("sr-word-box", [
-            reticle, progressBar, message, word, wpm, hiddenInput
-          ]),
+          wordBox,
           rightWrap
         ])
 
@@ -60,12 +61,14 @@
 
       , unlisten;
 
+
     hiddenInput.onkeyup = hiddenInput.onkeypress = function (ev) {
       if(!ev.ctrlKey && !ev.metaKey) {
         ev.stopImmediatePropagation();
         return false;
       }
     };
+
 
     var grabFocus = function () {
       hiddenInput.focus();
@@ -79,38 +82,50 @@
       hiddenInput.onkeydown = cb;
     };
 
+    this.dark = false;
+
     this.applyConfig = function () {
-      console.log("yesss");
       // initialise custom size/wpm
+      this.dark = config("dark");
+
+      this.applyTheme(config.getSelectedTheme());
+
       this.setScale(config("scale"));
       this.setWPM(config("target_wpm"));
-      this.setFont(config(["view","font_family"]));
+      this.setFont(config("font_family"));
 
       if (config("show_message")) {
         this.showMessage();
       } else {
         this.hideMessage();
       }
+    };
 
-      // initialise custom theme
-      this.setTheme(config("dark"));
+    this.appendTo = function (elem) {
+      // fade in backdrop
+      elem.appendChild(backdrop);
+
+      // pull down box;
+      elem.appendChild(wrapper);
+      wrapper.offsetWidth;
+      H.addClass(wrapper, "in");
+    };
+
+    this.watchConfig = function () {
+      var that = this;
+      unlisten = config.onChange(function () { that.applyConfig(); });
+    };
+
+    this.unwatchConfig = function () {
+      unlisten && unlisten();
     };
 
     this.show = function (cb) {
-      // fade in backdrop
-      document.body.appendChild(backdrop);
-      backdrop.offsetWidth;
-      H.addClass(backdrop, "in");
-
-      // pull down box;
-      document.body.appendChild(wrapper);
-      wrapper.offsetWidth;
-      H.addClass(wrapper, "in");
+      this.appendTo(document.body);
 
       // apply and listen to config;
       this.applyConfig();
-      var that = this;
-      unlisten = config.onChange(function () { that.applyConfig(); });
+      this.watchConfig();
 
       // need to stop the input focus from scrolling the page up.
       var scrollTop = H.getScrollTop();
@@ -128,7 +143,7 @@
       unlisten();
       hiddenInput.onblur = null;
       hiddenInput.blur();
-      H.removeClass(backdrop, "in");
+      backdrop.style.opacity = 0;
       H.removeClass(wrapper, "in");
       window.setTimeout(function () {
         backdrop.remove();
@@ -148,17 +163,44 @@
     };
     
     this.setFont = function (font) {
-      // really, we should be setting font-family of 
-      //  ".sr-reader .sr-word-box .sr-word > span"
-      word.style.fontFamily = font;
+      // thanks for pointing that out
+      leftWord.style.fontFamily = font;
+      pivotChar.style.fontFamily = font;
+      rightWord.style.fontFamily = font;
+      leftWrap.style.fontFamily = font;
+      rightWrap.style.fontFamily = font;
+      wpm.style.fontFamily = font;
+      message.style.fontFamily = font;
     };
 
-    this.setTheme = function (dark) {
-      if (dark)
-        H.addClass(box, "sr-dark");
-      else
-        H.removeClass(box, "sr-dark");
+    this.applyTheme = function (theme) {
+      var style;
+      if (this.dark) {
+        style = theme.dark;
+      } else {
+        style = theme.light;
+      }
+      var c = style.colors;
+
+      backdrop.offsetWidth;
+      backdrop.style.opacity = style.backdrop_opacity;
+
+      backdrop.style.backgroundColor = c.backdrop;
+      wordBox.style.backgroundColor = c.background;
+      leftWord.style.color = c.foreground;
+      rightWord.style.color = c.foreground;
+      leftWrap.style.backgroundColor = c.wrap_background;
+      rightWrap.style.backgroundColor = c.wrap_background;
+      leftWrap.style.color = c.wrap_foreground;
+      rightWrap.style.color = c.wrap_foreground;
+      reticle.style.borderColor = c.reticle;
+      pivotChar.style.color = c.pivot;
+      progressBar.style.borderColor = c.progress_bar_foreground;
+      progressBar.style.backgroundColor = c.progress_bar_background;
+      message.style.color = c.message;
+      wpm.style.color = c.message;
     };
+
 
     this.setProgress = function (percent) {
       progressBar.style.borderLeftWidth = Math.ceil(percent * 4) + "px";
@@ -211,7 +253,7 @@
     };
   }
 
-
+  view.Reader = Reader;
 
   // we only need one instance of Reader now.
   var readerSingleton;
@@ -238,7 +280,7 @@
     overlay.style.left = (H.getScrollLeft() + rect.left) + "px";
     overlay.style.width = rect.width + "px";
     overlay.style.height = rect.height + "px";
-    overlay.style.backgroundColor = config(["view", "selection_color"]);
+    overlay.style.backgroundColor = config("selection_color");
     document.body.appendChild(overlay);
     elem.___jetztOverlay = overlay;
 

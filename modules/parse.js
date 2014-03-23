@@ -142,6 +142,7 @@
   }
 
   var wraps = {
+    guillemot: {left: "«", right: "»"},
     double_quote: {left: "“", right: "”"},
     parens: {left: "(", right: ")"},
     heading1: {left: "H1", right: ""}
@@ -190,7 +191,7 @@
   // convert raw text into instructions
   function parseText (text,$instructionator) {
                         // long dashes ↓
-    var tokens = text.match(/["“”\(\)\/–—]|--+|\n+|[^\s"“”\(\)\/–—]+/g);
+    var tokens = text.match(/["«»“”\(\)\/–—]|--+|\n+|[^\s"“«»”\(\)\/–—]+/g);
 
     var $ = ($instructionator) ? $instructionator :  new Instructionator();
 
@@ -208,6 +209,16 @@
           break;
         case "”":
           $.popWrap(wraps.double_quote);
+          $.modPrev("end_clause");
+          $.spacer();
+          break;
+        case "«":
+          $.spacer();
+          $.pushWrap(wraps.guillemot);
+          $.modNext("start_clause");
+          break;
+        case "»":
+          $.popWrap(wraps.guillemot);
           $.modPrev("end_clause");
           $.spacer();
           break;

@@ -3,7 +3,8 @@
 
   "name": "jetzt",
   "description": "Speed Reading",
-  "version": "1.1.0",
+  "version": "1.2.0",
+  "homepage_url": "https://ds300.github.io/jetzt",
 
   "content_scripts": [
     {
@@ -13,6 +14,7 @@
                 "modules/preamble.js"
               , "modules/helpers.js"
               , "modules/config.js"
+              , "modules/themes.js"
               , "modules/parse.js"
               , "modules/exec.js"
               , "modules/view.js"
@@ -44,5 +46,5 @@
 	    "scripts": ["background.js"],
 	    "persistent": false
 	},
-	 "options_page" : "options/options.html"
+	 "options_page" : "options/index.html"
 }

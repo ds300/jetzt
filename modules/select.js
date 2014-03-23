@@ -8,8 +8,7 @@
 (function (window) {
 
   var jetzt  = window.jetzt
-    , H      = jetzt.helpers
-    , config = jetzt.config;
+    , H      = jetzt.helpers;
 
   function on (event, cb) {
     window.addEventListener(event, cb);
@@ -156,8 +155,13 @@
     on("keyup", keyupHandler);
   }
 
-  jetzt.select = function () {
-    var text = window.getSelection().toString();
+  jetzt.select = function (contextData) {
+    var text;
+    if (contextData === undefined) {
+      text = window.getSelection().toString();
+    } else {
+      text = contextData.selectionText;
+    }
     if (text.trim().length > 0) {
       jetzt.init(jetzt.parse.string(text));
       window.getSelection().removeAllRanges();

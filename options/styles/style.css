@@ -1,0 +1,228 @@
+.save-cancel {
+	position: absolute; right: 5px; top: 15px;
+}
+
+.nav-tabs {
+	padding-top: 15px;
+	padding-bottom: 25px;
+	-webkit-margin-before: 0em;
+	-webkit-margin-after: 0em;
+	-webkit-margin-start: 0px;
+	-webkit-margin-end: 0px;
+	-webkit-padding-start: 0px;
+}
+
+.nav-tabs li {
+	display: inline-block;
+}
+
+.nav-tabs li a {
+	font-size: 16px;
+	padding: 5px 15px;
+	color: #666;
+	text-decoration: none;
+	border-bottom: 2px solid transparent;
+}
+
+
+
+.nav-tabs li a:hover {
+	color: #222;
+	text-decoration: underline;
+}
+
+.nav-tabs li.active a {
+	color: #222;
+	border-bottom-color: #999;
+	text-decoration: none;
+}
+
+
+
+#reader-demo {
+	width: 400px;
+	height: 350px;
+	overflow: hidden;
+	position: absolute;
+	right: 5px;
+	top: 40px;
+}
+
+#reader-demo .sr-backdrop {
+	position: absolute;
+}
+
+#reader-demo .sr-reader-wrapper {
+	position: absolute;
+	top: 50%;
+}
+
+#reader-demo > div {
+	position: relative;
+	height: 120px;
+	overflow: hidden;
+	margin: 5px 0px;
+}
+
+#thepage {
+	width: 738px;
+	position: relative;
+}
+
+#themes-list {
+	list-style-type: none;
+	-webkit-margin-before: 0;
+	-webkit-margin-after: 0;
+	-webkit-margin-start: 0px;
+	-webkit-margin-end: 0px;
+	-webkit-padding-start: 0;
+	width: 180px;
+}
+
+#themes-list li {
+	display: block;
+	position: relative;
+}
+
+#themes-list li > a {
+	padding: 4px 8px;
+	font-size: 14px;
+	display: block;
+	background-color: #E4E4E4;
+	color: #333;
+	text-decoration: none;
+	margin-bottom: 1px;
+	border-left: 4px solid #E4E4E4;
+}
+
+#themes-list li > a:hover {
+	background-color: #F0F0F0;
+	border-left-color: #999;
+}
+
+
+#themes-list li.active > a {
+	cursor: default;
+	background-color: #2878C2;
+	color: white;
+	font-weight: 800;
+	border-left-color: #0B2842;
+}
+
+.demo-label {
+	display: block;
+	position: absolute;
+	z-index: 9999999999;
+	background-color: black;
+	border-radius: 4px;
+	padding: 2px 5px;
+	color: white;
+	top: 3px;
+	right: 3px;
+}
+
+#theme-editor {
+	width: 320px;
+	box-sizing: border-box;
+	padding: 5px;
+	background-color: #F3F3F3;
+	position: relative;
+	margin-top: -15px;
+	margin-left: -15px;
+	overflow: auto;
+}
+
+.done-btn {
+	padding: 0px 4px;
+	display: block;
+	box-sizing: border-box;
+	text-decoration: none;
+	position: absolute;
+	top: 0px;
+	right: 0px;
+	font-size: 16px;
+	color: white;
+	background-color: #2878C2;
+}
+
+#theme-editor .done-btn:hover {
+	background-color: #0B2842;
+}
+
+.colors-wrapper {
+	width: 310px;
+	margin-bottom: 15px;
+	overflow: auto;
+}
+
+
+
+.color-property {
+	width: 155px;
+	box-sizing: border-box;
+	display: inline-block;
+	padding-left: 16px;
+	float: left;
+}
+
+.color-property.right {
+	float: right;
+}
+
+input[type="color"] {
+	border: none;
+	width: 14px;
+	height: 18px;
+	cursor: pointer;
+	background: none;
+}
+
+.color-property input[type="color"] {
+	margin-left: -16px;
+}
+
+.edit-delete {
+	right: -48px;
+	position: absolute;
+	margin-top: 4px;
+}
+
+.edit-delete a {
+	padding: 1px 3px 3px;
+	background-color: white;
+	color: #555;
+	text-decoration: none;
+}
+
+.edit-delete a {
+	padding: 1px 3px 3px;
+	text-decoration: none;
+}
+
+.edit-delete a:hover {
+	background-color: #555;
+	color: white;
+}
+
+a.edit-light-dark-tab {
+	padding: 4px 10px 5px;
+	text-decoration: none;
+	cursor: pointer;
+	font-size: 14px;
+	color: #666;
+	display: inline-block;
+	margin-bottom: 5px;
+}
+
+a.edit-light-dark-tab:hover {
+	color: black;
+}
+
+a.edit-light-dark-tab.active {
+	color: black;
+	border-bottom: 2px solid #444;
+}
+
+*.ng-hide {
+	display: none;
+}

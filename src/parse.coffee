@@ -23,7 +23,7 @@ elem2str = (elem) ->
 
 # get a stream of string matches in a piece of text
 regexSectionStream = (regex, text) ->
-  new S.Stream () -> 
+  new S.Stream -> 
     match = regex.match text
     if match
       string: match[0]
@@ -37,7 +37,7 @@ nodeSectionStream = (node, text, index = 0) ->
 
   stack = [node]
 
-  new S.Stream () ->
+  new S.Stream ->
     if not stack.length
       @die()
     else
@@ -80,7 +80,7 @@ countLeadingWhitespace = (str) ->
 class AlignedToken
   constructor: (@string, @textEnd, @startNode, @offest, @styles) ->
 
-  select: () ->
+  select: ->
       # first select the node this token starts on;
       range = window.document.createRange()
       range.selectNodeContents @startNode
@@ -106,10 +106,38 @@ class AlignedToken
 
 # special token for linefeeds.
 LINEFEED =
-  select: () ->
+  select: ->
     sel = window.getSelection()
     sel.removeAllRanges()
     sel
+
+mergeSectionStreams = (a, b) ->
+  asec = a.next()
+  bsec = b.next()
+  new S.Stream ->
+    if asec? and bsec?
+      if asec.start < bsec.start
+        result = asec
+        asec = a.next()
+      else if asec.start > bsec.start
+        result = bsec
+        bsec = b.next()
+      else if asec.end < bsec.end
+        result = asec
+        asec = a.next()
+      else
+        result = bsec
+        bsec = b.next()
+    else if asec?
+      result = asec
+      asec = a.next()
+    else if bsec?
+      result = bsec
+      bsec = b.next()
+    else result = @die()
+
+    result
+
 
 
 # breaks a token around the bounds of some section. if filterMode is true,
@@ -166,7 +194,24 @@ alignedTokenStream = (tokens, sections) ->
 
   stack = []
 
-  new S.Stream () ->
+  # when breaking tokens apart for filters, semantic nodes, or word length,
+  # we need a way to push them back into the token stream and deal with them as
+  # if they are just normal tokens coming in (otherwise too much nasty logic
+  # is required). So we do that, but also push the sections back into the
+  # relevant stream too, to make sure that nothing gets missed.
+  pushbackTokens = (tkns) ->
+    tokens = tokens.pushBack tkns
+
+    # also push back sections from stack
+    pbSections = stack
+    pbSections.push nextSection
+    nextSection = pbSections.shift()
+
+    sections = sections.pushBack pbSections
+
+    stack = []
+
+  new S.Stream ->
     if !(nextToken = tokens.next())? or !nextSection?
       @die()
     else if nextToken.string.match /\n+/
@@ -189,26 +234,15 @@ alignedTokenStream = (tokens, sections) ->
         stack.push nextSection
         nextSection = sections.next()
 
-      # now apply regex filters
+      # now apply regex filters and node breakers
       for section in stack
         if section.filter
-          if section.start <= nextToken.start and section.end >= nextToken.end
-            # phew, we can just discard this token and carry on
-            return @next()
-          else
+          if section.start > nextToken.start or section.end < nextToken.end
             # we gots to break the token up and push the parts back
-            pbTokens = breakToken nextToken section true
-
-            pbSections = stack
-            pbSections.push nextSection
-            nextSection = pbSections.shift()
-
-            tokens = tokens.pushBack pbTokens
-            sections = sections.pushBack pbSections
-
-            stack = []
-
-            return @next()
+            pushbackTokens breakToken nextToken, section, true
+          # if the filter entirely encompasses the token then no breaking needs
+          # to occur and we just drop it
+          return @next()
 
 
 

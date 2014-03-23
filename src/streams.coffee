@@ -12,7 +12,7 @@ class Stream
   pushBack: (arr) ->
     saved = @next
     i = 0
-    @next = () =>
+    @next = =>
       if i < arr.length
         arr[i++]
       else
@@ -20,15 +20,15 @@ class Stream
         @next()
     @
 
-  die: () ->
-    @next = () -> null
+  die: ->
+    @next = -> null
     null
 
 
 # Concatenate two or more streams together
 concat = (streams...) ->
   i = 0
-  new Stream () ->
+  new Stream ->
     result = streams[i].next()
     if result?
       result
@@ -49,13 +49,13 @@ map = (fn, streams...) ->
     else
       done = true
 
-  new Stream () ->
+  new Stream ->
     args = (next s for s in streams)
     if done then @die() else fn(args...)
 
 # Remove items for which pred returns false
 filter = (pred, stream) ->
-  new Stream () ->
+  new Stream ->
     result = stream.next()
 
     while result? and not pred result
@@ -68,7 +68,7 @@ filter = (pred, stream) ->
 buffer = (stream, bufferSize = 100, chunkSize = 10, delay = 10) ->
   buf = []
   
-  do fill = () ->
+  do fill = ->
     targetSize = Math.min bufferSize, buf.length + chunkSize
 
     while buf.length < targetSize and (result = stream.next())?
@@ -79,7 +79,7 @@ buffer = (stream, bufferSize = 100, chunkSize = 10, delay = 10) ->
 
     buf.length
 
-  new Stream () ->
+  new Stream ->
     result = if not buf.length and not fill()
                @die()
              else
@@ -93,7 +93,7 @@ buffer = (stream, bufferSize = 100, chunkSize = 10, delay = 10) ->
 # Make a stream out of the items in the array
 arrayStream = (arr) ->
   i = 0
-  new Stream () ->
+  new Stream ->
     if i < arr.length
       arr[i++]
     else

@@ -155,8 +155,13 @@
     on("keyup", keyupHandler);
   }
 
-  jetzt.select = function () {
-    var text = window.getSelection().toString();
+  jetzt.select = function (contextData) {
+    var text;
+    if (contextData === undefined) {
+      text = window.getSelection().toString();
+    } else {
+      text = contextData.selectionText;
+    }
     if (text.trim().length > 0) {
       jetzt.init(jetzt.parse.string(text));
       window.getSelection().removeAllRanges();

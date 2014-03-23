@@ -6,7 +6,7 @@
 S = window.jetzt.streams
 
 # Take a dom range and get it's string contents
-# This uses window.getSelection() to avoid non-visible CDATA being picked up
+# This uses window.getSelection() to avoid non-visible (P)CDATA being picked up
 range2Str = (range) ->
   sel = window.getSelection()
   sel.removeAllRanges()
@@ -22,13 +22,13 @@ elem2str = (elem) ->
   range2Str range
 
 # get a stream of string matches in a piece of text
-regexSectionStream = (regex, text) ->
+regexSectionStream = (regex, text, group=0) ->
   new S.Stream -> 
     match = regex.match text
     if match
-      string: match[0]
+      string: match[group]
       start: match.index
-      end: match.index + match[0].length
+      end: match.index + match[group].length
 
 # get a heirarchical stream mapping nodes to start/end positions in the text
 # they contain
@@ -228,6 +228,98 @@ breakToken = (token, section, filterMode = false, breakType) ->
     result
 
 
+wordIsTooLong = (word) ->
+  word.length > 13 or word.length > 9 and word.indexOf("-") > -1
+
+splitLongWord = (word) ->
+  result = []
+
+  split = (w) ->
+    if not wordIsTooLong w
+      result.push w
+    else
+      # try to get individual sections down to 6 characters
+      numPartitions = Math.ceil w.length / 7
+      partitionLength = Math.floor w.length / numPartitions 
+      for i in [0...numPartitions-1]
+        result.push w[i*partitionLength...(i+1)*partitionLength]
+
+      # and finally the last part
+      result.push w[(numPartitions-1)*partitionLength..]
+
+  if word[1...-1].indexOf("-") > -1
+    split part for part in word.split("-")
+  else
+    split word
+
+  result
+
+splitLongToken = (token) ->
+  wordParts = splitLongWord token.string
+  index = 0
+  result = []
+  for part in wordParts
+    index = token.string.indexOf part, index
+    result.push
+      string : part + "-"
+      start  : index + token.start
+      end    : index + token.start + part.length # don't include the '-'
+    index += part.length
+
+  ## remove that last dash
+  last = result[result.length-1]
+  last.string = last.string[...-1]
+  result
+
+
+# map from node names to start/end tag renderers
+STYLE_NODES = {}
+
+standardStyleTypes = ["EM", "STRONG", "SUP", "SUB", "S", "CODE"]
+
+for type in standardStyleTypes
+  ltype = type.toLowerCase()
+  STYLE_NODES[type] =
+    startTag: -> "<#{ltype}>"
+    endTag: -> "</#{ltype}>"
+
+STYLE_NODES["A"] = 
+  startTag: (node) -> "<a href='#{node.href}'>"
+  endTag: -> "</a>"
+
+wrapfn = (left, right, style) ->
+  wrap = left: left, right: right
+  -> wrap
+
+WRAP_NODES =
+  BLOCKQUOTE: wrapfn "‘", "’"
+  H1: wrapfn "•••", "•••", "strong"
+  H2: wrapfn "••", "••", "strong"
+  H3: wrapfn "•", "•", "strong"
+  H4: wrapfn "•", "•"
+  H5: wrapfn "•", "•"
+  H6: wrapfn "•", "•"
+  LI: (node) ->
+    parentType = node.parentNode.nodeName
+    if parentType is "UL"
+      left: "•", right: ""
+    else if parentType is "OL"
+      # oh jeez, we have to find its index
+      idx = 0
+      n = node
+      while (n = n.previousSibling)?
+        idx++
+
+      p = node.parentNode
+
+      left: getOrderedListBullet(idx, p.start, p.type), right: ""
+
+getOrderedListBullet = (idx, start=1, type="1") ->
+  return idx + start + "."
+  # TODO. make this good. It turns out to be super complex if you take negative
+  # numbers and li.value/type attributes into account.
+
+
 # take a stream of token sections and node/filter sections, then smoosh them
 # together with a special blend of fresh algorithms and juicy laziness
 alignedTokenStream = (tokens, sections) ->
@@ -254,46 +346,74 @@ alignedTokenStream = (tokens, sections) ->
     stack = []
 
   new S.Stream ->
-    if !(nextToken = tokens.next())? or !nextSection?
+    if !(token = tokens.next())? or !nextSection?
       @die()
-    else if nextToken.string.match /\n+/
+    else if token.string.match /\n+/
       LINEFEED
     else
 
       # construct the appropriate stack for the token
 
       # first get rid of any sections which end before the token begins
-      while stack.length and stack[stack.length-1].end <= nextToken.start
+      while stack.length and stack[stack.length-1].end <= token.start
         stack.pop()
 
       # now get rid of any sections from the stream which end before the token
       # begins (this only maybe happens after filtering)
-      while nextSection? and nextSection.end <= nextToken.start
+      while nextSection? and nextSection.end <= token.start
         nextSection = sections.next()
 
       if !nextSection?
         return @die()
 
       # now pull in sections until they start after the token ends
-      while nextSection.start < nextToken.end
+      while nextSection.start < token.end
         stack.push nextSection
         nextSection = sections.next()
 
       # now apply regex filters and node breakers
       for section in stack
         if section.filter
-          bt = discoverBreakType nextToken, section
+          bt = discoverBreakType token, section
           if bt isnt NONE
             if bt isnt ENCOMPASS
-              pushbackTokens breakToken nextToken, section, true, bt
+              pushbackTokens breakToken token, section, true, bt
             # if bt *is* encompass, we just drop this token
             return @next()
         else if section.node?.nodeName of BREAKER_NODES
-          bt = discoverBreakType nextToken, section
+          bt = discoverBreakType token, section
           if bt > ENCOMPASS
-            pushbackTokens breakToken nextToken, section
+            pushbackTokens breakToken token, section
             return @next()
 
+      # now do word length splitting
+      if wordIsTooLong token.string
+        pushbackTokens splitLongToken token
+        return @next()
 
+      # I think we're all good on the splitting/filtering front now, so just
+      # specialise the sections for the current token, removing the document
+      # offset
+      sections = []
+      for section in stack
+        if !section.filter? and section.node?.nodeName of STYLE_NODES
+          sections.push
+            node  : section.node
+            start : section.start - token.start
+            end   : Math.min section.end - token.start, token.end - token.start
 
+      # get the start node of the element
+      # (this could be merged into the previous loop for performance, but I
+      # want the algorithm to be as clear as possible for the moment)
+      startNode = null
+      for section in stack
+        if section.start <= token.start
+          if section.node?
+            startNode = section.node
+        else break
+
+      if not startNode?
+        throw new Error "No start node found. What the jazz?"
+
+      new AlignedToken token.string, @textEnd, @startNode, @offest, @styles
 

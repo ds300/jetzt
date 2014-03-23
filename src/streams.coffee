@@ -109,4 +109,3 @@ window.jetzt.streams =
   filter: filter
   buffer: buffer
   arrayStream: arrayStream
-  regexSectionStream: regexSectionStream

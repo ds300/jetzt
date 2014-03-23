@@ -347,6 +347,10 @@ alignedTokenStream = (tokens, sections) ->
 
   nextSection = sections.next()
 
+  # this is the stack of sections (ordered by start time, then end time)
+  # it basically represents the DOM tree around the token currently being
+  # aligned, but also incorporates filtered sections. Aside sections get dealt
+  # with further down the line.
   stack = []
 
   # when breaking tokens apart for filters, semantic nodes, or word length,
@@ -443,10 +447,12 @@ alignedTokenStream = (tokens, sections) ->
                       , tokenSections
 
 document.addEventListener "DOMContentLoaded", ->
+  for junkNode in document.querySelectorAll(".junk")
+    junkNode.___jetzt_filter = true
   console.log "good"
   text = elem2str window.document.body
   tknregex = /["«»“”\(\)\/–—]|--+|\n+|[^\s"“«»”\(\)\/–—]+/g
-  filterRegex = /ant mor/g
+  filterRegex = /ant mor|que s/g
   filters = filterSectionStream regexSectionStream filterRegex, text
   nodes = nodeSectionStream window.document.body, text
   tokens = regexSectionStream tknregex, text

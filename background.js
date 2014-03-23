@@ -15,8 +15,10 @@ chrome.contextMenus.create({
 
 chrome.contextMenus.onClicked.addListener(function(data) {
   if (data.menuItemId == 'jetztMenu') {
+    // window.getSelection() doesn't work with PDFs
+    // data.selectionText is the workaround
     chrome.tabs.executeScript(null,{
-      code: 'window.jetzt.select()'
+        code: data.selectionText ? 'window.jetzt.select(' + JSON.stringify(data) + ')' : 'window.jetzt.select()'
     });
   }
 });

@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Options - jetzt speed reader</title>
+		<link rel="stylesheet" type="text/css" href="styles/options.css" />
+		<link rel="stylesheet" type="text/css" href="styles/options-widgets.css" />
+		<link rel="stylesheet" type="text/css" href="../jetzt.css" />
+		<link rel="stylesheet" type="text/css" href="styles/style.css" />
+		<meta charset="UTF-8">
+	</head>
+	<body ng-app="optsApp" ng-csp ng-controller="MenuCtrl">
+		<nav class="sideBar">
+			<h1>Chrome</h1>
+			<ul>
+				<li><a href="chrome://history" target="_blank">History</a></li>
+				<li>
+					<a href="chrome://extensions">Extensions</a>
+					<ul>
+						<li>jetzt</li>
+					</ul>
+				</li>
+				<li><a href="chrome://settings">Settings</a></li>
+				<li><a href="chrome://help">Help</a></li>
+			</ul>
+		</nav>
+		<header>
+			<h1>jetzt speed reader</h1>
+		</header>
+
+		<div id="thepage">
+
+			<ul class="nav-tabs">
+				<li ng-class="{active: editing == 'appearance'}">
+					<a href="#/">Appearance</a>
+				</li>
+				<li ng-class="{active: editing == 'reading'}">
+					<a href="#/reading">Reading</a>
+				</li>
+				<li ng-class="{active: editing == 'keyboard'}">
+					<a href="#/keyboard">Keyboard Controls</a>
+				</li>
+			</ul>
+
+			<div ng-view></div>
+
+		</div>
+
+		<script type="text/javascript" src="scripts/options-setup.js"></script>
+		
+		<script src="../modules/preamble.js"></script>
+
+		<script src="../modules/helpers.js"></script>
+		<script src="../modules/config.js"></script>
+		<script src="../modules/themes.js"></script>
+		<script src="../modules/view.js"></script>
+		<script src="../chrome-config.js"></script>
+
+		<script src="scripts/angular.min.js"></script>
+		<script src="scripts/angular-route.min.js"></script>
+		<script src="scripts/options-ng.js"></script>
+	</body>
+</html>

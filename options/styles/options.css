@@ -9,12 +9,12 @@ body {
 button, select:not([size]), select[size="1"], input[type="checkbox"], input[type="radio"] {
 	-webkit-appearance: none;
 	position: relative;
-	
+
 	margin: 0 1px 0 0;
 	padding: 0 10px;
 	min-width: 4em;
 	min-height: 2em;
-	
+
 	background-image: -webkit-linear-gradient(#EDEDED, #EDEDED 38%, #DEDEDE);
 	background-image:         linear-gradient(#EDEDED, #EDEDED 38%, #DEDEDE);
 	border: 1px solid rgba(0,0,0,0.25);
@@ -24,13 +24,13 @@ button, select:not([size]), select[size="1"], input[type="checkbox"], input[type
 	color: #444;
 	text-shadow: 0 1px 0 rgb(240,240,240);
 	font: inherit;
-	
+
 	-webkit-user-select: none;
 	        user-select: none;
 }
 	select:not([size]), select[size="1"] {
 		padding-right: 20px;
-		
+
 		background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABMAAAAICAYAAAAbQcSUAAAAaUlEQVQoz2P4//8/A7UwdkEGhiggTsODo4g2LBEImJmZvwE1/UfHIHGQPNGGAbHCggULFrKxsf1ENgjEB4mD5EnxJoaByAZB5Yk3DNlAPj6+L8gGkWUYzMC3b982IRtEtmFQjaxYxDAwAGi4TwMYKNLfAAAAAElFTkSuQmCC'), -webkit-linear-gradient(#EDEDED, #EDEDED 38%, #DEDEDE);
 		background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABMAAAAICAYAAAAbQcSUAAAAaUlEQVQoz2P4//8/A7UwdkEGhiggTsODo4g2LBEImJmZvwE1/UfHIHGQPNGGAbHCggULFrKxsf1ENgjEB4mD5EnxJoaByAZB5Yk3DNlAPj6+L8gGkWUYzMC3b982IRtEtmFQjaxYxDAwAGi4TwMYKNLfAAAAAElFTkSuQmCC'), linear-gradient(#EDEDED, #EDEDED 38%, #DEDEDE);
 		background-position: right center;
@@ -74,7 +74,7 @@ button, select:not([size]), select[size="1"], input[type="checkbox"], input[type
 			right: 3px;
 			top: 3px;
 			bottom: 3px;
-			
+
 			background-color: #666;
 			border-radius: 100%;
 		}
@@ -195,4 +195,51 @@ section {
 }
 section h3 {
 	margin-left: -18px;
+}
+
+
+
+#spacing-demo {
+	float: right;
+	width: 500px;
+	box-shadow: 0 0 10px grey;
+	padding: 10px;
+	box-sizing: border-box;
+	border-radius: 8px;
+}
+
+
+
+
+/* SPACING */
+.end_paragraph {
+	background-color: cyan;
+}
+
+.end_sentence {
+	background-color: red;
+}
+
+.end_clause {
+	background-color: violet;
+}
+
+.start_clause {
+	background-color: #7CC576;
+}
+
+.long_space {
+	background-color: orange;
+}
+
+.short_space {
+	background-color: yellow;
+}
+
+.start_paragraph {
+	background-color: skyblue;
+}
+
+.start_sentence {
+	background-color: chartreuse;
 }

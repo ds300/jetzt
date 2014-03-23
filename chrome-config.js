@@ -3,12 +3,12 @@
 
   var configStorage = {
     get: function (cb) {
-      chrome.storage.local.get(window.jetzt.DEFAULT_OPTIONS, function (value) {
-        cb(value);
+      chrome.storage.local.get({options: "{}"}, function (map) {
+        cb(map.options);
       });
     },
-    set: function (options) {
-      chrome.storage.local.set(options);
+    set: function (json) {
+      chrome.storage.local.set({options: json});
     }
   };
 

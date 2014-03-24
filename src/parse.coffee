@@ -9,10 +9,14 @@ S = window.jetzt.streams
 # This uses window.getSelection() to avoid non-visible (P)CDATA being picked up
 range2Str = (range) ->
   sel = window.getSelection()
+  if sel.rangeCount
+    existing = sel.getRangeAt(0)
   sel.removeAllRanges()
   sel.addRange range
   result = sel.toString()
   sel.removeAllRanges()
+  if existing?
+    sel.addRange(existing)
   result
 
 # range2str wrapper for dom nodes
@@ -52,8 +56,14 @@ nodeSectionStream = (node, text, index = 0) ->
 
   stack = [node]
 
+  nextSection = null
+
   new S.Stream ->
-    if not stack.length
+    if nextSection?
+      ret = nextSection
+      nextSection = null
+      ret
+    else if not stack.length
       @die()
     else
       node = stack.pop()
@@ -69,18 +79,26 @@ nodeSectionStream = (node, text, index = 0) ->
         # done with this node, ok to bump index
         index = start + string.length
 
-      if node.___jetzt_filter
-        type = "filter"
-      else if node.___jetzt_aside or node.nodeName of ASIDE_NODES
-        type = "aside"
-
-      return {
+      result =
         node: node
-        type: type or "node"
+        type: node.nodeName
         string: string
         start: start
         end: start + string.length
-      }
+
+      if node.___jetzt_filter
+        result.type = "filter"
+      else if node.___jetzt_aside or node.nodeName of ASIDE_NODES
+        # for asides we create a pseudo-section in case the actual node
+        # has any semantic goodness we'll need later on
+        nextSection = result
+        result =
+          node: node
+          type: "aside"
+          start: start
+          end: nextSection.end
+
+      result
 
 
 sectionsIntersect = (a, b) ->
@@ -90,6 +108,8 @@ countLeadingWhitespace = (str) ->
   str.match(/^\s+/)?[0].length or 0
 
 # @string    is the text of the token
+# @start     is the index of the token's first character in the original
+#            document
 # @textEnd   is the index of the character immediately following this token
 #            in the original document. Used to indicate progress.
 # @startNode is a node, probably a text node, in which the token's first
@@ -99,7 +119,7 @@ countLeadingWhitespace = (str) ->
 # @styles    is an array of style sections for to compile the string into an
 #            html fragment for display. This will most often be empty.
 class AlignedToken
-  constructor: (@string, @textEnd, @startNode, @offset, @styles) ->
+  constructor: (@string, @start, @end, @startNode, @offset, @styles) ->
 
   select: ->
       # first select the node this token starts on;
@@ -308,37 +328,10 @@ STYLE_NODES["A"] =
   startTag: (node) -> "<a href='#{node.href}'>"
   endTag: -> "</a>"
 
-wrapfn = (left, right, style) ->
-  wrap = left: left, right: right
-  -> wrap
+STYLE_NODES["pivot"] =
+  startTag: -> "<span class='sr-pivot'>"
+  endTag: -> "</span>"
 
-WRAP_NODES =
-  BLOCKQUOTE: wrapfn "‘", "’"
-  H1: wrapfn "•••", "•••", "strong"
-  H2: wrapfn "••", "••", "strong"
-  H3: wrapfn "•", "•", "strong"
-  H4: wrapfn "•", "•"
-  H5: wrapfn "•", "•"
-  H6: wrapfn "•", "•"
-  LI: (node) ->
-    parentType = node.parentNode.nodeName
-    if parentType is "UL"
-      left: "•", right: ""
-    else if parentType is "OL"
-      # oh jeez, we have to find its index
-      idx = 0
-      n = node
-      while (n = n.previousSibling)?
-        idx++
-
-      p = node.parentNode
-
-      left: getOrderedListBullet(idx, p.start, p.type), right: ""
-
-getOrderedListBullet = (idx, start=1, type="1") ->
-  return idx + start + "."
-  # TODO. make this good. It turns out to be super complex if you take negative
-  # numbers and li.value/type attributes into account.
 
 
 # take a stream of token sections and node/filter sections, then smoosh them
@@ -405,7 +398,7 @@ alignedTokenStream = (tokens, sections) ->
               pushbackTokens breakToken token, section, true, bt
             # if bt *is* encompass, we just drop this token
             return @next()
-        else if section.node?.nodeName of BREAKER_NODES
+        else if section.type of BREAKER_NODES
           bt = discoverBreakType token, section
           if bt > ENCOMPASS
             pushbackTokens breakToken token, section
@@ -441,10 +434,126 @@ alignedTokenStream = (tokens, sections) ->
         throw new Error "No start node found. What the jazz?"
 
       new AlignedToken  token.string
+                      , token.start
                       , token.end
                       , startSection.node
                       , token.start - startSection.start
                       , tokenSections
+
+
+
+# Semantic nodes are a neat idea. Basically, you get a section associated with
+# a dom node or something, and these guys get to compile an onStart and onEnd
+# function against that section. These functions get called when the nodes start
+# and end respectively, in heirarchical order, and get passed the
+# instructionator so they can add instructions for themselves.
+
+# this is a helper function for starting and ending wraps and styles
+wrapper = (left, right, style) ->
+  wrap = left: left, right: right
+  (sec) ->
+    sec.onStart = ($instr) ->
+      $instr.pushWrap(wrap)
+      style? and $instr.pushStyle(style)
+    sec.onEnd = ($instr) ->
+      $instr.popWrap(wrap)
+      style? and $instr.popStyle(style)
+
+ASIDE_ID = 0
+
+SEMANTIC_NODES =
+  BLOCKQUOTE: wrapper "‘", "’"
+  H1: wrapper "•••", "•••", "strong"
+  H2: wrapper "••", "••", "strong"
+  H3: wrapper "•", "•", "strong"
+  H4: wrapper "•", "•"
+  H5: wrapper "•", "•"
+  H6: wrapper "•", "•"
+
+  LI: (sec) ->
+    node = sec.node
+    parentType = node.parentNode.nodeName
+    if parentType is "UL"
+      wrapper("•", "")(sec)
+    else if parentType is "OL"
+      # oh jeez, we have to find its index
+      idx = 0
+      n = node
+      while (n = n.previousSibling)?
+        idx++
+
+      p = node.parentNode
+
+      wrapper(getOrderedListBullet(idx, p.start, p.type), "")(sec)
+    else
+      wrapper("", "")(sec)
+  
+  aside: (sec) ->
+    id = ASIDE_ID++
+    sec.onStart = ($instr) ->
+      $instr.asideStart id, sec.node
+    sec.onEnd = ($instr) ->
+      $instr.asideEnd id
+      $instr.clearWrap()
+      $instr.clearStyle()
+
+
+getOrderedListBullet = (idx, start=1, type="1") ->
+  return (idx + start) + "."
+  # TODO. make this good. It turns out to be super complex if you take negative
+  # numbers and li.value/type attributes into account.
+
+
+instructionStream = (node) ->
+  text = elem2str node
+  tknregex = /["«»“”\(\)\/–—]|--+|\n+|[^\s"“«»”\(\)\/–—]+/g
+
+  filterRegex = /\[\d+\]/ # wikipedia citations
+
+  filters = filterSectionStream regexSectionStream filterRegex, text
+
+  tokens = regexSectionStream tknregex, text
+
+  nodes = nodeSectionStream node
+
+  starts = []
+  # these ends need to be manually ordered
+  ends = []
+
+  pushEnd = (section) ->
+    if ends.length is 0
+      ends.push section
+    else
+      i = 0
+      for end in ends
+        if end.end <= section.end
+          i++
+      ends.splice i, 0, section
+
+  # this is not so much a filter as a short circuit to get the wraps and asides
+  # so we can create instructions to deal with them. It does filter out asides
+  # though.
+  grabAsidesAndWraps = (section) ->
+    if section.type of SEMANTIC_NODES
+      starts.push section
+      ends.push section
+
+    # don't include asides in the stream
+    section.type isnt "aside"
+
+  nodes = S.filter grabAsidesAndWraps, nodes
+
+  sections = mergeSectionStreams nodes, filters
+
+  alignedTokens = alignedTokenStream tokens, sections
+
+  nextToken = alignedTokens.next();
+
+  new S.Stream ->
+
+
+
+
 
 document.addEventListener "DOMContentLoaded", ->
   for junkNode in document.querySelectorAll(".junk")
@@ -464,6 +573,7 @@ document.addEventListener "DOMContentLoaded", ->
   next = ->
     if (tkn = alignedtokens.next())
       tkn.select()
+      console.log tkn
       setTimeout next, 300
 
 

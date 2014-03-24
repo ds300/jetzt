@@ -152,7 +152,7 @@ LINEFEED =
     sel.removeAllRanges()
     sel
 
-# streams are ordered first by start index (ASC), then by end index (ASC)
+# streams are ordered first by start index (ASC), then by end index (DESC)
 mergeSectionStreams = (a, b) ->
   asec = a.next()
   bsec = b.next()
@@ -340,7 +340,7 @@ alignedTokenStream = (tokens, sections) ->
 
   nextSection = sections.next()
 
-  # this is the stack of sections (ordered by start time, then end time)
+  # this is the stack of sections ordered by start time ASC, then end time DESC
   # it basically represents the DOM tree around the token currently being
   # aligned, but also incorporates filtered sections. Aside sections get dealt
   # with further down the line.
@@ -480,7 +480,8 @@ SEMANTIC_NODES =
       idx = 0
       n = node
       while (n = n.previousSibling)?
-        idx++
+        if n.nodeName is "LI"
+          idx++
 
       p = node.parentNode
 
@@ -508,7 +509,7 @@ instructionStream = (node) ->
   text = elem2str node
   tknregex = /["«»“”\(\)\/–—]|--+|\n+|[^\s"“«»”\(\)\/–—]+/g
 
-  filterRegex = /\[\d+\]/ # wikipedia citations
+  filterRegex = /\[\d+\]/g # wikipedia citations
 
   filters = filterSectionStream regexSectionStream filterRegex, text
 
@@ -521,22 +522,24 @@ instructionStream = (node) ->
   ends = []
 
   pushEnd = (section) ->
-    if ends.length is 0
-      ends.push section
-    else
-      i = 0
-      for end in ends
-        if end.end <= section.end
-          i++
-      ends.splice i, 0, section
+    for end, i in ends
+      if end.end > section.end
+        ends.splice i, 0, section
+        return
+    ends.push section
+      
+  processEnds = (idx, $instr) ->
+    while ends.length and ends[0].end <= idx
+      ends.shift().onEnd $instr
+
 
   # this is not so much a filter as a short circuit to get the wraps and asides
   # so we can create instructions to deal with them. It does filter out asides
   # though.
   grabAsidesAndWraps = (section) ->
-    if section.type of SEMANTIC_NODES
+    if (compile = SEMANTIC_NODES[section.type])?
+      compile section
       starts.push section
-      ends.push section
 
     # don't include asides in the stream
     section.type isnt "aside"
@@ -549,32 +552,42 @@ instructionStream = (node) ->
 
   nextToken = alignedTokens.next();
 
+  $instr = new InstrMock()
+
   new S.Stream ->
+    while starts.length and starts[0].start <= nextToken.start
+      section = starts.shift()
+      processEnds section.start, $instr
+      section.onStart $instr
+      pushEnd section
+
+    processEnds nextToken.start, $instr
+
+    $instr.token nextToken
+
+    processEnds nextToken.end, $instr
+
+    nextToken = alignedTokens.next()
 
 
 
+
+
+
+class InstrMock
+  pushWrap: (w) -> console.log "push wrap", w
+  popWrap: (w) -> console.log "pop wrap", w
+  pushStyle: (w) -> console.log "push style", w
+  popStyle: (w) -> console.log "pop style", w
+  token: (w) -> console.log "token", w.string
 
 
 document.addEventListener "DOMContentLoaded", ->
   for junkNode in document.querySelectorAll(".junk")
     junkNode.___jetzt_filter = true
-  console.log "good"
-  text = elem2str window.document.body
-  tknregex = /["«»“”\(\)\/–—]|--+|\n+|[^\s"“«»”\(\)\/–—]+/g
-  filterRegex = /ant mor|que s/g
-  filters = filterSectionStream regexSectionStream filterRegex, text
-  nodes = nodeSectionStream window.document.body, text
-  tokens = regexSectionStream tknregex, text
+  
 
-  alignedtokens = alignedTokenStream tokens, mergeSectionStreams nodes, filters
+  instrs = instructionStream document.body
 
-  tkn = null
-
-  next = ->
-    if (tkn = alignedtokens.next())
-      tkn.select()
-      console.log tkn
-      setTimeout next, 300
-
-
-  next()
+  window.addEventListener "keydown", ->
+    instrs.next()

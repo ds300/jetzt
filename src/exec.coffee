@@ -6,7 +6,7 @@
 # instruction types
 
 class Word
-  constructor: (@html, @wrap, @progress, @startNode, @offset) ->
+  constructor: (@html, @progress, @startNode, @offset, @wrap, @modifier) ->
 
 class AsideStart
   constructor: (@id, @node, @type, @whatever) ->
@@ -14,17 +14,22 @@ class AsideStart
 class AsideEnd
   constructor: (@id)->
 
-SENTENCE_START = {}
-PARAGRAPH_START = {}
-LONG_SPACE = {}
-SHORT_SPACE = {}
+class SentenceStart
+class ParagraphStart
+class LongSpace
+class ShortSpace
+
+SENTENCE_START = new SentenceStart
+PARAGRAPH_START = new ParagraphStart
+LONG_SPACE = new LongSpace
+SHORT_SPACE = new ShortSpace
 
 
 window.exec = {}
 
 window.exec.instructions =
   Word: Word
-  AsideStart: AsideStarts
+  AsideStart: AsideStart
   AsideEnd: AsideEnd
   SENTENCE_START: SENTENCE_START
   PARAGRAPH_START: PARAGRAPH_START

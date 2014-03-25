@@ -4,6 +4,7 @@
 # the file LICENSE-2.0 or at http://www.apache.org/licenses/LICENSE-2.0
 
 S = window.jetzt.streams
+I = window.exec.instructions
 
 # Take a dom range and get it's string contents
 # This uses window.getSelection() to avoid non-visible (P)CDATA being picked up
@@ -561,26 +562,37 @@ instructionStream = (node) ->
 
   nextToken = alignedTokens.next();
 
-  $instr = new InstrMock()
+  $instr = new Instructionator()
 
   new S.Stream ->
-    while starts.length and starts[0].start <= nextToken.start
-      section = starts.shift()
-      processEnds section.start, $instr
-      section.onStart $instr
-      pushEnd section
+    if not $instr.needsMore()
+      $instr.nextInstruction()
+    else if not nextToken?
+      if (dregs = $instr.nextInstruction())?
+        dregs
+      else
+        @die()
+    else
+      while starts.length and starts[0].start <= nextToken.start
+        section = starts.shift()
+        processEnds section.start, $instr
+        section.onStart $instr
+        pushEnd section
 
-    processEnds nextToken.start, $instr
+      processEnds nextToken.start, $instr
 
-    handleToken nextToken, $instr
+      progress = nextToken.end/text.length
 
-    processEnds nextToken.end, $instr
+      handleToken nextToken, progress, $instr
 
-    nextToken = alignedTokens.next()
+      processEnds nextToken.end, $instr
+
+      nextToken = alignedTokens.next()
+      @next()
 
 
-handleToken = (tkn, $) ->
-  str = tkn.string
+handleToken = (tkn, progress, $) ->
+  str = tkn.string or "\n\n"
   switch str
     when "“"
       $.spacer()
@@ -619,15 +631,15 @@ handleToken = (tkn, $) ->
     else
       if str.match(/^(\/|--+|—|–)$/)
         $.modNext "start_clause"
-        $.token tkn
+        $.token tkn, progress
         $.modNext "start_clause"
       else if str.match(/[.?!…]+$/)
         $.modNext "end_sentence"
-        $.token tkn
+        $.token tkn, progress
         $.modNext "start_sentence"
       else if str.match(/[,;:]$/)
         $.modNext "end_clause"
-        $.token tkn
+        $.token tkn, progress
         $.modNext "start_clause"
       else if str.match(/\n+/)
         $.clearWrap()
@@ -636,54 +648,96 @@ handleToken = (tkn, $) ->
         $.modNext "start_paragraph"
         double_quote_state = false
       else
-        $.token tkn
+        $.token tkn, progress
 
-
-class InstrMock
-  pushWrap: (w) -> console.log "push wrap", w
-  popWrap: (w) -> console.log "pop wrap", w
-  clearWrap: (w) -> console.log "clear wrap"
-  clearStyle: (w) -> console.log "clear style"
-  pushStyle: (w) -> console.log "push style", w
-  asideStart: (w, n) -> console.log "aside start", w, n
-  asideEnd: (w) -> console.log "asideEnd", w
-  popStyle: (w) -> console.log "pop style", w
-  token: (w) -> console.log "token", w.string
-
-class Word
 
 class Instructionator
   constructor: ->
     @_buffer = []
-    @_modifier = ""
+    @_modifier = "normal"
     @_wraps = []
+    @_currentWrap = null
     @_styles = []
-    @_spacerInstruction = null
+    @_currentStyle = null
+    @_spacer = null
 
   nextInstruction: -> @_buffer.shift()
 
-  needsMore: -> @_buffer.length < 5 # chosen arbitrarily. anything > 1
+  needsMore: -> @_buffer.length < 10
 
   modNext: (modifier) ->
     @_modifier = modifier # TODO: use maxModifier once config is ported
 
   modPrev: (modifier) ->
-    for item in @_buffer by -1 when item instanceof Word
+    for item in @_buffer by -1 when item instanceof I.Word
       item.modifier = modifier # TODO: maxModifier again
+      break
 
-  pushWrap: (wrap) -> @_wraps.push(wrap)
+  pushWrap: (wrap) ->
+    @_wraps.push(wrap)
+    @_currentWrap = null
 
   popWrap: (wrap) ->
     idx = @_wraps.lastIndexOf wrap
     if idx > -1
       @_wraps.splice idx, @_wraps.length
+      @_currentWrap = null
 
   clearWrap: () ->
     @_wraps = @_wraps.filter (w) -> w.noClear
+    @_currentWrap = null
 
-  _addWraps: (instr)
-    instr.leftWrap = @_wraps.map((w) -> w.left).join ""
-    instr.rightWrap = @_wraps.map((w) -> w.right).join ""
+  _addWrap: (instr) ->
+    if !@_currentWrap?
+      left = @_wraps.map((w) -> w.left).join ""
+      right = @_wraps.map((w) -> w.right).join ""
+      @_currentWrap = left: left, right: right
+    instr.wrap = @_currentWrap
+    instr
+
+  spacer: ->
+    @_spacer = if @_spacer? then I.LONG_SPACE else I.SHORT_SPACE
+
+  pushStyle: (style) ->
+    @_styles.push style
+    @_currentStyle = null
+
+  popStyle: (style) ->
+    idx = @_styles.indexOf style
+    if idx > -1
+      @_styles.splice idx, @_styles.length
+      @_currentStyle = null
+
+  _addStyle: (instr) ->
+    if !@_currentStyle?
+      @_currentStyle = @_styles.join ""
+
+    instr.style = @_currentStyle
+    instr
+
+  clearStyle: ->
+    @_styles = []
+    @_currentStyle = null
+
+  asideStart: (id, node) ->
+    @_buffer.push new I.AsideStart id, node
+
+  asideEnd: (id) ->
+    @_buffer.push new I.AsideEnd id
+
+  _emit: (instr) ->
+    if @_spacer?
+      @_buffer.push @_spacer
+      @_spacer = null
+
+    instr.modifier = @_modifier
+    @_buffer.push @_addStyle @_addWrap instr
+
+    @_modifier = "normal"
+
+  token: (tkn, progress) ->
+    @_emit new I.Word tkn.string, progress, tkn.startNode, tkn.offset
+
 
 
 
@@ -697,4 +751,4 @@ document.addEventListener "DOMContentLoaded", ->
   instrs = instructionStream document.body
 
   window.addEventListener "keydown", ->
-    instrs.next()
+    console.log instrs.next()

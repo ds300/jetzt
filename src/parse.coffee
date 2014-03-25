@@ -449,8 +449,12 @@ alignedTokenStream = (tokens, sections) ->
 # instructionator so they can add instructions for themselves.
 
 # this is a helper function for starting and ending wraps and styles
+makeWrap = (left, right) ->
+  left: left, right: right
+
 wrapper = (left, right, style) ->
-  wrap = left: left, right: right
+  wrap = makeWrap left, right
+  wrap.noClear = true # no need for defensive wrap clearing with these guys
   (sec) ->
     sec.onStart = ($instr) ->
       $instr.pushWrap(wrap)
@@ -499,6 +503,11 @@ SEMANTIC_NODES =
       $instr.clearStyle()
 
 
+WRAPS =
+  guillemet: makeWrap "«", "»"
+  double_quote: makeWrap "“", "”"
+  parens: makeWrap "(", ")"
+
 getOrderedListBullet = (idx, start=1, type="1") ->
   return (idx + start) + "."
   # TODO. make this good. It turns out to be super complex if you take negative
@@ -507,7 +516,7 @@ getOrderedListBullet = (idx, start=1, type="1") ->
 
 instructionStream = (node) ->
   text = elem2str node
-  tknregex = /["«»“”\(\)\/–—]|--+|\n+|[^\s"“«»”\(\)\/–—]+/g
+  tknregex = /["«»“”\(\)\/—]|--+|\n+|[^\s"“«»”\(\)\/—]+/g
 
   filterRegex = /\[\d+\]/g # wikipedia citations
 
@@ -523,7 +532,7 @@ instructionStream = (node) ->
 
   pushEnd = (section) ->
     for end, i in ends
-      if end.end > section.end
+      if end.end >= section.end
         ends.splice i, 0, section
         return
     ends.push section
@@ -563,23 +572,121 @@ instructionStream = (node) ->
 
     processEnds nextToken.start, $instr
 
-    $instr.token nextToken
+    handleToken nextToken, $instr
 
     processEnds nextToken.end, $instr
 
     nextToken = alignedTokens.next()
 
 
-
-
+handleToken = (tkn, $) ->
+  str = tkn.string
+  switch str
+    when "“"
+      $.spacer()
+      $.pushWrap WRAPS.double_quote
+      $.modNext "start_clause"
+    when "”"
+      $.popWrap WRAPS.double_quote
+      $.modPrev "end_clause"
+      $.spacer()
+    when "«"
+      $.spacer()
+      $.pushWrap WRAPS.guillemet
+      $.modNext "start_clause"
+    when "»"
+      $.popWrap WRAPS.guillemet
+      $.modPrev "end_clause"
+      $.spacer()
+    when "\""
+      if double_quote_state
+        $.popWrap WRAPS.double_quote
+        $.spacer()
+        $.modNext "start_clause"
+      else
+        $.spacer()
+        $.pushWrap WRAPS.double_quote
+        $.modPrev "end_clause"
+      double_quote_state = not double_quote_state
+    when "("
+      $.spacer()
+      $.pushWrap WRAPS.parens
+      $.modNext "start_clause"
+    when ")"
+      $.popWrap WRAPS.parens
+      $.modPrev "end_clause"
+      $.spacer()
+    else
+      if str.match(/^(\/|--+|—|–)$/)
+        $.modNext "start_clause"
+        $.token tkn
+        $.modNext "start_clause"
+      else if str.match(/[.?!…]+$/)
+        $.modNext "end_sentence"
+        $.token tkn
+        $.modNext "start_sentence"
+      else if str.match(/[,;:]$/)
+        $.modNext "end_clause"
+        $.token tkn
+        $.modNext "start_clause"
+      else if str.match(/\n+/)
+        $.clearWrap()
+        $.modPrev "end_paragraph"
+        $.spacer()
+        $.modNext "start_paragraph"
+        double_quote_state = false
+      else
+        $.token tkn
 
 
 class InstrMock
   pushWrap: (w) -> console.log "push wrap", w
   popWrap: (w) -> console.log "pop wrap", w
+  clearWrap: (w) -> console.log "clear wrap"
+  clearStyle: (w) -> console.log "clear style"
   pushStyle: (w) -> console.log "push style", w
+  asideStart: (w, n) -> console.log "aside start", w, n
+  asideEnd: (w) -> console.log "asideEnd", w
   popStyle: (w) -> console.log "pop style", w
   token: (w) -> console.log "token", w.string
+
+class Word
+
+class Instructionator
+  constructor: ->
+    @_buffer = []
+    @_modifier = ""
+    @_wraps = []
+    @_styles = []
+    @_spacerInstruction = null
+
+  nextInstruction: -> @_buffer.shift()
+
+  needsMore: -> @_buffer.length < 5 # chosen arbitrarily. anything > 1
+
+  modNext: (modifier) ->
+    @_modifier = modifier # TODO: use maxModifier once config is ported
+
+  modPrev: (modifier) ->
+    for item in @_buffer by -1 when item instanceof Word
+      item.modifier = modifier # TODO: maxModifier again
+
+  pushWrap: (wrap) -> @_wraps.push(wrap)
+
+  popWrap: (wrap) ->
+    idx = @_wraps.lastIndexOf wrap
+    if idx > -1
+      @_wraps.splice idx, @_wraps.length
+
+  clearWrap: () ->
+    @_wraps = @_wraps.filter (w) -> w.noClear
+
+  _addWraps: (instr)
+    instr.leftWrap = @_wraps.map((w) -> w.left).join ""
+    instr.rightWrap = @_wraps.map((w) -> w.right).join ""
+
+
+
 
 
 document.addEventListener "DOMContentLoaded", ->

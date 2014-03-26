@@ -284,7 +284,7 @@
   };
 
   config.adjustScale = function (diff) {
-    options.scale = H.clamp(0, options.scale + diff, 1);
+    this("scale", H.clamp(0, options.scale + diff, 1));
   };
 
 

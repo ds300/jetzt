@@ -7,34 +7,51 @@ module.exports = function(grunt) {
       + '<%= grunt.template.today("yyyy-mm-dd") %>\n'
       + '* https://ds300.github.io/jetzt/\n'
       + '* Copyright (c) <%= grunt.template.today("yyyy") %> '
-      + 'David Sheldrick and contributors; Licensed Apache 2.0 */\n'
+      + 'jetzt contributors; Licensed Apache 2.0 */\n'
     // Task configuration.
+    , coffee: {
+      options: {
+        sourceMap: true,
+        sourceMapDir: 'build/maps/' // source map files will be created here
+      },
+      dynamic_mappings: {
+        files: [
+          {
+            expand: true,     // Enable dynamic expansion.
+            cwd: 'src/',      // Src matches are relative to this path.
+            src: ['*.coffee'], // Actual pattern(s) to match.
+            dest: 'build/',   // Destination path prefix.
+            ext: '.js'   // Dest filepaths will have this extension.
+          }
+        ],
+      }
+    }
     , concat: {
       options: {
         banner: '<%= banner %>'
         , stripBanners: true
       }
       , 'jetzt-solid.js' : [
-            "modules/preamble.js"
-          , "modules/helpers.js"
-          , "modules/config.js"
-          , "modules/parse.js"
-          , "modules/exec.js"
-          , "modules/view.js"
-          , "modules/select.js"
-          , "modules/control.js"
-          , "modules/init.js"
+            "build/preamble.js"
+          , "build/helpers.js"
+          , "build/config.js"
+          , "build/parse.js"
+          , "build/exec.js"
+          , "build/view.js"
+          , "build/select.js"
+          , "build/control.js"
+          , "build/init.js"
         ]
       }
     , uglify: {
       options: {
         banner: '<%= banner %>'
       }       
-    	, 'jetzt-solid.min.js' : 'jetzt-solid.js'
+      , 'jetzt-solid.min.js' : 'jetzt-solid.js'
     }
     , watch: {
-      files: ["modules/**", "src/**"]
-      , tasks: ["concat", "uglify"]
+      files: ["src/**"]
+      , tasks: ["coffee", "concat", "uglify"]
     }
 
 
@@ -42,11 +59,12 @@ module.exports = function(grunt) {
   });
 
   // These plugins provide necessary tasks.
+  grunt.loadNpmTasks('grunt-contrib-coffee');
   grunt.loadNpmTasks('grunt-contrib-concat');
   grunt.loadNpmTasks('grunt-contrib-uglify');
   grunt.loadNpmTasks('grunt-contrib-watch');
   
   // Default task.
-  grunt.registerTask('default', ['concat', 'uglify', 'watch']);
+  grunt.registerTask('default', ['coffee', 'concat', 'uglify', 'watch']);
 
 };

@@ -35,3 +35,14 @@ window.exec.instructions =
   PARAGRAPH_START: PARAGRAPH_START
   LONG_SPACE: LONG_SPACE
   SHORT_SPACE: SHORT_SPACE
+
+
+
+class StreamExectuor
+  constructor: (@in) ->
+    @_instructions = []
+    @_doneLoading = false
+    @_index = 
+
+    @_step = (nav) =>
+      if nav?

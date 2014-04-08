@@ -47,9 +47,8 @@
       , progressBar = div("sr-progress")
       , message = div("sr-message")
       , reticle = div("sr-reticle")
-      , hiddenInput = H.elem("input", "sr-input")
       , wordBox = div("sr-word-box", [
-          reticle, progressBar, message, word, wpm, hiddenInput
+          reticle, progressBar, message, word, wpm
         ])
       , box = div("sr-reader", [
           leftWrap,
@@ -60,9 +59,8 @@
       , wrapper = div("sr-reader-wrapper", [box])
 
       , unlisten;
-
-
-    hiddenInput.onkeyup = hiddenInput.onkeypress = function (ev) {
+    
+    box.onkeyup = box.onkeypress = function (ev) {
       if(!ev.ctrlKey && !ev.metaKey) {
         ev.stopImmediatePropagation();
         return false;
@@ -71,7 +69,8 @@
 
 
     var grabFocus = function () {
-      hiddenInput.focus();
+    	box.tabIndex = 0; // make sure this element can have focus
+    	box.focus();
     };
 
     this.onBackdropClick = function (cb) {
@@ -79,7 +78,7 @@
     };
 
     this.onKeyDown = function (cb) {
-      hiddenInput.onkeydown = cb;
+    	box.onkeydown = cb;
     };
 
     this.dark = false;
@@ -133,7 +132,7 @@
       document.body.scrollTop = scrollTop;
       document.documentElement.scrollTop = scrollTop;
 
-      hiddenInput.onblur = grabFocus;
+      box.onblur = grabFocus;
 
       typeof cb === 'function' && window.setTimeout(cb, 340);
     };
@@ -141,8 +140,8 @@
 
     this.hide = function (cb) {
       unlisten();
-      hiddenInput.onblur = null;
-      hiddenInput.blur();
+      box.onblur = null;
+      box.blur();
       backdrop.style.opacity = 0;
       H.removeClass(wrapper, "in");
       window.setTimeout(function () {

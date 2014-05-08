@@ -10,7 +10,7 @@ Here's what jetzt looks like in your browser:
 
 ### More Info
 
-- [Google Chrome Extension](https://chrome.google.com/webstore/detail/speed-reader/mopleljddigalhljmbidplhdhgmafemi?utm_source=chrome-ntp-icon)
+- [Google Chrome Extension](https://chrome.google.com/webstore/detail/speed-reader/mopleljddigalhljmbidplhdhgmafemi)
 
 - Read about [how to install](https://ds300.github.io/jetzt/#install) (Manual Chrome extension and bookmarklet)
 

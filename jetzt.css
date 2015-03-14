@@ -22,6 +22,8 @@
 
 .sr-reader {
   height: 100px;
+  display: -webkit-flex;
+  -webkit-flex-direction: row;
   display: flex;
   flex-direction: row;
   -webkit-box-shadow: 2px 2px 19px 0px rgba(50, 50, 50, 0.75);
@@ -53,6 +55,8 @@
 .sr-reader > .sr-wrap {
   min-width: 40px;
   font-size: 50px;
+  -webkit-flex: 1 1 auto;
+  -ms-flex: 1 1 auto;
   flex: 1 1 auto;
   padding: 15px 5px;
   line-height: 60px;
@@ -71,6 +75,8 @@
 }
 
 .sr-reader .sr-word-box {
+  -webkit-flex: 0 0 auto;
+  -ms-flex: 0 0 auto;
   flex: 0 0 auto;
   width: 400px;
   position: relative;

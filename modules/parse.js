@@ -136,6 +136,14 @@
       }
     };
 
+    // amend the last token, cb(old_tkn) returns new_tkn
+    this.amend = function (cb) {
+      if (instructions.length > 0) {
+        var inst = instructions[instructions.length-1];
+        inst.token = cb(inst.token);
+      }
+    };
+
     this.getInstructions = function () {
       return instructions;
     };
@@ -249,6 +257,10 @@
             $.modNext("start_clause");
             $.token(tkn);
             $.modNext("start_clause");
+          } else if (tkn.match(/^[.?!…]+$/)) {
+            $.modPrev("end_sentence");
+            $.amend(function (old) {return old + tkn;});
+            $.modNext("start_sentence");
           } else if (tkn.match(/[.?!…]+$/)) {
             $.modNext("end_sentence");
             $.token(tkn);

@@ -265,6 +265,10 @@
             $.modNext("end_sentence");
             $.token(tkn);
             $.modNext("start_sentence");
+          } else if (tkn.match(/^[,;:]$/)) {
+            $.modNext("end_clause");
+            $.amend(function (old) {return old + tkn;});
+            $.modNext("start_clause");
           } else if (tkn.match(/[,;:]$/)) {
             $.modNext("end_clause");
             $.token(tkn);

@@ -150,8 +150,22 @@
 
   function parseDom(topnode,$instructionator) {
     var inst =  ($instructionator) ? $instructionator :  new Instructionator();
-    var node=null;
 
+    var all_inline = [].reduce.call(
+      topnode.childNodes,
+      function(val, node) {
+        return val && (node.nodeType !== 1 ||
+          !!window.getComputedStyle(node).display.match(/^inline/));
+      },
+      true
+    );
+    if (all_inline) {
+      var text = topnode.textContent.trim();
+      if (text.length > 0) parseText(text, inst);
+      return inst.getInstructions();
+    }
+
+    var node=null;
     for(var i=0;i<topnode.childNodes.length;i++) {
         node=topnode.childNodes[i];
 

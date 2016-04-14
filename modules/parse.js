@@ -136,14 +136,6 @@
       }
     };
 
-    // amend the last token, cb(old_tkn) returns new_tkn
-    this.amend = function (cb) {
-      if (instructions.length > 0) {
-        var inst = instructions[instructions.length-1];
-        inst.token = cb(inst.token);
-      }
-    };
-
     this.getInstructions = function () {
       return instructions;
     };
@@ -158,8 +150,22 @@
 
   function parseDom(topnode,$instructionator) {
     var inst =  ($instructionator) ? $instructionator :  new Instructionator();
-    var node=null;
 
+    var all_inline = [].reduce.call(
+      topnode.childNodes,
+      function(val, node) {
+        return val && (node.nodeType !== 1 ||
+          !!window.getComputedStyle(node).display.match(/^inline/));
+      },
+      true
+    );
+    if (all_inline) {
+      var text = topnode.textContent.trim();
+      if (text.length > 0) parseText(text, inst);
+      return inst.getInstructions();
+    }
+
+    var node=null;
     for(var i=0;i<topnode.childNodes.length;i++) {
         node=topnode.childNodes[i];
 
@@ -257,18 +263,10 @@
             $.modNext("start_clause");
             $.token(tkn);
             $.modNext("start_clause");
-          } else if (tkn.match(/^[.?!…]+$/)) {
-            $.modPrev("end_sentence");
-            $.amend(function (old) {return old + tkn;});
-            $.modNext("start_sentence");
           } else if (tkn.match(/[.?!…]+$/)) {
             $.modNext("end_sentence");
             $.token(tkn);
             $.modNext("start_sentence");
-          } else if (tkn.match(/^[,;:]$/)) {
-            $.modNext("end_clause");
-            $.amend(function (old) {return old + tkn;});
-            $.modNext("start_clause");
           } else if (tkn.match(/[,;:]$/)) {
             $.modNext("end_clause");
             $.token(tkn);

@@ -151,23 +151,30 @@
   function parseDom(topnode,$instructionator) {
     var inst =  ($instructionator) ? $instructionator :  new Instructionator();
 
-    var all_inline = [].reduce.call(
-      topnode.childNodes,
-      function(val, node) {
-        return val && (node.nodeType !== 1 ||
-          !!window.getComputedStyle(node).display.match(/^inline/));
-      },
-      true
-    );
-    if (all_inline) {
-      var text = topnode.textContent.trim();
-      if (text.length > 0) parseText(text, inst);
-      return inst.getInstructions();
+    var nodes = null;
+    if (H.realTypeOf(topnode) === "Array") {
+      nodes = topnode;
+    } else {
+      nodes = topnode.childNodes;
+
+      var all_inline = [].reduce.call(
+        nodes,
+        function(val, node) {
+          return val && (node.nodeType !== 1 ||
+            !!window.getComputedStyle(node).display.match(/^inline/));
+        },
+        true
+      );
+      if (all_inline) {
+        var text = topnode.textContent.trim();
+        if (text.length > 0) parseText(text, inst);
+        return inst.getInstructions();
+      }
     }
 
     var node=null;
-    for(var i=0;i<topnode.childNodes.length;i++) {
-        node=topnode.childNodes[i];
+    for(var i=0;i<nodes.length;i++) {
+        node = nodes[i];
 
         //TODO add modifiers, e.g. based on node.nodeName
         switch(node.nodeName) {
@@ -297,16 +304,7 @@
 
   function parseStuff (parser, content) {
     var instr = new Instructionator();
-    if (H.realTypeOf(content) === "Array") {
-      content.forEach(function (item) {
-        instr.modNext("start_paragraph");
-        parser(item, instr);
-        instr.clearWrap();
-        instr.modPrev("end_paragraph");
-      });
-    } else {
-      parser(content, instr);
-    }
+    parser(content, instr);
 
     return instr.getInstructions();
   }

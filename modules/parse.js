@@ -105,6 +105,14 @@
       }
     };
 
+    // add a decorator to the previous token
+    this.decPrev = function (dec) {
+      if (instructions.length > 0) {
+        var current = instructions[instructions.length-1].decorator;
+        instructions[instructions.length-1].decorator += dec;
+      }
+    };
+
     // start a wrap on the next token
     this.pushWrap = function (wrap) {
       wraps.push(wrap);
@@ -136,7 +144,8 @@
       } else {
         spacerInstruction = _addWraps({
           token: "   ",
-          modifier: "short_space"
+          modifier: "short_space",
+          decorator: ""
         });
       }
     };
@@ -148,7 +157,8 @@
 
       instructions.push(_addWraps({
         token: token,
-        modifier: modifier
+        modifier: modifier,
+        decorator: ""
       }));
 
       modifier = "normal";
@@ -315,10 +325,16 @@
             $.modNext("start_clause");
             $.token(tkn);
             $.modNext("start_clause");
+          } else if (tkn.match(/^[.?!…]+$/)) {
+            $.decPrev(tkn);
+            $.modPrev("end_sentence");
           } else if (tkn.match(/[.?!…]+$/)) {
             $.modNext("end_sentence");
             $.token(tkn);
             $.modNext("start_sentence");
+          } else if (tkn.match(/^[,;:]$/)) {
+            $.decPrev(tkn);
+            $.modPrev("end_clause");
           } else if (tkn.match(/[,;:]$/)) {
             $.modNext("end_clause");
             $.token(tkn);

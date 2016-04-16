@@ -145,7 +145,8 @@
     guillemot: {left: "«", right: "»"},
     double_quote: {left: "“", right: "”"},
     parens: {left: "(", right: ")"},
-    heading1: {left: "H1", right: ""}
+    heading: {left: "#", right: ""},
+    blockquote: {left: "›", right: ""}  // U+203A
   };
 
   function parseDom(topnode,$instructionator) {
@@ -179,12 +180,24 @@
         //TODO add modifiers, e.g. based on node.nodeName
         switch(node.nodeName) {
           case "H1":
-            //commented out until view for headings is implemented    
-            //inst.pushWrap(wraps.heading1);
+          case "H2":
+          case "H3":
+          case "H4":
+          case "H5":
+          case "H6":
+            inst.clearWrap();
+            inst.pushWrap(wraps.heading);
             inst.modNext("start_paragraph");
             parseDom(node,inst);
             inst.spacer();
-            inst.clearWrap();
+            inst.popWrap(wraps.heading);
+            inst.modPrev("end_paragraph");
+            break;
+          case "BLOCKQUOTE":
+            inst.pushWrap(wraps.blockquote);
+            inst.modNext("start_paragraph");
+            parseDom(node,inst);
+            inst.popWrap(wraps.blockquote);
             inst.modPrev("end_paragraph");
             break;
           case "SCRIPT":
@@ -192,12 +205,14 @@
           case "#text":
             if(node.textContent.trim().length > 0) parseText(node.textContent.trim(),inst);
             break;
+          case "DL":
+          case "OL":
+          case "UL":
+          case "SECTION":
           case "P":
-            inst.clearWrap();
             inst.modNext("start_paragraph");
             parseDom(node, inst)
             inst.modPrev("end_paragraph");
-            inst.clearWrap();
             break;
           case "#comment":
             break;

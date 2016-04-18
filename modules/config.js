@@ -75,6 +75,7 @@
     selection_color: "#FF0000",
     modifiers: DEFAULT_MODIFIERS,
     font_family: "Menlo, Monaco, Consolas, monospace",
+    font_weight: "normal",
     custom_themes: []
   };
 

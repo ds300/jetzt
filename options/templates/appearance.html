@@ -56,6 +56,10 @@
 		<p>
 			<select id="fav_font"  ng-options="fnt.displayName as fnt.displayName for fnt in installedFonts" ng-model="font"></select>
 		</p>
+		<p>Font weight:</p>
+		<p>
+			<select ng-options="w as w for w in fontWeights" ng-model="fontWeight"></select>
+		</p>
 		<p>Selection color: <input type="color" ng-model="selectionColor" name="{{property}}_{{style}}"></p>
 		<p>Theme:</p>
 		<ul id="themes-list">

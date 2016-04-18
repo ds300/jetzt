@@ -92,6 +92,7 @@
       this.setScale(config("scale"));
       this.setWPM(config("target_wpm"));
       this.setFont(config("font_family"));
+      this.setFontWeight(config("font_weight"));
 
       if (config("show_message")) {
         this.showMessage();
@@ -170,6 +171,12 @@
       rightWrap.style.fontFamily = font;
       wpm.style.fontFamily = font;
       message.style.fontFamily = font;
+    };
+
+    this.setFontWeight = function (fontWeight) {
+      leftWord.style.fontWeight = fontWeight;
+      pivotChar.style.fontWeight = fontWeight;
+      rightWord.style.fontWeight = fontWeight;
     };
 
     this.applyTheme = function (theme) {

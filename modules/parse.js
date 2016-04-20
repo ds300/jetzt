@@ -52,6 +52,34 @@
     return result;
   }
 
+  // regexp that matches in-text citations
+  var _reInTextCitation = (function () {
+    var au = "((\\S\\.\\s)?(\\S+\\s)?\\S+?)";          // author
+    var et = "(,?\\set\\sal\\.?)";                     // et al.
+
+    var yr = "((16|17|18|19|20)\\d{2}[a-z]?)";         // year restricted in 17c.-21c.
+    var pt = "([a-z]{1,4}\\.\\s\\d+)";                 // part: p. 199, chap. 5, etc.
+    var yp = "(" + yr + "|" + pt + ")";                // year and part
+    var pp = "(" + pt + "|\\d+)";                      // part and page
+
+    var as = "((" + au + ",\\s)*" + au +
+             ",?\\s(and|&)\\s)?" + au + et;            // multiple authors
+    var ml = as + "?\\s\\d+(,\\s\\d+)*";               // MLA author-page (disabled)
+    var ap = "(" + as + "?,?\\s)?" + yp +
+             "((,\\s|:)" + pp + ")*";                  // APA/CMS/ASA author-year-page
+
+    var hs = "(" + as + "|" + ap + ")";                // humanist single citation
+    var hm = "\\((" + hs + "(;|,|,?\\s(and|&))\\s)*" +
+             hs + "\\)";                               // humanist multiple citations
+    var ie = "\\[\\d+\\]";                             // IEEE
+
+    return new RegExp("\\s?(" + hm + "|" + ie + ")", "g");
+  })();
+
+  function stripInTextCitation (text) {
+    return text.replace(_reInTextCitation, "");
+  }
+
   /**
    * Helper class for generating jetzt instructions.
    * Very subject to change.
@@ -226,8 +254,10 @@
 
   // convert raw text into instructions
   function parseText (text,$instructionator) {
+    if (config("strip_citation")) text = stripInTextCitation(text);
                         // long dashes ↓
     var tokens = text.match(/["«»“”\(\)\/–—]|--+|\n+|[^\s"“«»”\(\)\/–—]+/g);
+    if (tokens === null) tokens = [];
 
     var $ = ($instructionator) ? $instructionator :  new Instructionator();
 

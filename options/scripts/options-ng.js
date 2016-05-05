@@ -51,6 +51,7 @@ optsApp.controller("ReadingCtrl", function ($scope, $window, jetzt, Persist) {
 	// make sure we get the versions from storage
 	jetzt.config.refresh(function () {
 		$scope.modifiers = angular.copy(jetzt.config("modifiers"));
+		$scope.stripCitation = jetzt.config("strip_citation");
 		saved = angular.copy(jetzt.config("modifiers"));
 		$scope.$$phase || $scope.$apply();
 	});
@@ -80,6 +81,7 @@ optsApp.controller("ReadingCtrl", function ($scope, $window, jetzt, Persist) {
 
 	Persist($scope, function () {
 		jetzt.config("modifiers", $scope.modifiers);
+		jetzt.config("strip_citation", $scope.stripCitation);
 	});
 });
 

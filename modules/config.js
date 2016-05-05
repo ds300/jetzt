@@ -72,6 +72,7 @@
     dark: false,
     selected_theme: 0,
     show_message: false,
+    strip_citation: false,
     selection_color: "#FF0000",
     modifiers: DEFAULT_MODIFIERS,
     font_family: "Menlo, Monaco, Consolas, monospace",

@@ -18,7 +18,8 @@
     return word.length > 13 || word.length > 9 && word.indexOf("-") > -1;
   }
 
-  function _maybeSplitLongWord (word) {
+  // split a long word into sensible sections
+  function splitLongWord (word) {
     if (wordShouldBeSplitUp(word)) {
       var result = [];
 
@@ -26,7 +27,7 @@
       if (dashIdx > 0 && dashIdx < word.length - 1) {
         result.push(word.substr(0, dashIdx));
         result.push(word.substr(dashIdx + 1));
-        return H.flatten(result.map(_maybeSplitLongWord));
+        return H.flatten(result.map(splitLongWord));
       } else {
         var partitions = Math.ceil(word.length / 8);
         var partitionLength = Math.ceil(word.length / partitions);
@@ -39,17 +40,6 @@
     } else {
       return [word];
     }
-  }
-
-  // split a long word into sensible sections
-  function splitLongWord (word) {
-    var result = _maybeSplitLongWord(word);
-    if (result.length > 1) {
-      for (var i=0; i<result.length-1; i++) {
-        result[i] += "-";
-      }
-    }
-    return result;
   }
 
   // regexp that matches in-text citations
@@ -150,28 +140,29 @@
       }
     };
 
-    var _emit = function (token) {
+    // add the token
+    this.token = function (token) {
       if (spacerInstruction) {
         instructions.push(spacerInstruction);
       }
 
+      var trunks = wordShouldBeSplitUp(token) ? splitLongWord(token) : [token]
+        , last = trunks.pop();
+      trunks.forEach(function (t) {
+        instructions.push(_addWraps({
+          token: t,
+          modifier: "normal",
+          decorator: "-"
+        }));
+      });
       instructions.push(_addWraps({
-        token: token,
+        token: last,
         modifier: modifier,
         decorator: ""
       }));
 
       modifier = "normal";
       spacerInstruction = null;
-    };
-
-    // add the token
-    this.token = function (tkn) {
-      if (wordShouldBeSplitUp(tkn)) {
-        splitLongWord(tkn).forEach(_emit);
-      } else {
-        _emit(tkn);
-      }
     };
 
     this.getInstructions = function () {

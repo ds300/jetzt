@@ -134,6 +134,9 @@
       document.documentElement.scrollTop = scrollTop;
 
       hiddenInput.onblur = grabFocus;
+      window.onfocus = function() {
+        setTimeout(grabFocus, 100);
+      }
 
       typeof cb === 'function' && window.setTimeout(cb, 340);
     };

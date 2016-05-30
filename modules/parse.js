@@ -18,7 +18,8 @@
     return word.length > 13 || word.length > 9 && word.indexOf("-") > -1;
   }
 
-  function _maybeSplitLongWord (word) {
+  // split a long word into sensible sections
+  function splitLongWord (word) {
     if (wordShouldBeSplitUp(word)) {
       var result = [];
 
@@ -26,7 +27,7 @@
       if (dashIdx > 0 && dashIdx < word.length - 1) {
         result.push(word.substr(0, dashIdx));
         result.push(word.substr(dashIdx + 1));
-        return H.flatten(result.map(_maybeSplitLongWord));
+        return H.flatten(result.map(splitLongWord));
       } else {
         var partitions = Math.ceil(word.length / 8);
         var partitionLength = Math.ceil(word.length / partitions);
@@ -41,15 +42,32 @@
     }
   }
 
-  // split a long word into sensible sections
-  function splitLongWord (word) {
-    var result = _maybeSplitLongWord(word);
-    if (result.length > 1) {
-      for (var i=0; i<result.length-1; i++) {
-        result[i] += "-";
-      }
-    }
-    return result;
+  // regexp that matches in-text citations
+  var _reInTextCitation = (function () {
+    var au = "((\\S\\.\\s)?(\\S+\\s)?\\S+?)";          // author
+    var et = "(,?\\set\\sal\\.?)";                     // et al.
+
+    var yr = "((16|17|18|19|20)\\d{2}[a-z]?)";         // year restricted in 17c.-21c.
+    var pt = "([a-z]{1,4}\\.\\s\\d+)";                 // part: p. 199, chap. 5, etc.
+    var yp = "(" + yr + "|" + pt + ")";                // year and part
+    var pp = "(" + pt + "|\\d+)";                      // part and page
+
+    var as = "((" + au + ",\\s)*" + au +
+             ",?\\s(and|&)\\s)?" + au + et;            // multiple authors
+    var ml = as + "?\\s\\d+(,\\s\\d+)*";               // MLA author-page (disabled)
+    var ap = "(" + as + "?,?\\s)?" + yp +
+             "((,\\s|:)" + pp + ")*";                  // APA/CMS/ASA author-year-page
+
+    var hs = "(" + as + "|" + ap + ")";                // humanist single citation
+    var hm = "\\((" + hs + "(;|,|,?\\s(and|&))\\s)*" +
+             hs + "\\)";                               // humanist multiple citations
+    var ie = "\\[\\d+\\]";                             // IEEE
+
+    return new RegExp("\\s?(" + hm + "|" + ie + ")", "g");
+  })();
+
+  function stripInTextCitation (text) {
+    return text.replace(_reInTextCitation, "");
   }
 
   /**
@@ -74,6 +92,14 @@
       if (instructions.length > 0) {
         var current = instructions[instructions.length-1].modifier;
         instructions[instructions.length-1].modifier = config.maxModifier(current, mod);
+      }
+    };
+
+    // add a decorator to the previous token
+    this.decPrev = function (dec) {
+      if (instructions.length > 0) {
+        var current = instructions[instructions.length-1].decorator;
+        instructions[instructions.length-1].decorator += dec;
       }
     };
 
@@ -108,32 +134,35 @@
       } else {
         spacerInstruction = _addWraps({
           token: "   ",
-          modifier: "short_space"
+          modifier: "short_space",
+          decorator: ""
         });
       }
     };
 
-    var _emit = function (token) {
+    // add the token
+    this.token = function (token) {
       if (spacerInstruction) {
         instructions.push(spacerInstruction);
       }
 
+      var trunks = wordShouldBeSplitUp(token) ? splitLongWord(token) : [token]
+        , last = trunks.pop();
+      trunks.forEach(function (t) {
+        instructions.push(_addWraps({
+          token: t,
+          modifier: "normal",
+          decorator: "-"
+        }));
+      });
       instructions.push(_addWraps({
-        token: token,
-        modifier: modifier
+        token: last,
+        modifier: modifier,
+        decorator: ""
       }));
 
       modifier = "normal";
       spacerInstruction = null;
-    };
-
-    // add the token
-    this.token = function (tkn) {
-      if (wordShouldBeSplitUp(tkn)) {
-        splitLongWord(tkn).forEach(_emit);
-      } else {
-        _emit(tkn);
-      }
     };
 
     this.getInstructions = function () {
@@ -145,7 +174,8 @@
     guillemot: {left: "«", right: "»"},
     double_quote: {left: "“", right: "”"},
     parens: {left: "(", right: ")"},
-    heading1: {left: "H1", right: ""}
+    heading: {left: "#", right: ""},
+    blockquote: {left: "›", right: ""}  // U+203A
   };
 
   function parseDom(topnode,$instructionator) {
@@ -179,12 +209,24 @@
         //TODO add modifiers, e.g. based on node.nodeName
         switch(node.nodeName) {
           case "H1":
-            //commented out until view for headings is implemented    
-            //inst.pushWrap(wraps.heading1);
+          case "H2":
+          case "H3":
+          case "H4":
+          case "H5":
+          case "H6":
+            inst.clearWrap();
+            inst.pushWrap(wraps.heading);
             inst.modNext("start_paragraph");
             parseDom(node,inst);
             inst.spacer();
-            inst.clearWrap();
+            inst.popWrap(wraps.heading);
+            inst.modPrev("end_paragraph");
+            break;
+          case "BLOCKQUOTE":
+            inst.pushWrap(wraps.blockquote);
+            inst.modNext("start_paragraph");
+            parseDom(node,inst);
+            inst.popWrap(wraps.blockquote);
             inst.modPrev("end_paragraph");
             break;
           case "SCRIPT":
@@ -192,12 +234,14 @@
           case "#text":
             if(node.textContent.trim().length > 0) parseText(node.textContent.trim(),inst);
             break;
+          case "DL":
+          case "OL":
+          case "UL":
+          case "SECTION":
           case "P":
-            inst.clearWrap();
             inst.modNext("start_paragraph");
             parseDom(node, inst)
             inst.modPrev("end_paragraph");
-            inst.clearWrap();
             break;
           case "#comment":
             break;
@@ -211,8 +255,10 @@
 
   // convert raw text into instructions
   function parseText (text,$instructionator) {
+    if (config("strip_citation")) text = stripInTextCitation(text);
                         // long dashes ↓
     var tokens = text.match(/["«»“”\(\)\/–—]|--+|\n+|[^\s"“«»”\(\)\/–—]+/g);
+    if (tokens === null) tokens = [];
 
     var $ = ($instructionator) ? $instructionator :  new Instructionator();
 
@@ -270,10 +316,16 @@
             $.modNext("start_clause");
             $.token(tkn);
             $.modNext("start_clause");
+          } else if (tkn.match(/^[.?!…]+$/)) {
+            $.decPrev(tkn);
+            $.modPrev("end_sentence");
           } else if (tkn.match(/[.?!…]+$/)) {
             $.modNext("end_sentence");
             $.token(tkn);
             $.modNext("start_sentence");
+          } else if (tkn.match(/^[,;:]$/)) {
+            $.decPrev(tkn);
+            $.modPrev("end_clause");
           } else if (tkn.match(/[,;:]$/)) {
             $.modNext("end_clause");
             $.token(tkn);

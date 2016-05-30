@@ -65,7 +65,7 @@
           instr = instructions[instructions.length - 1];
         }
       }
-      reader.setWord(instr.token);
+      reader.setWord(instr.token, instr.decorator);
       reader.setWrap(instr.leftWrap, instr.rightWrap);
       reader.setProgress(100 * (index / instructions.length));
 

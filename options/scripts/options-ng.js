@@ -51,6 +51,7 @@ optsApp.controller("ReadingCtrl", function ($scope, $window, jetzt, Persist) {
 	// make sure we get the versions from storage
 	jetzt.config.refresh(function () {
 		$scope.modifiers = angular.copy(jetzt.config("modifiers"));
+		$scope.stripCitation = jetzt.config("strip_citation");
 		saved = angular.copy(jetzt.config("modifiers"));
 		$scope.$$phase || $scope.$apply();
 	});
@@ -80,6 +81,7 @@ optsApp.controller("ReadingCtrl", function ($scope, $window, jetzt, Persist) {
 
 	Persist($scope, function () {
 		jetzt.config("modifiers", $scope.modifiers);
+		jetzt.config("strip_citation", $scope.stripCitation);
 	});
 });
 
@@ -87,6 +89,8 @@ optsApp.controller("AppearanceCtrl", function ($scope, jetzt, Persist) {
 
 	$scope.themes = jetzt.themes;
 	$scope.config = jetzt.config;
+
+	$scope.fontWeights = ["normal", "bold", "100", "200", "300", "400", "500", "600", "700", "800", "900"];
 
 	window.chrome.fontSettings.getFontList(function (fonts){
 		$scope.$$phase || $scope.$apply(function () {
@@ -96,6 +100,7 @@ optsApp.controller("AppearanceCtrl", function ($scope, jetzt, Persist) {
 
 	jetzt.config.refresh(function () {
 		$scope.font = jetzt.config("font_family");
+		$scope.fontWeight = jetzt.config("font_weight");
 		$scope.selectionColor = jetzt.config("selection_color");
 		$scope.$$phase || $scope.$apply();
 	});
@@ -140,6 +145,7 @@ optsApp.controller("AppearanceCtrl", function ($scope, jetzt, Persist) {
 
 	Persist($scope, function () {
 		jetzt.config("font_family", $scope.font);
+		jetzt.config("font_weight", $scope.fontWeight);
 		jetzt.config("selection_color", $scope.selectionColor);
 	});
 });
@@ -179,6 +185,11 @@ optsApp.directive("readerDemo", function (loremIpsum, jetzt, $window) {
 
 			$scope.$watch("font", function (val) {
 				r.setFont(val);
+				r.setWord("jetzt");
+			});
+
+			$scope.$watch("fontWeight", function (val) {
+				r.setFontWeight(val);
 				r.setWord("jetzt");
 			});
 		}

@@ -44,7 +44,7 @@
       , pivotChar = span("sr-pivot")
       , decorator = span("sr-decorator")
       , word = div("sr-word", [leftWord, pivotChar, rightWord, decorator])
-      
+
       , progressBar = div("sr-progress")
       , message = div("sr-message")
       , reticle = div("sr-reticle")
@@ -60,7 +60,7 @@
       , wrapper = div("sr-reader-wrapper", [box])
 
       , unlisten;
-    
+
     box.onkeyup = box.onkeypress = function (ev) {
       if(!ev.ctrlKey && !ev.metaKey) {
         ev.stopImmediatePropagation();
@@ -135,6 +135,9 @@
       document.documentElement.scrollTop = scrollTop;
 
       box.onblur = grabFocus;
+      window.onfocus = function() {
+        setTimeout(grabFocus, 100);
+      }
 
       typeof cb === 'function' && window.setTimeout(cb, 340);
     };
@@ -162,7 +165,7 @@
     this.setWPM = function (target_wpm) {
       wpm.innerHTML = target_wpm + "";
     };
-    
+
     this.setFont = function (font) {
       // thanks for pointing that out
       leftWord.style.fontFamily = font;

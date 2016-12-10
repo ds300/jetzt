@@ -10,7 +10,9 @@ Here's what jetzt looks like in your browser:
 
 ### More Info
 
-- Read about [how to install](https://ds300.github.io/jetzt/#install) (Chrome extension and bookmarklet)
+- [Google Chrome Extension](https://chrome.google.com/webstore/detail/speed-reader/mopleljddigalhljmbidplhdhgmafemi)
+
+- Read about [how to install](https://ds300.github.io/jetzt/#install) (Manual Chrome extension and bookmarklet)
 
 - Consult the [usage instructions](https://ds300.github.io/jetzt/#use)
 

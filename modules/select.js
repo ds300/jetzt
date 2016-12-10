@@ -100,6 +100,46 @@
       }
     };
 
+    var domainSpecificDomModifications = function(selection) {
+      if (location.host === "play.google.com" &&
+          location.href.indexOf('com/books/reader') != -1) {
+        return modifyDomForGooglePlay(selection);
+      }
+      return selection;
+    };
+
+    var modifyDomForGooglePlay = function(selection) {
+      console.log(selection);
+      var newSelection = []
+      for (var i = 0; i < selection.length; i++) {
+        var text = getTextFromGbsChildren(selection[i]);
+        var p = document.createElement("P");
+        p.appendChild(document.createTextNode(text));
+        newSelection.push(p);
+      }
+      return newSelection;
+    }
+
+    var getTextFromGbsChildren = function(element) {
+      var text = "";
+      for (var i = 0; i < element.childNodes.length; i++) {
+        var child = element.childNodes[i];
+        if (child.tagName === 'GBS') {
+          for (var j = 0; j < child.childNodes.length; j++) {
+            var textNode = child.childNodes[j];
+            if (textNode.tagName === 'GBT') {
+              if (window.getComputedStyle(textNode).display !== 'none') {
+                text += textNode.textContent;
+              }
+            }
+          }
+        } else {
+          text += getTextFromGbsChildren(child);
+        }
+      }
+      return text;
+    }
+
     var stop = function () {
       jetzt.view.removeAllOverlays();
       off("mouseover", mouseoverHandler);
@@ -126,6 +166,7 @@
 
     var clickHandler = function (ev) {
       stop();
+      selection = domainSpecificDomModifications(selection);
       jetzt.init(jetzt.parse.dom(selection));
     };
 

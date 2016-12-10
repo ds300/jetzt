@@ -32,7 +32,7 @@
         }
       },
       "light": {
-        "backdrop_opacity": "0.07",
+        "backdrop_opacity": "0.86",
         "colors": {
           "backdrop": "black",
           "background": "#fbfbfb",

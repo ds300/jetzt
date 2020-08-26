@@ -37,8 +37,7 @@
 						min="0" max="1" step="0.01">
 			</label>
 			<div class="colors-wrapper">
-				<div class="color-property" ng-repeat="property in colorsList"
-				     ng-class="{right: $odd}">
+				<div class="color-property" ng-repeat="property in colorsList">
 					<label for="{{property}}_{{style}}">
 						<input type="color" ng-model="theme[style].colors[property]" name="{{property}}_{{style}}">
 						{{noUnderscores(property)}}

@@ -92,11 +92,13 @@ optsApp.controller("AppearanceCtrl", function ($scope, jetzt, Persist) {
 
 	$scope.fontWeights = ["normal", "bold", "100", "200", "300", "400", "500", "600", "700", "800", "900"];
 
-	window.chrome.fontSettings.getFontList(function (fonts){
-		$scope.$$phase || $scope.$apply(function () {
-			$scope.installedFonts = fonts;
+	if(window.chrome.fontSettings  !== undefined) {
+		window.chrome.fontSettings.getFontList(function (fonts){
+			$scope.$$phase || $scope.$apply(function () {
+				$scope.installedFonts = fonts;
+			});
 		});
-	});
+	}
 
 	jetzt.config.refresh(function () {
 		$scope.font = jetzt.config("font_family");

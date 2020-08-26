@@ -46,5 +46,8 @@
 	    "scripts": ["background.js"],
 	    "persistent": false
 	},
-	 "options_page" : "options/index.html"
+	"options_ui": {
+ 		"page": "options/index.html",
+		"browser_style": false
+	}
 }

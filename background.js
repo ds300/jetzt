@@ -1,7 +1,7 @@
 chrome.browserAction.onClicked.addListener(function(tab) {
   console.log('Speed-reading in ' + tab.url);
   chrome.tabs.executeScript(null,{
-    code: 'window.jetzt.select()'
+    code: 'document.jetzt.select()'
   });
 });
 
@@ -18,7 +18,7 @@ chrome.contextMenus.onClicked.addListener(function(data) {
     // window.getSelection() doesn't work with PDFs
     // data.selectionText is the workaround
     chrome.tabs.executeScript(null,{
-        code: data.selectionText ? 'window.jetzt.select(' + JSON.stringify(data) + ')' : 'window.jetzt.select()'
+        code: data.selectionText ? 'document.jetzt.select(' + JSON.stringify(data) + ')' : 'document.jetzt.select()'
     });
   }
 });

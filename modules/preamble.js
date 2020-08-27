@@ -12,6 +12,7 @@
     return;
   } else {
     window.jetzt = {};
+    document.jetzt = window.jetzt;
   }
 
 })(this);

@@ -1,4 +1,4 @@
-(function (window) {
+(function (document) {
   "use strict";
 
   var configStorage = {
@@ -12,6 +12,6 @@
     }
   };
 
-  window.jetzt.config.setBackend(configStorage);
+  document.jetzt.config.setBackend(configStorage);
 
-})(window);
+})(document);

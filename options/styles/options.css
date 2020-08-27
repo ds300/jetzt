@@ -1,7 +1,6 @@
 body {
 	margin: 0;
-	padding-left: 155px; /* width of sidebar */
-	padding-top: 53px; /* height of header */
+	padding: 0px;
 	font-family: sans-serif;
 	font-size: 12px;
 	color: rgb(48, 57, 66);
@@ -139,55 +138,6 @@ p {
 	margin: 0.65em 0;
 }
 
-.sideBar {
-	position: fixed;
-	top: 0;
-	bottom: 0;
-	left: 0;
-	width: 155px;
-}
-.sideBar h1 {
-	margin: 21px 0 1em 23px;
-	padding: 0;
-	color: rgb(92, 97, 102);
-}
-.sideBar ul {
-	list-style-type: none;
-	padding: 0;
-}
-.sideBar ul > li {
-	border-left: 6px solid transparent;
-	padding-left: 18px;
-	-webkit-user-select: none;
-	        user-select: none;
-	cursor: pointer;
-}
-.sideBar > ul > li:last-of-type {
-	margin-top: 27px;
-}
-.sideBar li a {
-	display: inline-block;
-	color: #999;
-	text-decoration: none;
-	line-height: 17px;
-	margin: 6px 0;
-}
-.sideBar, header {
-	z-index: 3;
-}
-header {
-	position: fixed;
-	top: 0;
-	left: 155px;
-	right: 0;
-	border-bottom: 1px solid #EEE;
-	background: -webkit-linear-gradient(white, white 40%, rgba(255, 255, 255, 0.92));
-	background:         linear-gradient(white, white 40%, rgba(255, 255, 255, 0.92));
-}
-header, section {
-	min-width: 600px;
-	max-width: 738px;
-}
 section {
 	padding-left: 18px;
 	margin-top: 8px;
@@ -201,7 +151,8 @@ section h3 {
 
 #spacing-demo {
 	float: right;
-	width: 500px;
+	width: 450px;
+	margin: 10px;
 	box-shadow: 0 0 10px grey;
 	padding: 10px;
 	box-sizing: border-box;

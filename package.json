@@ -16,9 +16,9 @@
     "start": "grunt"
   },
   "devDependencies": {
-    "grunt": "~0.4.4",
-    "grunt-contrib-uglify": "~0.3.0",
+    "grunt": "^1.4.1",
+    "grunt-contrib-uglify": "^5.0.1",
     "grunt-contrib-concat": "~0.3.0",
-    "grunt-contrib-watch": "~0.5.3"
+    "grunt-contrib-watch": "^1.1.0"
   }
 }
